@@ -27,7 +27,8 @@ public class CardDealer : MonoBehaviour
             int row = index / grid.gridCols;
             int col = index % grid.gridCols;
             
-            Vector2 targetPosition = grid.GetWorldPosition(row, col);
+            Vector2 targetPosition2D = grid.GetWorldPosition(row, col);
+            Vector3 targetPosition = new Vector3(targetPosition2D.x, targetPosition2D.y, 0f); // z = 0
             
             // Устанавливаем только координаты сетки БЕЗ перемещения
             // Карточка уже находится в позиции колоды

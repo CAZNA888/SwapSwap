@@ -13,8 +13,12 @@ public class PuzzleGrid : MonoBehaviour
     [Header("Deck Position")]
     public Vector2 deckPosition = new Vector2(5f, -5f);
     
+    [Header("Grid Cells")]
+    public GameObject gridCellPrefab; // Опциональный префаб для ячейки
+    
     private Vector2 cardSize;
     private Vector2 fieldStartPosition; // Левый верхний угол поля
+    private Dictionary<Vector2Int, GridCell> gridCells = new Dictionary<Vector2Int, GridCell>();
     
     void Awake()
     {
@@ -165,6 +169,72 @@ public class PuzzleGrid : MonoBehaviour
     public bool IsValidGridPosition(int row, int col)
     {
         return row >= 0 && row < gridRows && col >= 0 && col < gridCols;
+    }
+    
+    public void CreateGridCells()
+    {
+        // Удаляем старые ячейки если есть
+        foreach (var cell in gridCells.Values)
+        {
+            if (cell != null) Destroy(cell.gameObject);
+        }
+        gridCells.Clear();
+        
+        // Создаем ячейки
+        for (int row = 0; row < gridRows; row++)
+        {
+            for (int col = 0; col < gridCols; col++)
+            {
+                GameObject cellObj;
+                if (gridCellPrefab != null)
+                {
+                    cellObj = Instantiate(gridCellPrefab, transform);
+                }
+                else
+                {
+                    cellObj = new GameObject();
+                    cellObj.transform.SetParent(transform);
+                }
+                
+                GridCell cell = cellObj.GetComponent<GridCell>();
+                if (cell == null)
+                {
+                    cell = cellObj.AddComponent<GridCell>();
+                }
+                
+                Vector2 cellSize = new Vector2(cardSize.x + cardSpacing, cardSize.y + cardSpacing);
+                cell.Initialize(row, col, this, cellSize);
+                
+                Vector2Int key = new Vector2Int(row, col);
+                gridCells[key] = cell;
+            }
+        }
+    }
+    
+    public GridCell GetCellAt(int row, int col)
+    {
+        Vector2Int key = new Vector2Int(row, col);
+        gridCells.TryGetValue(key, out GridCell cell);
+        return cell;
+    }
+    
+    public GridCell GetCellAtPosition(Vector2 worldPos)
+    {
+        // Используем коллайдеры для определения ячейки
+        // Используем OverlapPointAll чтобы получить все коллайдеры под точкой
+        Collider2D[] hits = Physics2D.OverlapPointAll(worldPos);
+        
+        // Ищем GridCell среди всех коллайдеров
+        foreach (Collider2D hit in hits)
+        {
+            GridCell cell = hit.GetComponent<GridCell>();
+            if (cell != null)
+            {
+                return cell;
+            }
+        }
+        
+        return null;
     }
 }
 

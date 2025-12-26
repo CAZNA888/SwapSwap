@@ -29,6 +29,8 @@ graph TD
     LevelCompleteUI --> MoneyAnimation[MoneyAnimation]
 ```
 
+
+
 ## Структура файлов
 
 ### Core Scripts
@@ -315,7 +317,7 @@ graph TD
 
 ## Структура папок
 
-```
+```javascript
 Assets/
 ├── Scripts/
 │   ├── Core/
@@ -339,6 +341,8 @@ Assets/
     ├── BorderPart.prefab
     └── Coin.prefab
 ```
+
+
 
 ## Ключевые алгоритмы
 
@@ -364,6 +368,8 @@ List<PuzzlePiece> FindConnectedGroup(PuzzlePiece start) {
 }
 ```
 
+
+
 ### Проверка соединения
 
 ```csharp
@@ -385,10 +391,11 @@ bool AreConnected(PuzzlePiece a, PuzzlePiece b) {
 }
 ```
 
+
+
 ## Необходимые настройки
 
 1. Установить DOTween через Package Manager
 2. Настроить Audio Source на GameManager или отдельном объекте
 3. Создать Canvas для UI (Screen Space - Overlay)
 4. Настроить Camera для 2D (Orthographic)
-5. Подготовить спрайты (исходное изображение, обратная сторона, рамка, монетка)

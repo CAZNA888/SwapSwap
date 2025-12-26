@@ -62,6 +62,7 @@ public class GameManager : MonoBehaviour
         }
         puzzleGrid.Initialize(gridRows, gridCols, fieldWidth, fieldHeight, cardSpacing);
         puzzleGrid.deckPosition = deckPosition;
+        puzzleGrid.CreateGridCells(); // Создаем ячейки с коллайдерами
         
         imageSlicer = GetComponent<ImageSlicer>();
         if (imageSlicer == null)
@@ -215,11 +216,15 @@ public class GameManager : MonoBehaviour
             }
             
             // Добавляем коллайдер для свайпов и физики (если нет в префабе)
-            if (pieceObj.GetComponent<Collider2D>() == null)
+            BoxCollider2D collider = pieceObj.GetComponent<BoxCollider2D>();
+            if (collider == null)
             {
-                BoxCollider2D collider = pieceObj.AddComponent<BoxCollider2D>();
-                collider.size = cardSize;
+                collider = pieceObj.AddComponent<BoxCollider2D>();
             }
+            collider.size = cardSize;
+            // Убеждаемся, что коллайдер всегда активен и не триггер
+            collider.enabled = true;
+            collider.isTrigger = false; // НЕ триггер для карточек
             
             // Добавляем Rigidbody2D для корректной работы коллайдера (kinematic)
             if (pieceObj.GetComponent<Rigidbody2D>() == null)
@@ -228,6 +233,9 @@ public class GameManager : MonoBehaviour
                 rb.isKinematic = true; // Не используем физику, только для коллайдера
                 rb.gravityScale = 0;
             }
+            
+            // Устанавливаем z-позицию карточки выше ячеек
+            pieceObj.transform.position = new Vector3(pieceObj.transform.position.x, pieceObj.transform.position.y, 0f);
             
             // Инициализируем карточку
             Sprite frontSprite = slicedSprites[i];
@@ -398,12 +406,19 @@ public class GameManager : MonoBehaviour
             mainCamera.gameObject.AddComponent<UnityEngine.EventSystems.Physics2DRaycaster>();
         }
         
-        // Регистрируем все карточки в connection manager
+        // Регистрируем все карточки в connection manager и обновляем ячейки
         foreach (PuzzlePiece piece in puzzlePieces)
         {
             Vector2Int gridPos = new Vector2Int(piece.currentGridRow, piece.currentGridCol);
             occupiedCells[gridPos] = piece;
             connectionManager.RegisterPiece(piece);
+            
+            // Обновляем ячейку - привязываем карточку к ячейке
+            GridCell cell = puzzleGrid.GetCellAt(gridPos.x, gridPos.y);
+            if (cell != null)
+            {
+                cell.SetPiece(piece);
+            }
         }
         
         // Создаем SwipeHandler на каждой карточке
