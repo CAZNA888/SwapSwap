@@ -90,7 +90,16 @@ public class ConnectionManager : MonoBehaviour
         
         if (piecesOnGrid.TryGetValue(neighborGridPos, out PuzzlePiece neighbor))
         {
-            return neighbor.originalIndex == neighborOriginalIndex;
+            bool isConnected = neighbor.originalIndex == neighborOriginalIndex;
+            if (isConnected)
+            {
+                Debug.Log($"[ConnectionManager] CheckConnection: {piece.name} (originalIndex={piece.originalIndex}) соединена с {neighbor.name} (originalIndex={neighbor.originalIndex}) на позиции ({neighborGridPos.x}, {neighborGridPos.y})");
+            }
+            return isConnected;
+        }
+        else
+        {
+            Debug.LogWarning($"[ConnectionManager] CheckConnection: не найдена карточка в piecesOnGrid для позиции ({neighborGridPos.x}, {neighborGridPos.y})");
         }
         
         return false;
@@ -118,6 +127,21 @@ public class ConnectionManager : MonoBehaviour
     {
         Vector2Int gridPos = new Vector2Int(piece.currentGridRow, piece.currentGridCol);
         piecesOnGrid.Remove(gridPos);
+    }
+    
+    // Синхронизирует piecesOnGrid с переданным словарем occupiedCells
+    public void SyncWithOccupiedCells(Dictionary<Vector2Int, PuzzlePiece> occupiedCells)
+    {
+        // Очищаем старые данные
+        piecesOnGrid.Clear();
+        
+        // Копируем данные из occupiedCells
+        foreach (var kvp in occupiedCells)
+        {
+            piecesOnGrid[kvp.Key] = kvp.Value;
+        }
+        
+        Debug.Log($"[ConnectionManager] SyncWithOccupiedCells: синхронизировано {piecesOnGrid.Count} карточек");
     }
 }
 
