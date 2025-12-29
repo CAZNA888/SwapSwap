@@ -12,7 +12,7 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
     public float swapTargetDuration = 0.5f; // Длительность для карты, которая стоит на месте при обмене
     public Ease moveEase = Ease.OutQuad;
     [Header("Drag Settings")]
-    public float dragMoveDuration = 0.3f; // Длительность анимации во время перетаскивания (настраивается в инспекторе)
+    public float dragMoveDuration = 0.1f; // Длительность анимации во время перетаскивания (настраивается в инспекторе)
     
     private PuzzleGrid grid;
     private ConnectionManager connectionManager;
@@ -1267,13 +1267,17 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
     // Возвращает группу на исходные позиции с восстановлением grid координат
     private void ReturnGroupToOriginalPositions(List<PuzzlePiece> group, Dictionary<PuzzlePiece, Vector2Int> oldPositions)
     {
+        List<Tween> tweens = new List<Tween>();
+        
         foreach (PuzzlePiece piece in group)
         {
             if (oldPositions.TryGetValue(piece, out Vector2Int oldPos))
             {
                 Vector2 worldPos2D = grid.GetWorldPosition(oldPos.x, oldPos.y);
                 Vector3 worldPos = new Vector3(worldPos2D.x, worldPos2D.y, 0f); // z = 0
-                piece.transform.DOMove(worldPos, moveDuration).SetEase(moveEase);
+                Tween tween = piece.transform.DOMove(worldPos, moveDuration).SetEase(moveEase);
+                tweens.Add(tween);
+                
                 // Восстанавливаем grid координаты
                 piece.SetGridCoordinates(oldPos.x, oldPos.y);
                 // Восстанавливаем в occupiedCells
@@ -1290,16 +1294,32 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                 BoxCollider2D collider = piece.GetComponent<BoxCollider2D>();
                 if (collider != null) collider.enabled = true;
                 
-                // Возвращаем sortingOrder карточки и рамок
-                SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
-                if (sr != null) sr.sortingOrder = 0;
-                
-                BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
-                if (borderRenderer != null)
-                {
-                    borderRenderer.SetBordersSortingOrder(1); // Возвращаем к исходному
-                }
+                // НЕ возвращаем sortingOrder здесь - сделаем это после завершения анимации
             }
+        }
+        
+        // Ждем завершения всех анимаций и возвращаем sortingOrder
+        if (tweens.Count > 0)
+        {
+            Sequence sequence = DOTween.Sequence();
+            foreach (var tween in tweens)
+            {
+                sequence.Join(tween);
+            }
+            sequence.OnComplete(() => {
+                // Возвращаем sortingOrder для всех карточек группы после завершения анимации
+                foreach (PuzzlePiece piece in group)
+                {
+                    SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
+                    if (sr != null) sr.sortingOrder = 0;
+                    
+                    BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
+                    if (borderRenderer != null)
+                    {
+                        borderRenderer.SetBordersSortingOrder(1); // Возвращаем к исходному
+                    }
+                }
+            });
         }
     }
     
