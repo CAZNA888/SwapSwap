@@ -42,6 +42,30 @@ public class BorderRenderer : MonoBehaviour
         }
     }
     
+    public void SetBordersSortingOrder(int sortingOrder)
+    {
+        if (topBorder != null)
+        {
+            SpriteRenderer sr = topBorder.GetComponent<SpriteRenderer>();
+            if (sr != null) sr.sortingOrder = sortingOrder;
+        }
+        if (bottomBorder != null)
+        {
+            SpriteRenderer sr = bottomBorder.GetComponent<SpriteRenderer>();
+            if (sr != null) sr.sortingOrder = sortingOrder;
+        }
+        if (leftBorder != null)
+        {
+            SpriteRenderer sr = leftBorder.GetComponent<SpriteRenderer>();
+            if (sr != null) sr.sortingOrder = sortingOrder;
+        }
+        if (rightBorder != null)
+        {
+            SpriteRenderer sr = rightBorder.GetComponent<SpriteRenderer>();
+            if (sr != null) sr.sortingOrder = sortingOrder;
+        }
+    }
+    
     public void UpdateBorders(bool[] connections, bool isFlipped)
     {
         // Если карточка не перевернута (CardBack) - скрываем все рамки

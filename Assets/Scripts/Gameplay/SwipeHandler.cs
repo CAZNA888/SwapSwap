@@ -84,16 +84,13 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         {
             selectedPiece = clickedPiece;
             
-            // ВАЖНО: Синхронизируем ConnectionManager с occupiedCells перед проверкой соединений
+            // ВАЖНО: Синхронизируем ConnectionManager с occupiedCells для корректной работы при свайпе
             connectionManager.SyncWithOccupiedCells(occupiedCells);
             
-            // ВАЖНО: Обновляем соединения перед поиском группы
-            Vector2Int piecePos = new Vector2Int(selectedPiece.currentGridRow, selectedPiece.currentGridCol);
-            Debug.Log($"[SwipeHandler] OnPointerDown: обновляем соединения для {selectedPiece.name} в позиции ({piecePos.x}, {piecePos.y})");
-            connectionManager.CheckPieceConnections(selectedPiece);
-            CheckNeighborsConnections(selectedPiece, piecePos);
+            // НЕ обновляем соединения при клике - позиция карточки еще не изменилась
+            // Соединения будут проверены только после реального перемещения карточки
             
-            // Находим группу соединенных карточек
+            // Находим группу соединенных карточек (используем текущие соединения без обновления)
             selectedGroup = FindConnectedGroup(selectedPiece);
             Debug.Log($"[SwipeHandler] OnPointerDown: найдена группа из {selectedGroup.Count} карточек");
             
@@ -113,6 +110,13 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                 if (sr != null)
                 {
                     sr.sortingOrder = 10; // Выше остальных
+                }
+                
+                // Поднимаем рамки выше карточки
+                BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
+                if (borderRenderer != null)
+                {
+                    borderRenderer.SetBordersSortingOrder(11); // Выше карточки (10)
                 }
             }
         }
@@ -309,24 +313,42 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         connectionManager.UpdatePieceOnGrid(piece1, oldPos1, newPos1);
         connectionManager.UpdatePieceOnGrid(piece2, oldPos2, newPos2);
         
-        // ВАЖНО: Обновляем соединения СРАЗУ (до анимации)
-        connectionManager.CheckPieceConnections(piece1);
-        connectionManager.CheckPieceConnections(piece2);
-        // Также проверяем соседей этих карточек
-        CheckNeighborsConnections(piece1, newPos1);
-        CheckNeighborsConnections(piece2, newPos2);
+        // ВАЖНО: Синхронизируем piecesOnGrid с occupiedCells перед проверкой соединений
+        // Это гарантирует, что все карточки (включая стоящие на месте) будут в piecesOnGrid
+        connectionManager.SyncWithOccupiedCells(occupiedCells);
         
-        // Возвращаем sortingOrder
+        // СРАЗУ проверяем соединения после установки карт в ячейки
+        // Проверяем соединения только для карточек, которые переместились
+        if (oldPos1 != newPos1)
+        {
+            connectionManager.CheckPieceConnections(piece1);
+            CheckNeighborsConnections(piece1, newPos1);
+        }
+        if (oldPos2 != newPos2)
+        {
+            connectionManager.CheckPieceConnections(piece2);
+            CheckNeighborsConnections(piece2, newPos2);
+        }
+        
+        // Обновляем все соединения на поле для гарантии актуальности данных
+        connectionManager.CheckAllConnections();
+        
+        // Возвращаем sortingOrder карточек
         SpriteRenderer sr1 = piece1.GetComponent<SpriteRenderer>();
         SpriteRenderer sr2 = piece2.GetComponent<SpriteRenderer>();
         if (sr1 != null) sr1.sortingOrder = 0;
         if (sr2 != null) sr2.sortingOrder = 0;
         
-        // Проверяем соединения еще раз после анимации (на всякий случай)
+        // Возвращаем sortingOrder рамок
+        BorderRenderer br1 = piece1.GetComponentInChildren<BorderRenderer>();
+        BorderRenderer br2 = piece2.GetComponentInChildren<BorderRenderer>();
+        if (br1 != null) br1.SetBordersSortingOrder(1); // Возвращаем к исходному
+        if (br2 != null) br2.SetBordersSortingOrder(1); // Возвращаем к исходному
+        
+        // Запускаем анимацию и вызываем колбэки после завершения
         Sequence swapSeq = DOTween.Sequence();
         swapSeq.AppendInterval(moveDuration);
         swapSeq.OnComplete(() => {
-            connectionManager.CheckAllConnections();
             if (audioManager != null) audioManager.PlaySwipe();
             if (gameManager != null) gameManager.OnPieceMoved();
         });
@@ -376,17 +398,34 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         
         connectionManager.UpdatePieceOnGrid(piece, oldPos, newPosInt);
         
-        // ВАЖНО: Обновляем соединения СРАЗУ (до анимации)
-        connectionManager.CheckPieceConnections(piece);
-        CheckNeighborsConnections(piece, newPosInt);
+        // ВАЖНО: Синхронизируем piecesOnGrid с occupiedCells перед проверкой соединений
+        // Это гарантирует, что все карточки (включая стоящие на месте) будут в piecesOnGrid
+        connectionManager.SyncWithOccupiedCells(occupiedCells);
+        
+        // СРАЗУ проверяем соединения после установки карты в ячейку
+        // Проверяем соединения только если позиция изменилась
+        if (oldPos != newPosInt)
+        {
+            connectionManager.CheckPieceConnections(piece);
+            CheckNeighborsConnections(piece, newPosInt);
+        }
+        
+        // Обновляем все соединения на поле для гарантии актуальности данных
+        connectionManager.CheckAllConnections();
         
         SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
         if (sr != null) sr.sortingOrder = 0;
         
+        // Возвращаем sortingOrder рамок
+        BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
+        if (borderRenderer != null)
+        {
+            borderRenderer.SetBordersSortingOrder(1); // Возвращаем к исходному
+        }
+        
         Sequence moveSeq = DOTween.Sequence();
         moveSeq.AppendInterval(moveDuration);
         moveSeq.OnComplete(() => {
-            connectionManager.CheckAllConnections();
             if (audioManager != null) audioManager.PlaySwipe();
             if (gameManager != null) gameManager.OnPieceMoved();
         });
@@ -619,13 +658,31 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             // Затем добавляем новую позицию в occupiedCells (старая уже удалена на шаге 5)
             occupiedCells[newPos] = piece;
             connectionManager.UpdatePieceOnGrid(piece, oldPos, newPos);
-            
-            // ВАЖНО: Обновляем соединения СРАЗУ (до анимации)
-            connectionManager.CheckPieceConnections(piece);
-            CheckNeighborsConnections(piece, newPos);
         }
         
-        // 8.3. ПРОВЕРКА ЦЕЛОСТНОСТИ СРАЗУ ПОСЛЕ РАЗМЕЩЕНИЯ ГРУППЫ (до анимации)
+        // ВАЖНО: Синхронизируем piecesOnGrid с occupiedCells перед проверкой соединений
+        // Это гарантирует, что все карточки (включая стоящие на месте) будут в piecesOnGrid
+        connectionManager.SyncWithOccupiedCells(occupiedCells);
+        
+        // 8.3. СРАЗУ проверяем соединения после установки всех карт группы в ячейки
+        foreach (PuzzlePiece piece in group)
+        {
+            if (oldPositions.TryGetValue(piece, out Vector2Int oldPos))
+            {
+                Vector2Int newPos = new Vector2Int(piece.currentGridRow, piece.currentGridCol);
+                // Проверяем соединения только если позиция изменилась
+                if (oldPos != newPos)
+                {
+                    connectionManager.CheckPieceConnections(piece);
+                    CheckNeighborsConnections(piece, newPos);
+                }
+            }
+        }
+        
+        // Обновляем все соединения на поле для гарантии актуальности данных
+        connectionManager.CheckAllConnections();
+        
+        // 8.4. ПРОВЕРКА ЦЕЛОСТНОСТИ СРАЗУ ПОСЛЕ РАЗМЕЩЕНИЯ ГРУППЫ (до анимации)
         ValidateGridIntegrityImmediate();
         
         // 8.5. ФИНАЛЬНАЯ ПРОВЕРКА: Убеждаемся, что на всех целевых ячейках только карточки из группы
@@ -724,13 +781,35 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                     cellIndex++;
                 }
             }
+            
+            // ВАЖНО: Синхронизируем piecesOnGrid с occupiedCells перед проверкой соединений
+            // Это гарантирует, что все карточки (включая стоящие на месте) будут в piecesOnGrid
+            connectionManager.SyncWithOccupiedCells(occupiedCells);
+            
+            // СРАЗУ проверяем соединения после установки всех карт в ячейки
+            foreach (PuzzlePiece piece in remainingPiecesToMove)
+            {
+                Vector2Int newPos = new Vector2Int(piece.currentGridRow, piece.currentGridCol);
+                connectionManager.CheckPieceConnections(piece);
+                CheckNeighborsConnections(piece, newPos);
+            }
+            
+            // Обновляем все соединения на поле для гарантии актуальности данных
+            connectionManager.CheckAllConnections();
         }
         
-        // 9. Возвращаем sortingOrder
+        // 9. Возвращаем sortingOrder карточек и рамок
         foreach (PuzzlePiece piece in group)
         {
             SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
             if (sr != null) sr.sortingOrder = 0;
+            
+            // Возвращаем sortingOrder рамок
+            BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
+            if (borderRenderer != null)
+            {
+                borderRenderer.SetBordersSortingOrder(1); // Возвращаем к исходному
+            }
         }
         
         // 10. Ждем завершения анимаций
@@ -741,13 +820,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         }
         sequence.OnComplete(() => {
             // Финальная проверка: убеждаемся, что на каждой ячейке только 1 карточка
-            ValidateGridIntegrity();
-            
-            // После обновления соединений снова проверяем целостность
-            connectionManager.CheckAllConnections();
-            
-            // ВАЖНО: После CheckAllConnections могут измениться соединения и появиться новые карточки под группой
-            // Поэтому снова проверяем целостность
             ValidateGridIntegrity();
             
             if (audioManager != null) audioManager.PlaySwipe();
@@ -1094,6 +1166,16 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                 // Убеждаемся, что коллайдер активен
                 BoxCollider2D collider = piece.GetComponent<BoxCollider2D>();
                 if (collider != null) collider.enabled = true;
+                
+                // Возвращаем sortingOrder карточки и рамок
+                SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
+                if (sr != null) sr.sortingOrder = 0;
+                
+                BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
+                if (borderRenderer != null)
+                {
+                    borderRenderer.SetBordersSortingOrder(1); // Возвращаем к исходному
+                }
             }
         }
     }
@@ -1379,8 +1461,8 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                 Vector2Int neighborPos = new Vector2Int(newRow, newCol);
                 if (occupiedCells.TryGetValue(neighborPos, out PuzzlePiece neighbor))
                 {
-                    // ВАЖНО: Обновляем соединения соседа перед проверкой
-                    connectionManager.CheckPieceConnections(neighbor);
+                    // НЕ обновляем соединения соседа при поиске группы - это обновляет рамки при клике
+                    // Используем текущие соединения без обновления
                     
                     // Проверяем, что сосед тоже соединен с этой карточкой
                     // Для соседа нужно проверить противоположную сторону
