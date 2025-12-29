@@ -9,7 +9,10 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
     [Header("Settings")]
     public float swipeThreshold = 0.1f;
     public float moveDuration = 0.3f;
+    public float swapTargetDuration = 0.5f; // Длительность для карты, которая стоит на месте при обмене
     public Ease moveEase = Ease.OutQuad;
+    [Header("Drag Settings")]
+    public float dragMoveDuration = 0.3f; // Длительность анимации во время перетаскивания (настраивается в инспекторе)
     
     private PuzzleGrid grid;
     private ConnectionManager connectionManager;
@@ -21,6 +24,7 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
     private Vector3 dragOffset;
     private bool isDragging = false;
     private Dictionary<Vector2Int, PuzzlePiece> occupiedCells;
+    private Dictionary<PuzzlePiece, Tween> dragTweens = new Dictionary<PuzzlePiece, Tween>(); // Хранит активные анимации перетаскивания
     
     public void Initialize(PuzzleGrid puzzleGrid, ConnectionManager connManager, AudioManager audio, Dictionary<Vector2Int, PuzzlePiece> cells, GameManager gm = null)
     {
@@ -103,6 +107,16 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             
             isDragging = true;
             
+            // Очищаем старые твины перетаскивания
+            foreach (var kvp in dragTweens)
+            {
+                if (kvp.Value != null && kvp.Value.IsActive())
+                {
+                    kvp.Value.Kill();
+                }
+            }
+            dragTweens.Clear();
+            
             // Поднимаем карточки выше (изменяем sortingOrder)
             foreach (PuzzlePiece piece in selectedGroup)
             {
@@ -140,22 +154,60 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             relativeOffsets[piece] = piece.transform.position - selectedPiece.transform.position;
         }
         
-        // Перемещаем все карточки группы ОДНОВРЕМЕННО
+        // Перемещаем все карточки группы ОДНОВРЕМЕННО с плавной анимацией
         foreach (PuzzlePiece piece in selectedGroup)
         {
             Vector3 newPos = targetPos + relativeOffsets[piece];
             newPos.z = 0f; // Сохраняем z = 0 для всех карточек в группе
-            piece.transform.position = newPos;
+            
+            // Убиваем предыдущую анимацию, если она есть
+            if (dragTweens.TryGetValue(piece, out Tween existingTween))
+            {
+                if (existingTween != null && existingTween.IsActive())
+                {
+                    existingTween.Kill();
+                }
+            }
+            
+            // Запускаем плавную анимацию перемещения
+            Tween tween = piece.transform.DOMove(newPos, dragMoveDuration)
+                .SetEase(Ease.OutQuad);
+            
+            dragTweens[piece] = tween;
             
             // Убеждаемся, что коллайдер активен
             BoxCollider2D collider = piece.GetComponent<BoxCollider2D>();
             if (collider != null) collider.enabled = true;
+            
+            // ВАЖНО: Убеждаемся, что перетаскиваемые карточки остаются выше всех остальных
+            SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
+            if (sr != null)
+            {
+                sr.sortingOrder = 10; // Выше остальных
+            }
+            
+            // Поднимаем рамки выше карточки
+            BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
+            if (borderRenderer != null)
+            {
+                borderRenderer.SetBordersSortingOrder(11); // Выше карточки (10)
+            }
         }
     }
     
     public void OnPointerUp(PointerEventData eventData)
     {
         if (!isDragging || selectedGroup == null) return;
+        
+        // Останавливаем все анимации перетаскивания
+        foreach (var kvp in dragTweens)
+        {
+            if (kvp.Value != null && kvp.Value.IsActive())
+            {
+                kvp.Value.Kill();
+            }
+        }
+        dragTweens.Clear();
         
         isDragging = false;
         
@@ -280,8 +332,11 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             0f
         );
         
+        // Карта А (draggedPiece) - используем стандартную длительность
         piece1.transform.DOMove(pos1, moveDuration).SetEase(moveEase);
-        piece2.transform.DOMove(pos2, moveDuration).SetEase(moveEase);
+        
+        // Карта Б (targetPiece) - используем большую длительность для плавности
+        piece2.transform.DOMove(pos2, swapTargetDuration).SetEase(moveEase);
         
         // Убеждаемся, что коллайдеры активны
         BoxCollider2D collider1 = piece1.GetComponent<BoxCollider2D>();
@@ -289,14 +344,30 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         if (collider1 != null) collider1.enabled = true;
         if (collider2 != null) collider2.enabled = true;
         
+        // Устанавливаем правильный sortingOrder для обеих карточек во время анимации
+        // Карточка А (draggedPiece) остается высокой - уже установлено в OnPointerDown (10)
+        // Карточка Б (targetPiece) - понижаем, чтобы была ниже карточки А
+        SpriteRenderer sr1 = piece1.GetComponent<SpriteRenderer>();
+        SpriteRenderer sr2 = piece2.GetComponent<SpriteRenderer>();
+        if (sr1 != null) sr1.sortingOrder = 10; // Карточка А остается высокой
+        if (sr2 != null) sr2.sortingOrder = 5; // Карточка Б ниже карточки А
+        
+        // Рамки карточки А остаются высокими (11) - уже установлено в OnPointerDown
+        // Рамки карточки Б - ниже рамок А, но выше самой карточки Б
+        BorderRenderer br1 = piece1.GetComponentInChildren<BorderRenderer>();
+        BorderRenderer br2 = piece2.GetComponentInChildren<BorderRenderer>();
+        if (br1 != null) br1.SetBordersSortingOrder(11); // Рамки А остаются высокими
+        if (br2 != null) br2.SetBordersSortingOrder(6); // Рамки Б ниже рамок А, но выше карточки Б
+        
         // Обновляем координаты СРАЗУ (до анимации)
         Vector2Int oldPos1 = new Vector2Int(cell1.row, cell1.col);
         Vector2Int oldPos2 = new Vector2Int(cell2.row, cell2.col);
         Vector2Int newPos1 = new Vector2Int(cell2.row, cell2.col);
         Vector2Int newPos2 = new Vector2Int(cell1.row, cell1.col);
         
-        piece1.SetPosition(newPos1.x, newPos1.y);
-        piece2.SetPosition(newPos2.x, newPos2.y);
+        // Используем SetGridCoordinates вместо SetPosition, чтобы не прерывать анимацию DOMove
+        piece1.SetGridCoordinates(newPos1.x, newPos1.y);
+        piece2.SetGridCoordinates(newPos2.x, newPos2.y);
         
         // ВАЖНО: Сначала очищаем старые позиции в occupiedCells
         occupiedCells.Remove(oldPos1);
@@ -333,22 +404,19 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         // Обновляем все соединения на поле для гарантии актуальности данных
         connectionManager.CheckAllConnections();
         
-        // Возвращаем sortingOrder карточек
-        SpriteRenderer sr1 = piece1.GetComponent<SpriteRenderer>();
-        SpriteRenderer sr2 = piece2.GetComponent<SpriteRenderer>();
-        if (sr1 != null) sr1.sortingOrder = 0;
-        if (sr2 != null) sr2.sortingOrder = 0;
-        
-        // Возвращаем sortingOrder рамок
-        BorderRenderer br1 = piece1.GetComponentInChildren<BorderRenderer>();
-        BorderRenderer br2 = piece2.GetComponentInChildren<BorderRenderer>();
-        if (br1 != null) br1.SetBordersSortingOrder(1); // Возвращаем к исходному
-        if (br2 != null) br2.SetBordersSortingOrder(1); // Возвращаем к исходному
-        
-        // Запускаем анимацию и вызываем колбэки после завершения
+        // Запускаем анимацию и вызываем колбэки после завершения (используем максимальную длительность)
+        float maxDuration = Mathf.Max(moveDuration, swapTargetDuration);
         Sequence swapSeq = DOTween.Sequence();
-        swapSeq.AppendInterval(moveDuration);
+        swapSeq.AppendInterval(maxDuration);
         swapSeq.OnComplete(() => {
+            // Возвращаем sortingOrder карточек к исходным значениям
+            if (sr1 != null) sr1.sortingOrder = 0;
+            if (sr2 != null) sr2.sortingOrder = 0;
+            
+            // Возвращаем sortingOrder рамок к исходным значениям
+            if (br1 != null) br1.SetBordersSortingOrder(1);
+            if (br2 != null) br2.SetBordersSortingOrder(1);
+            
             if (audioManager != null) audioManager.PlaySwipe();
             if (gameManager != null) gameManager.OnPieceMoved();
         });
@@ -588,8 +656,18 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                     BoxCollider2D collider = piece.GetComponent<BoxCollider2D>();
                     if (collider != null) collider.enabled = true;
                     
-                    // ВАЖНО: Сначала обновляем координаты карточки
-                    piece.SetPosition(newPos.x, newPos.y);
+                    // Устанавливаем низкий sortingOrder для мешающих карточек (ниже группы)
+                    SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
+                    if (sr != null) sr.sortingOrder = 5; // Ниже группы
+                    
+                    BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
+                    if (borderRenderer != null)
+                    {
+                        borderRenderer.SetBordersSortingOrder(6); // Ниже рамок группы, но выше карточки
+                    }
+                    
+                    // ВАЖНО: Используем SetGridCoordinates вместо SetPosition, чтобы не прерывать анимацию DOMove
+                    piece.SetGridCoordinates(newPos.x, newPos.y);
                     
                     // Затем очищаем старую позицию в occupiedCells
                     occupiedCells.Remove(oldPos);
@@ -639,8 +717,18 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             if (collider != null) collider.enabled = true;
             tweens.Add(tween);
             
-            // ВАЖНО: Сначала обновляем координаты карточки
-            piece.SetPosition(newRow, newCol);
+            // Убеждаемся, что карточки группы имеют высокий sortingOrder (уже установлено в OnPointerDown, но для надежности)
+            SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
+            if (sr != null) sr.sortingOrder = 10; // Группа остается высокой
+            
+            BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
+            if (borderRenderer != null)
+            {
+                borderRenderer.SetBordersSortingOrder(11); // Рамки группы остаются высокими
+            }
+            
+            // ВАЖНО: Используем SetGridCoordinates вместо SetPosition, чтобы не прерывать анимацию DOMove
+            piece.SetGridCoordinates(newRow, newCol);
             
             // Затем обновляем ячейку (старая уже очищена на шаге 5, целевая очищена на шаге 6)
             // Но нужно убедиться, что ячейка пуста
@@ -761,8 +849,18 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                     BoxCollider2D collider = piece.GetComponent<BoxCollider2D>();
                     if (collider != null) collider.enabled = true;
                     
-                    // ВАЖНО: Сначала обновляем координаты карточки
-                    piece.SetPosition(newPos.x, newPos.y);
+                    // Устанавливаем низкий sortingOrder для оставшихся карточек (ниже группы)
+                    SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
+                    if (sr != null) sr.sortingOrder = 5; // Ниже группы
+                    
+                    BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
+                    if (borderRenderer != null)
+                    {
+                        borderRenderer.SetBordersSortingOrder(6); // Ниже рамок группы, но выше карточки
+                    }
+                    
+                    // ВАЖНО: Используем SetGridCoordinates вместо SetPosition, чтобы не прерывать анимацию DOMove
+                    piece.SetGridCoordinates(newPos.x, newPos.y);
                     
                     // Затем очищаем старую позицию в occupiedCells
                     occupiedCells.Remove(oldPos);
@@ -798,27 +896,52 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             connectionManager.CheckAllConnections();
         }
         
-        // 9. Возвращаем sortingOrder карточек и рамок
-        foreach (PuzzlePiece piece in group)
-        {
-            SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
-            if (sr != null) sr.sortingOrder = 0;
-            
-            // Возвращаем sortingOrder рамок
-            BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
-            if (borderRenderer != null)
-            {
-                borderRenderer.SetBordersSortingOrder(1); // Возвращаем к исходному
-            }
-        }
-        
-        // 10. Ждем завершения анимаций
+        // 9. Ждем завершения анимаций и возвращаем sortingOrder всех карточек
         Sequence sequence = DOTween.Sequence();
         foreach (var tween in tweens)
         {
             sequence.Join(tween);
         }
         sequence.OnComplete(() => {
+            // Возвращаем sortingOrder для карточек группы
+            foreach (PuzzlePiece piece in group)
+            {
+                SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
+                if (sr != null) sr.sortingOrder = 0;
+                
+                BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
+                if (borderRenderer != null)
+                {
+                    borderRenderer.SetBordersSortingOrder(1);
+                }
+            }
+            
+            // Возвращаем sortingOrder для мешающих карточек
+            foreach (PuzzlePiece piece in piecesToMove)
+            {
+                SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
+                if (sr != null) sr.sortingOrder = 0;
+                
+                BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
+                if (borderRenderer != null)
+                {
+                    borderRenderer.SetBordersSortingOrder(1);
+                }
+            }
+            
+            // Возвращаем sortingOrder для оставшихся карточек
+            foreach (PuzzlePiece piece in remainingPiecesToMove)
+            {
+                SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
+                if (sr != null) sr.sortingOrder = 0;
+                
+                BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
+                if (borderRenderer != null)
+                {
+                    borderRenderer.SetBordersSortingOrder(1);
+                }
+            }
+            
             // Финальная проверка: убеждаемся, что на каждой ячейке только 1 карточка
             ValidateGridIntegrity();
             
@@ -934,8 +1057,8 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                     Vector2 worldPos2D = grid.GetWorldPosition(newPos.x, newPos.y);
                     Vector3 newWorldPos = new Vector3(worldPos2D.x, worldPos2D.y, 0f);
                     
-                    // Перемещаем СРАЗУ (без анимации для немедленной проверки)
-                    duplicate.transform.position = newWorldPos;
+                    // Перемещаем с анимацией
+                    duplicate.transform.DOMove(newWorldPos, moveDuration).SetEase(moveEase);
                     duplicate.SetPosition(newPos.x, newPos.y);
                     
                     GridCell oldCell = grid.GetCellAt(oldPos.x, oldPos.y);
