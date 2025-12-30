@@ -29,14 +29,9 @@ public class ImageSlicer : MonoBehaviour
         
         // Вырезаем только область спрайта из текстуры
         Texture2D spriteTexture = new Texture2D(spriteWidth, spriteHeight, TextureFormat.RGBA32, false);
-        // Получаем пиксели и конвертируем в Color32 для точного копирования без потери данных
-        Color[] spritePixelsFloat = fullTexture.GetPixels(spriteX, spriteY, spriteWidth, spriteHeight);
-        Color32[] spritePixels = new Color32[spritePixelsFloat.Length];
-        for (int i = 0; i < spritePixelsFloat.Length; i++)
-        {
-            spritePixels[i] = spritePixelsFloat[i];
-        }
-        spriteTexture.SetPixels32(spritePixels);
+        // Используем GetPixels напрямую для сохранения максимального качества (float precision)
+        Color[] spritePixels = fullTexture.GetPixels(spriteX, spriteY, spriteWidth, spriteHeight);
+        spriteTexture.SetPixels(spritePixels);
         
         // КРИТИЧНО: Устанавливаем point filtering ДО Apply() для предотвращения размытия
         spriteTexture.filterMode = FilterMode.Point;
@@ -79,14 +74,9 @@ public class ImageSlicer : MonoBehaviour
                 // Создаем новую текстуру для кусочка с явным форматом
                 Texture2D sliceTexture = new Texture2D(currentSliceWidth, currentSliceHeight, TextureFormat.RGBA32, false);
                 
-                // Получаем пиксели и конвертируем в Color32 для точного копирования без потери данных
-                Color[] pixelsFloat = spriteTexture.GetPixels(x, y, currentSliceWidth, currentSliceHeight);
-                Color32[] pixels = new Color32[pixelsFloat.Length];
-                for (int i = 0; i < pixelsFloat.Length; i++)
-                {
-                    pixels[i] = pixelsFloat[i];
-                }
-                sliceTexture.SetPixels32(pixels);
+                // Используем GetPixels напрямую для сохранения максимального качества
+                Color[] pixels = spriteTexture.GetPixels(x, y, currentSliceWidth, currentSliceHeight);
+                sliceTexture.SetPixels(pixels);
                 
                 // КРИТИЧНО: Устанавливаем point filtering ДО Apply() для предотвращения размытия и артефактов
                 sliceTexture.filterMode = FilterMode.Point;

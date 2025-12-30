@@ -514,52 +514,50 @@ public class GameManager : MonoBehaviour
         return scaledSprite;
     }
     
-    // Масштабирует текстуру с использованием nearest neighbor для точного результата без размытия
+    // Масштабирует текстуру с использованием высококачественного алгоритма
     private Texture2D ScaleTexture(Texture2D source, int targetWidth, int targetHeight)
     {
-        // Если размеры совпадают, просто копируем пиксели
+        // Если размеры совпадают, просто копируем пиксели с максимальным качеством
         if (source.width == targetWidth && source.height == targetHeight)
         {
             Texture2D result = new Texture2D(targetWidth, targetHeight, TextureFormat.RGBA32, false);
-            Color32[] pixels = source.GetPixels32();
-            result.SetPixels32(pixels);
+            Color[] pixels = source.GetPixels();
+            result.SetPixels(pixels);
             result.filterMode = FilterMode.Point;
             result.wrapMode = TextureWrapMode.Clamp;
             result.Apply();
             return result;
         }
         
-        // Используем nearest neighbor scaling для точного масштабирования без фильтрации
+        // Используем RenderTexture с bilinear filtering для высококачественного масштабирования
+        // Но применяем point filtering к результату для предотвращения артефактов на краях
+        RenderTexture rt = RenderTexture.GetTemporary(
+            targetWidth, 
+            targetHeight, 
+            0, 
+            RenderTextureFormat.ARGB32, 
+            RenderTextureReadWrite.sRGB
+        );
+        
+        // Используем bilinear для плавного масштабирования
+        rt.filterMode = FilterMode.Bilinear;
+        
+        RenderTexture previous = RenderTexture.active;
+        RenderTexture.active = rt;
+        
+        // Копируем исходную текстуру с масштабированием
+        Graphics.Blit(source, rt);
+        
         Texture2D resultTexture = new Texture2D(targetWidth, targetHeight, TextureFormat.RGBA32, false);
-        Color32[] sourcePixels = source.GetPixels32();
-        Color32[] targetPixels = new Color32[targetWidth * targetHeight];
+        resultTexture.ReadPixels(new Rect(0, 0, targetWidth, targetHeight), 0, 0);
         
-        float scaleX = (float)source.width / targetWidth;
-        float scaleY = (float)source.height / targetHeight;
-        
-        // Nearest neighbor sampling - берем ближайший пиксель без интерполяции
-        for (int y = 0; y < targetHeight; y++)
-        {
-            for (int x = 0; x < targetWidth; x++)
-            {
-                int sourceX = Mathf.FloorToInt(x * scaleX);
-                int sourceY = Mathf.FloorToInt(y * scaleY);
-                
-                // Ограничиваем координаты границами исходной текстуры
-                sourceX = Mathf.Clamp(sourceX, 0, source.width - 1);
-                sourceY = Mathf.Clamp(sourceY, 0, source.height - 1);
-                
-                int sourceIndex = sourceY * source.width + sourceX;
-                int targetIndex = y * targetWidth + x;
-                
-                targetPixels[targetIndex] = sourcePixels[sourceIndex];
-            }
-        }
-        
-        resultTexture.SetPixels32(targetPixels);
+        // Устанавливаем point filtering для финальной текстуры
         resultTexture.filterMode = FilterMode.Point;
         resultTexture.wrapMode = TextureWrapMode.Clamp;
         resultTexture.Apply();
+        
+        RenderTexture.active = previous;
+        RenderTexture.ReleaseTemporary(rt);
         
         return resultTexture;
     }
