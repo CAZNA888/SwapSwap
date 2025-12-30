@@ -27,17 +27,33 @@ public class ImageSlicer : MonoBehaviour
         // Получаем читаемую текстуру
         Texture2D fullTexture = GetReadableTexture(sourceSprite.texture);
         
-        // Вырезаем только область спрайта из текстуры (368×512, а не 512×512)
-        Texture2D spriteTexture = new Texture2D(spriteWidth, spriteHeight);
-        Color[] spritePixels = fullTexture.GetPixels(spriteX, spriteY, spriteWidth, spriteHeight);
-        spriteTexture.SetPixels(spritePixels);
+        // Вырезаем только область спрайта из текстуры
+        Texture2D spriteTexture = new Texture2D(spriteWidth, spriteHeight, TextureFormat.RGBA32, false);
+        // Получаем пиксели и конвертируем в Color32 для точного копирования без потери данных
+        Color[] spritePixelsFloat = fullTexture.GetPixels(spriteX, spriteY, spriteWidth, spriteHeight);
+        Color32[] spritePixels = new Color32[spritePixelsFloat.Length];
+        for (int i = 0; i < spritePixelsFloat.Length; i++)
+        {
+            spritePixels[i] = spritePixelsFloat[i];
+        }
+        spriteTexture.SetPixels32(spritePixels);
+        
+        // КРИТИЧНО: Устанавливаем point filtering ДО Apply() для предотвращения размытия
+        spriteTexture.filterMode = FilterMode.Point;
+        spriteTexture.wrapMode = TextureWrapMode.Clamp;
         spriteTexture.Apply();
         
-        // Теперь нарезаем обрезанный спрайт на кусочки
-        int sliceWidth = spriteWidth / cols;  // Используем размер спрайта, а не текстуры!
+        // Вычисляем размеры кусочков с учетом остатков
+        int sliceWidth = spriteWidth / cols;
         int sliceHeight = spriteHeight / rows;
+        int widthRemainder = spriteWidth % cols;
+        int heightRemainder = spriteHeight % rows;
         
         Debug.Log($"Размер каждого кусочка: {sliceWidth}×{sliceHeight} пикселей");
+        if (widthRemainder > 0 || heightRemainder > 0)
+        {
+            Debug.LogWarning($"Остатки при делении: ширина {widthRemainder}, высота {heightRemainder}. Последние кусочки будут немного больше.");
+        }
         
         for (int row = 0; row < rows; row++)
         {
@@ -47,18 +63,40 @@ public class ImageSlicer : MonoBehaviour
                 int x = col * sliceWidth;
                 int y = (rows - 1 - row) * sliceHeight; // Инвертируем Y для Unity координат
                 
-                // Создаем новую текстуру для кусочка
-                Texture2D sliceTexture = new Texture2D(sliceWidth, sliceHeight);
+                // Для последних кусочков учитываем остаток
+                int currentSliceWidth = sliceWidth;
+                int currentSliceHeight = sliceHeight;
                 
-                // Копируем пиксели из обрезанного спрайта
-                Color[] pixels = spriteTexture.GetPixels(x, y, sliceWidth, sliceHeight);
-                sliceTexture.SetPixels(pixels);
+                if (col == cols - 1 && widthRemainder > 0)
+                {
+                    currentSliceWidth += widthRemainder;
+                }
+                if (row == rows - 1 && heightRemainder > 0)
+                {
+                    currentSliceHeight += heightRemainder;
+                }
+                
+                // Создаем новую текстуру для кусочка с явным форматом
+                Texture2D sliceTexture = new Texture2D(currentSliceWidth, currentSliceHeight, TextureFormat.RGBA32, false);
+                
+                // Получаем пиксели и конвертируем в Color32 для точного копирования без потери данных
+                Color[] pixelsFloat = spriteTexture.GetPixels(x, y, currentSliceWidth, currentSliceHeight);
+                Color32[] pixels = new Color32[pixelsFloat.Length];
+                for (int i = 0; i < pixelsFloat.Length; i++)
+                {
+                    pixels[i] = pixelsFloat[i];
+                }
+                sliceTexture.SetPixels32(pixels);
+                
+                // КРИТИЧНО: Устанавливаем point filtering ДО Apply() для предотвращения размытия и артефактов
+                sliceTexture.filterMode = FilterMode.Point;
+                sliceTexture.wrapMode = TextureWrapMode.Clamp;
                 sliceTexture.Apply();
                 
                 // Создаем спрайт
                 Sprite sliceSprite = Sprite.Create(
                     sliceTexture,
-                    new Rect(0, 0, sliceWidth, sliceHeight),
+                    new Rect(0, 0, currentSliceWidth, currentSliceHeight),
                     new Vector2(0.5f, 0.5f), // Pivot в центре
                     sourceSprite.pixelsPerUnit
                 );
@@ -89,20 +127,25 @@ public class ImageSlicer : MonoBehaviour
         catch
         {
             // Текстура не читаема, создаем копию
+            // Используем sRGB для правильной цветопередачи
             RenderTexture renderTexture = RenderTexture.GetTemporary(
                 source.width,
                 source.height,
                 0,
                 RenderTextureFormat.Default,
-                RenderTextureReadWrite.Linear
+                RenderTextureReadWrite.sRGB
             );
             
             Graphics.Blit(source, renderTexture);
             RenderTexture previous = RenderTexture.active;
             RenderTexture.active = renderTexture;
             
-            Texture2D readableTexture = new Texture2D(source.width, source.height);
+            // Создаем текстуру с явным форматом и point filtering
+            Texture2D readableTexture = new Texture2D(source.width, source.height, TextureFormat.RGBA32, false);
             readableTexture.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
+            // КРИТИЧНО: Устанавливаем point filtering ДО Apply()
+            readableTexture.filterMode = FilterMode.Point;
+            readableTexture.wrapMode = TextureWrapMode.Clamp;
             readableTexture.Apply();
             
             RenderTexture.active = previous;

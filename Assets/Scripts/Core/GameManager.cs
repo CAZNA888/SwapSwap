@@ -514,24 +514,60 @@ public class GameManager : MonoBehaviour
         return scaledSprite;
     }
     
-    // Масштабирует текстуру
+    // Масштабирует текстуру с использованием nearest neighbor для точного результата без размытия
     private Texture2D ScaleTexture(Texture2D source, int targetWidth, int targetHeight)
     {
-        RenderTexture rt = RenderTexture.GetTemporary(targetWidth, targetHeight);
-        Graphics.Blit(source, rt);
-        RenderTexture previous = RenderTexture.active;
-        RenderTexture.active = rt;
-        Texture2D readableTexture = new Texture2D(targetWidth, targetHeight);
-        readableTexture.ReadPixels(new Rect(0, 0, targetWidth, targetHeight), 0, 0);
-        readableTexture.Apply();
-        RenderTexture.active = previous;
-        RenderTexture.ReleaseTemporary(rt);
-        return readableTexture;
+        // Если размеры совпадают, просто копируем пиксели
+        if (source.width == targetWidth && source.height == targetHeight)
+        {
+            Texture2D result = new Texture2D(targetWidth, targetHeight, TextureFormat.RGBA32, false);
+            Color32[] pixels = source.GetPixels32();
+            result.SetPixels32(pixels);
+            result.filterMode = FilterMode.Point;
+            result.wrapMode = TextureWrapMode.Clamp;
+            result.Apply();
+            return result;
+        }
+        
+        // Используем nearest neighbor scaling для точного масштабирования без фильтрации
+        Texture2D resultTexture = new Texture2D(targetWidth, targetHeight, TextureFormat.RGBA32, false);
+        Color32[] sourcePixels = source.GetPixels32();
+        Color32[] targetPixels = new Color32[targetWidth * targetHeight];
+        
+        float scaleX = (float)source.width / targetWidth;
+        float scaleY = (float)source.height / targetHeight;
+        
+        // Nearest neighbor sampling - берем ближайший пиксель без интерполяции
+        for (int y = 0; y < targetHeight; y++)
+        {
+            for (int x = 0; x < targetWidth; x++)
+            {
+                int sourceX = Mathf.FloorToInt(x * scaleX);
+                int sourceY = Mathf.FloorToInt(y * scaleY);
+                
+                // Ограничиваем координаты границами исходной текстуры
+                sourceX = Mathf.Clamp(sourceX, 0, source.width - 1);
+                sourceY = Mathf.Clamp(sourceY, 0, source.height - 1);
+                
+                int sourceIndex = sourceY * source.width + sourceX;
+                int targetIndex = y * targetWidth + x;
+                
+                targetPixels[targetIndex] = sourcePixels[sourceIndex];
+            }
+        }
+        
+        resultTexture.SetPixels32(targetPixels);
+        resultTexture.filterMode = FilterMode.Point;
+        resultTexture.wrapMode = TextureWrapMode.Clamp;
+        resultTexture.Apply();
+        
+        return resultTexture;
     }
     
-    // Получает читаемую текстуру
+    // Получает читаемую текстуру с point filtering
     private Texture2D GetReadableTexture(Texture2D source)
     {
+        // Если текстура уже читаема, возвращаем её
         try
         {
             source.GetPixels(0, 0, 1, 1);
@@ -539,14 +575,30 @@ public class GameManager : MonoBehaviour
         }
         catch
         {
+            // Текстура не читаема, создаем копию
+            // Используем sRGB для правильной цветопередачи
             RenderTexture renderTexture = RenderTexture.GetTemporary(
-                source.width, source.height, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Linear);
+                source.width, 
+                source.height, 
+                0, 
+                RenderTextureFormat.Default, 
+                RenderTextureReadWrite.sRGB
+            );
+            
+            // Устанавливаем point filtering для RenderTexture
+            renderTexture.filterMode = FilterMode.Point;
+            
             Graphics.Blit(source, renderTexture);
             RenderTexture previous = RenderTexture.active;
             RenderTexture.active = renderTexture;
             
-            Texture2D readableTexture = new Texture2D(source.width, source.height);
+            // Создаем текстуру с явным форматом и point filtering
+            Texture2D readableTexture = new Texture2D(source.width, source.height, TextureFormat.RGBA32, false);
             readableTexture.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
+            
+            // КРИТИЧНО: Устанавливаем point filtering ДО Apply()
+            readableTexture.filterMode = FilterMode.Point;
+            readableTexture.wrapMode = TextureWrapMode.Clamp;
             readableTexture.Apply();
             
             RenderTexture.active = previous;
