@@ -14,8 +14,18 @@ public class HintManager : MonoBehaviour
     public int pulseCount = 3; // Number of pulses
     
     private Dictionary<PuzzlePiece, Tween> activeHintAnimations = new Dictionary<PuzzlePiece, Tween>();
+    private Dictionary<PuzzlePiece, int> originalCardSortingOrders = new Dictionary<PuzzlePiece, int>();
+    private Dictionary<PuzzlePiece, int> originalBorderSortingOrders = new Dictionary<PuzzlePiece, int>();
     private PuzzleGrid grid;
     private Dictionary<Vector2Int, PuzzlePiece> occupiedCells;
+    
+    // Константы для sorting order во время анимации подсказок
+    private const int HINT_FIRST_CARD_SORTING_ORDER = 20;
+    private const int HINT_FIRST_BORDER_SORTING_ORDER = 21;
+    private const int HINT_SECOND_CARD_SORTING_ORDER = 15;
+    private const int HINT_SECOND_BORDER_SORTING_ORDER = 16;
+    private const int HINT_OTHER_CARD_SORTING_ORDER = 5;
+    private const int HINT_OTHER_BORDER_SORTING_ORDER = 6;
     
     void Start()
     {
@@ -608,8 +618,58 @@ public class HintManager : MonoBehaviour
         
         StopAnimationsForPieces(new[] { piece1, piece2 });
         
-        Sequence hintSequence1 = CreatePulseSequence(piece1.transform);
-        Sequence hintSequence2 = CreatePulseSequence(piece2.transform);
+        // Сохраняем оригинальные sortingOrder для первой карточки
+        SpriteRenderer sr1 = piece1.GetComponent<SpriteRenderer>();
+        if (sr1 != null)
+        {
+            originalCardSortingOrders[piece1] = sr1.sortingOrder;
+            sr1.sortingOrder = HINT_FIRST_CARD_SORTING_ORDER; // Самая высокая
+        }
+        
+        BorderRenderer br1 = piece1.GetComponentInChildren<BorderRenderer>();
+        if (br1 != null)
+        {
+            // Получаем оригинальный sortingOrder рамок (берем первую рамку как референс)
+            int originalBorderOrder1 = 1;
+            if (br1.topBorder != null)
+            {
+                SpriteRenderer borderSr = br1.topBorder.GetComponent<SpriteRenderer>();
+                if (borderSr != null)
+                {
+                    originalBorderOrder1 = borderSr.sortingOrder;
+                }
+            }
+            originalBorderSortingOrders[piece1] = originalBorderOrder1;
+            br1.SetBordersSortingOrder(HINT_FIRST_BORDER_SORTING_ORDER); // Рамки первой карточки выше всех
+        }
+        
+        // Сохраняем оригинальные sortingOrder для второй карточки
+        SpriteRenderer sr2 = piece2.GetComponent<SpriteRenderer>();
+        if (sr2 != null)
+        {
+            originalCardSortingOrders[piece2] = sr2.sortingOrder;
+            sr2.sortingOrder = HINT_SECOND_CARD_SORTING_ORDER; // Ниже первой, но выше остальных
+        }
+        
+        BorderRenderer br2 = piece2.GetComponentInChildren<BorderRenderer>();
+        if (br2 != null)
+        {
+            // Получаем оригинальный sortingOrder рамок
+            int originalBorderOrder2 = 1;
+            if (br2.topBorder != null)
+            {
+                SpriteRenderer borderSr = br2.topBorder.GetComponent<SpriteRenderer>();
+                if (borderSr != null)
+                {
+                    originalBorderOrder2 = borderSr.sortingOrder;
+                }
+            }
+            originalBorderSortingOrders[piece2] = originalBorderOrder2;
+            br2.SetBordersSortingOrder(HINT_SECOND_BORDER_SORTING_ORDER); // Рамки второй карточки ниже рамок первой
+        }
+        
+        Sequence hintSequence1 = CreatePulseSequence(piece1.transform, piece1);
+        Sequence hintSequence2 = CreatePulseSequence(piece2.transform, piece2);
         
         activeHintAnimations[piece1] = hintSequence1;
         activeHintAnimations[piece2] = hintSequence2;
@@ -625,16 +685,69 @@ public class HintManager : MonoBehaviour
         
         StopAnimationsForPieces(group.ToArray());
         
-        // Анимируем все карточки группы
-        foreach (PuzzlePiece piece in group)
+        // Анимируем все карточки группы с правильным sortingOrder
+        for (int i = 0; i < group.Count; i++)
         {
-            Sequence hintSequence = CreatePulseSequence(piece.transform);
+            PuzzlePiece piece = group[i];
+            
+            SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
+            if (sr != null)
+            {
+                originalCardSortingOrders[piece] = sr.sortingOrder;
+                
+                if (i == 0)
+                {
+                    // Первая карточка группы - самая высокая
+                    sr.sortingOrder = HINT_FIRST_CARD_SORTING_ORDER;
+                }
+                else if (i == 1)
+                {
+                    // Вторая карточка группы - ниже первой
+                    sr.sortingOrder = HINT_SECOND_CARD_SORTING_ORDER;
+                }
+                else
+                {
+                    // Остальные карточки - выше обычных, но ниже первых двух
+                    sr.sortingOrder = HINT_OTHER_CARD_SORTING_ORDER;
+                }
+            }
+            
+            BorderRenderer br = piece.GetComponentInChildren<BorderRenderer>();
+            if (br != null)
+            {
+                // Получаем оригинальный sortingOrder рамок
+                int originalBorderOrder = 1;
+                if (br.topBorder != null)
+                {
+                    SpriteRenderer borderSr = br.topBorder.GetComponent<SpriteRenderer>();
+                    if (borderSr != null)
+                    {
+                        originalBorderOrder = borderSr.sortingOrder;
+                    }
+                }
+                originalBorderSortingOrders[piece] = originalBorderOrder;
+                
+                if (i == 0)
+                {
+                    // Рамки первой карточки - выше всех
+                    br.SetBordersSortingOrder(HINT_FIRST_BORDER_SORTING_ORDER);
+                }
+                else if (i == 1)
+                {
+                    // Рамки второй карточки - ниже рамок первой
+                    br.SetBordersSortingOrder(HINT_SECOND_BORDER_SORTING_ORDER);
+                }
+                else
+                {
+                    // Рамки остальных карточек
+                    br.SetBordersSortingOrder(HINT_OTHER_BORDER_SORTING_ORDER);
+                }
+            }
+            
+            Sequence hintSequence = CreatePulseSequence(piece.transform, piece);
             activeHintAnimations[piece] = hintSequence;
             hintSequence.Play();
         }
-        
-        // Также можно показать целевую позицию визуально
-        // Пока просто анимируем все карточки группы
     }
     
     private void StopAnimationsForPieces(PuzzlePiece[] pieces)
@@ -650,11 +763,33 @@ public class HintManager : MonoBehaviour
             if (piece != null && piece.transform != null)
             {
                 piece.transform.localScale = Vector3.one;
+                
+                // Восстанавливаем sortingOrder карточки
+                if (originalCardSortingOrders.ContainsKey(piece))
+                {
+                    SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
+                    if (sr != null)
+                    {
+                        sr.sortingOrder = originalCardSortingOrders[piece];
+                    }
+                    originalCardSortingOrders.Remove(piece);
+                }
+                
+                // Восстанавливаем sortingOrder рамок
+                if (originalBorderSortingOrders.ContainsKey(piece))
+                {
+                    BorderRenderer br = piece.GetComponentInChildren<BorderRenderer>();
+                    if (br != null)
+                    {
+                        br.SetBordersSortingOrder(originalBorderSortingOrders[piece]);
+                    }
+                    originalBorderSortingOrders.Remove(piece);
+                }
             }
         }
     }
     
-    private Sequence CreatePulseSequence(Transform target)
+    private Sequence CreatePulseSequence(Transform target, PuzzlePiece piece)
     {
         Sequence seq = DOTween.Sequence();
         Vector3 originalScale = target.localScale;
@@ -669,6 +804,32 @@ public class HintManager : MonoBehaviour
         seq.OnComplete(() => {
             // Ensure scale is back to original
             target.localScale = originalScale;
+            
+            // Восстанавливаем оригинальные sortingOrder
+            if (piece != null)
+            {
+                // Восстанавливаем sortingOrder карточки
+                if (originalCardSortingOrders.ContainsKey(piece))
+                {
+                    SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
+                    if (sr != null)
+                    {
+                        sr.sortingOrder = originalCardSortingOrders[piece];
+                    }
+                    originalCardSortingOrders.Remove(piece);
+                }
+                
+                // Восстанавливаем sortingOrder рамок
+                if (originalBorderSortingOrders.ContainsKey(piece))
+                {
+                    BorderRenderer br = piece.GetComponentInChildren<BorderRenderer>();
+                    if (br != null)
+                    {
+                        br.SetBordersSortingOrder(originalBorderSortingOrders[piece]);
+                    }
+                    originalBorderSortingOrders.Remove(piece);
+                }
+            }
         });
         
         return seq;
@@ -683,10 +844,32 @@ public class HintManager : MonoBehaviour
                 kvp.Value.Kill();
             }
             
-            // Reset scale
-            if (kvp.Key != null && kvp.Key.transform != null)
+            PuzzlePiece piece = kvp.Key;
+            if (piece != null && piece.transform != null)
             {
-                kvp.Key.transform.localScale = Vector3.one;
+                piece.transform.localScale = Vector3.one;
+                
+                // Восстанавливаем sortingOrder карточки
+                if (originalCardSortingOrders.ContainsKey(piece))
+                {
+                    SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
+                    if (sr != null)
+                    {
+                        sr.sortingOrder = originalCardSortingOrders[piece];
+                    }
+                    originalCardSortingOrders.Remove(piece);
+                }
+                
+                // Восстанавливаем sortingOrder рамок
+                if (originalBorderSortingOrders.ContainsKey(piece))
+                {
+                    BorderRenderer br = piece.GetComponentInChildren<BorderRenderer>();
+                    if (br != null)
+                    {
+                        br.SetBordersSortingOrder(originalBorderSortingOrders[piece]);
+                    }
+                    originalBorderSortingOrders.Remove(piece);
+                }
             }
         }
         activeHintAnimations.Clear();
