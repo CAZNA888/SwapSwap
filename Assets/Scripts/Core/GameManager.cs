@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +33,16 @@ public class GameManager : MonoBehaviour
     [Header("Level Complete Effects")]
     public GameObject levelCompleteUIObject; // GameObject to turn on at level completion
     public List<ParticleSystem> levelCompleteParticles = new List<ParticleSystem>();
+    
+    [Header("Scene Management")]
+    public int nextSceneIndex = 0; // Индекс следующей сцены для загрузки
+    public Transform coinStartPoint; // UI объект старта для монеток
+    public Transform coinFinishPoint; // UI объект финиша для монеток
+    public GameObject coinPrefab; // Префаб монетки
+    public int coinsCount = 15; // Количество монеток (k)
+    public int moneyAmount = 15; // Количество денег для добавления (j)
+    public float coinSpawnDelay = 0.05f; // Задержка между созданием монеток
+    public float coinAnimationDuration = 1f; // Длительность анимации монеток
     
     // Components
     private PuzzleGrid puzzleGrid;
@@ -533,6 +545,156 @@ public class GameManager : MonoBehaviour
     public void OnPieceMoved()
     {
         CheckWinCondition();
+    }
+    
+    // Загрузка сцены по индексу с анимацией монеток
+    public void LoadSceneByIndex(int sceneIndex)
+    {
+        if (sceneIndex >= 0 && sceneIndex < SceneManager.sceneCountInBuildSettings)
+        {
+            StartCoroutine(LoadSceneWithCoinAnimation(sceneIndex));
+        }
+        else
+        {
+            Debug.LogWarning($"Scene index {sceneIndex} is out of range! Available scenes: 0-{SceneManager.sceneCountInBuildSettings - 1}");
+        }
+    }
+    
+    // Корутина: анимация монеток -> добавление денег -> загрузка сцены
+    private IEnumerator LoadSceneWithCoinAnimation(int sceneIndex)
+    {
+        // Проверяем наличие необходимых объектов
+        if (coinStartPoint == null || coinFinishPoint == null || coinPrefab == null)
+        {
+            Debug.LogWarning("Coin animation parameters not set! Loading scene without animation.");
+            yield return new WaitForSeconds(1f);
+            SceneManager.LoadScene(sceneIndex);
+            yield break;
+        }
+        
+        // Находим Canvas для создания UI элементов
+        Canvas canvas = coinStartPoint.GetComponentInParent<Canvas>();
+        if (canvas == null)
+        {
+            canvas = FindObjectOfType<Canvas>();
+        }
+        
+        if (canvas == null)
+        {
+            Debug.LogWarning("Canvas not found! Loading scene without animation.");
+            yield return new WaitForSeconds(1f);
+            SceneManager.LoadScene(sceneIndex);
+            yield break;
+        }
+        
+        List<GameObject> coins = new List<GameObject>();
+        
+        // Создаем монетки в точке старта
+        RectTransform canvasRect = canvas.transform as RectTransform;
+        
+        if (canvasRect == null)
+        {
+            Debug.LogWarning("Canvas must have RectTransform component!");
+            yield return new WaitForSeconds(1f);
+            SceneManager.LoadScene(sceneIndex);
+            yield break;
+        }
+        
+        for (int i = 0; i < coinsCount; i++)
+        {
+            // Используем RectTransform для UI элементов
+            RectTransform startRect = coinStartPoint as RectTransform;
+            RectTransform finishRect = coinFinishPoint as RectTransform;
+            
+            if (startRect == null || finishRect == null)
+            {
+                Debug.LogWarning("Coin start/finish points must have RectTransform component!");
+                break;
+            }
+            
+            // Создаем монетку как дочерний объект Canvas
+            GameObject coin = Instantiate(coinPrefab, canvas.transform);
+            RectTransform coinRect = coin.GetComponent<RectTransform>();
+            
+            if (coinRect == null)
+            {
+                Debug.LogWarning("Coin prefab must have RectTransform component!");
+                Destroy(coin);
+                continue;
+            }
+            
+            // Конвертируем позицию старта в локальные координаты Canvas
+            Vector2 startScreenPos = RectTransformUtility.WorldToScreenPoint(null, startRect.position);
+            Vector2 startLocalPos;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, startScreenPos, null, out startLocalPos);
+            
+            // Устанавливаем начальную позицию с небольшим разбросом
+            coinRect.anchoredPosition = startLocalPos;
+            coinRect.anchoredPosition += Random.insideUnitCircle * 20f; // Небольшой разброс в пикселях
+            
+            coins.Add(coin);
+            
+            // Проигрываем звук при создании монетки
+            if (audioManager != null)
+            {
+                audioManager.PlayCoin();
+            }
+            
+            // Анимируем монетку к точке финиша
+            MoneyAnimation moneyAnim = coin.GetComponent<MoneyAnimation>();
+            if (moneyAnim == null)
+            {
+                moneyAnim = coin.AddComponent<MoneyAnimation>();
+            }
+            
+            // Конвертируем позицию финиша в локальные координаты Canvas
+            Vector2 finishScreenPos = RectTransformUtility.WorldToScreenPoint(null, finishRect.position);
+            Vector2 finishLocalPos;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, finishScreenPos, null, out finishLocalPos);
+            
+            // Передаем финальную позицию в локальных координатах Canvas
+            moneyAnim.Initialize(finishLocalPos);
+            moneyAnim.animationDuration = coinAnimationDuration;
+            moneyAnim.AnimateToTarget();
+            
+            yield return new WaitForSeconds(coinSpawnDelay);
+        }
+        
+        // Ждем завершения анимаций
+        yield return new WaitForSeconds(coinAnimationDuration);
+        
+        // Удаляем все монетки (на случай, если они еще не удалились)
+        foreach (GameObject coin in coins)
+        {
+            if (coin != null)
+            {
+                Destroy(coin);
+            }
+        }
+        
+        // Добавляем деньги
+        if (moneyManager != null)
+        {
+            moneyManager.AddMoney(moneyAmount);
+        }
+        
+        // Ждем 1 секунду перед загрузкой сцены
+        yield return new WaitForSeconds(1f);
+        
+        // Загружаем сцену
+        SceneManager.LoadScene(sceneIndex);
+    }
+    
+    // Загрузка следующей сцены (использует nextSceneIndex)
+    public void LoadNextScene()
+    {
+        LoadSceneByIndex(nextSceneIndex);
+    }
+    
+    // Перезагрузка текущей сцены
+    public void ReloadCurrentScene()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
     
     // Масштабирует спрайт до нужного размера

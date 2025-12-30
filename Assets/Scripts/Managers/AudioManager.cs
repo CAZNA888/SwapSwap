@@ -8,6 +8,7 @@ public class AudioManager : MonoBehaviour
     public AudioClip swipeClip;
     public AudioClip levelCompleteClip;
     public AudioClip connectionClip;
+    public AudioClip coinClip; // Звук монетки
     
     [Header("Settings")]
     public float volume = 1f;
@@ -48,6 +49,11 @@ public class AudioManager : MonoBehaviour
     public void PlayConnection()
     {
         PlaySound(connectionClip);
+    }
+    
+    public void PlayCoin()
+    {
+        PlaySound(coinClip);
     }
     
     private void PlaySound(AudioClip clip)
