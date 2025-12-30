@@ -388,27 +388,26 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         // Это гарантирует, что все карточки (включая стоящие на месте) будут в piecesOnGrid
         connectionManager.SyncWithOccupiedCells(occupiedCells);
         
-        // СРАЗУ проверяем соединения после установки карт в ячейки
-        // Проверяем соединения только для карточек, которые переместились
-        if (oldPos1 != newPos1)
-        {
-            connectionManager.CheckPieceConnections(piece1);
-            CheckNeighborsConnections(piece1, newPos1);
-        }
-        if (oldPos2 != newPos2)
-        {
-            connectionManager.CheckPieceConnections(piece2);
-            CheckNeighborsConnections(piece2, newPos2);
-        }
-        
-        // Обновляем все соединения на поле для гарантии актуальности данных
-        connectionManager.CheckAllConnections();
-        
         // Запускаем анимацию и вызываем колбэки после завершения (используем максимальную длительность)
         float maxDuration = Mathf.Max(moveDuration, swapTargetDuration);
         Sequence swapSeq = DOTween.Sequence();
         swapSeq.AppendInterval(maxDuration);
         swapSeq.OnComplete(() => {
+            // Проверяем соединения ПОСЛЕ завершения анимации перемещения
+            if (oldPos1 != newPos1)
+            {
+                connectionManager.CheckPieceConnectionsDeferred(piece1);
+                CheckNeighborsConnections(piece1, newPos1);
+            }
+            if (oldPos2 != newPos2)
+            {
+                connectionManager.CheckPieceConnectionsDeferred(piece2);
+                CheckNeighborsConnections(piece2, newPos2);
+            }
+            
+            // Обновляем все соединения на поле для гарантии актуальности данных
+            connectionManager.CheckAllConnections();
+            
             // Возвращаем sortingOrder карточек к исходным значениям
             if (sr1 != null) sr1.sortingOrder = 0;
             if (sr2 != null) sr2.sortingOrder = 0;
@@ -470,17 +469,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         // Это гарантирует, что все карточки (включая стоящие на месте) будут в piecesOnGrid
         connectionManager.SyncWithOccupiedCells(occupiedCells);
         
-        // СРАЗУ проверяем соединения после установки карты в ячейку
-        // Проверяем соединения только если позиция изменилась
-        if (oldPos != newPosInt)
-        {
-            connectionManager.CheckPieceConnections(piece);
-            CheckNeighborsConnections(piece, newPosInt);
-        }
-        
-        // Обновляем все соединения на поле для гарантии актуальности данных
-        connectionManager.CheckAllConnections();
-        
         SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
         if (sr != null) sr.sortingOrder = 0;
         
@@ -494,6 +482,16 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         Sequence moveSeq = DOTween.Sequence();
         moveSeq.AppendInterval(moveDuration);
         moveSeq.OnComplete(() => {
+            // Проверяем соединения ПОСЛЕ завершения анимации перемещения
+            if (oldPos != newPosInt)
+            {
+                connectionManager.CheckPieceConnectionsDeferred(piece);
+                CheckNeighborsConnections(piece, newPosInt);
+            }
+            
+            // Обновляем все соединения на поле для гарантии актуальности данных
+            connectionManager.CheckAllConnections();
+            
             if (audioManager != null) audioManager.PlaySwipe();
             if (gameManager != null) gameManager.OnPieceMoved();
         });
@@ -752,23 +750,19 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         // Это гарантирует, что все карточки (включая стоящие на месте) будут в piecesOnGrid
         connectionManager.SyncWithOccupiedCells(occupiedCells);
         
-        // 8.3. СРАЗУ проверяем соединения после установки всех карт группы в ячейки
+        // Store pieces that moved for deferred connection check
+        List<PuzzlePiece> movedPieces = new List<PuzzlePiece>();
         foreach (PuzzlePiece piece in group)
         {
             if (oldPositions.TryGetValue(piece, out Vector2Int oldPos))
             {
                 Vector2Int newPos = new Vector2Int(piece.currentGridRow, piece.currentGridCol);
-                // Проверяем соединения только если позиция изменилась
                 if (oldPos != newPos)
                 {
-                    connectionManager.CheckPieceConnections(piece);
-                    CheckNeighborsConnections(piece, newPos);
+                    movedPieces.Add(piece);
                 }
             }
         }
-        
-        // Обновляем все соединения на поле для гарантии актуальности данных
-        connectionManager.CheckAllConnections();
         
         // 8.4. ПРОВЕРКА ЦЕЛОСТНОСТИ СРАЗУ ПОСЛЕ РАЗМЕЩЕНИЯ ГРУППЫ (до анимации)
         ValidateGridIntegrityImmediate();
@@ -884,16 +878,14 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             // Это гарантирует, что все карточки (включая стоящие на месте) будут в piecesOnGrid
             connectionManager.SyncWithOccupiedCells(occupiedCells);
             
-            // СРАЗУ проверяем соединения после установки всех карт в ячейки
+            // Add remaining pieces to movedPieces for deferred connection check
             foreach (PuzzlePiece piece in remainingPiecesToMove)
             {
-                Vector2Int newPos = new Vector2Int(piece.currentGridRow, piece.currentGridCol);
-                connectionManager.CheckPieceConnections(piece);
-                CheckNeighborsConnections(piece, newPos);
+                if (!movedPieces.Contains(piece))
+                {
+                    movedPieces.Add(piece);
+                }
             }
-            
-            // Обновляем все соединения на поле для гарантии актуальности данных
-            connectionManager.CheckAllConnections();
         }
         
         // 9. Ждем завершения анимаций и возвращаем sortingOrder всех карточек
@@ -903,6 +895,28 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             sequence.Join(tween);
         }
         sequence.OnComplete(() => {
+            // Проверяем соединения ПОСЛЕ завершения всех анимаций перемещения
+            foreach (PuzzlePiece piece in movedPieces)
+            {
+                if (oldPositions.TryGetValue(piece, out Vector2Int oldPos))
+                {
+                    Vector2Int newPos = new Vector2Int(piece.currentGridRow, piece.currentGridCol);
+                    if (oldPos != newPos)
+                    {
+                        connectionManager.CheckPieceConnectionsDeferred(piece);
+                        CheckNeighborsConnections(piece, newPos);
+                    }
+                }
+                else
+                {
+                    Vector2Int newPos = new Vector2Int(piece.currentGridRow, piece.currentGridCol);
+                    connectionManager.CheckPieceConnectionsDeferred(piece);
+                    CheckNeighborsConnections(piece, newPos);
+                }
+            }
+            
+            // Обновляем все соединения на поле для гарантии актуальности данных
+            connectionManager.CheckAllConnections();
             // Возвращаем sortingOrder для карточек группы
             foreach (PuzzlePiece piece in group)
             {

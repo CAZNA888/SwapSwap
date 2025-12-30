@@ -1,6 +1,8 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 using DG.Tweening;
 
 public class ConnectionManager : MonoBehaviour
@@ -10,11 +12,15 @@ public class ConnectionManager : MonoBehaviour
     private AudioManager audioManager;
     
     [Header("Connection Animation")]
-    public float scaleIncrease = 0.075f; // 7.5% increase (between 5-10%)
+    public float scaleIncrease = 0.1f; // 10% increase (more spectacular)
     public float animationDuration = 0.3f;
+    public float delayAfterMovement = 0.1f; // Delay before scale animation starts
     
     // Track active animations to prevent conflicts
     private Dictionary<PuzzlePiece, Tween> activeScaleTweens = new Dictionary<PuzzlePiece, Tween>();
+    
+    // Queue for deferred animations
+    private Dictionary<PuzzlePiece, Action> queuedAnimations = new Dictionary<PuzzlePiece, Action>();
     
     public void Initialize(PuzzleGrid puzzleGrid)
     {
@@ -211,16 +217,87 @@ public class ConnectionManager : MonoBehaviour
             audioManager.PlayConnection();
         }
         
-        // Animate the entire group together as one unit
-        AnimateGroupScale(connectedGroup);
+        // Animate the entire group together as one unit (with deferred timing)
+        AnimateGroupScaleDeferred(connectedGroup);
     }
     
-    private void AnimateGroupScale(HashSet<PuzzlePiece> group)
+    // Public method for deferred connection checks from SwipeHandler
+    public void CheckPieceConnectionsDeferred(PuzzlePiece piece, float delayAfterMovement = 0.1f)
+    {
+        if (piece == null) return;
+        
+        // Wait for movement to complete, then check connections
+        StartCoroutine(WaitForMovementAndCheck(piece, delayAfterMovement));
+    }
+    
+    private IEnumerator WaitForMovementAndCheck(PuzzlePiece piece, float delay)
+    {
+        // Wait for any active movement tweens to complete
+        while (DOTween.IsTweening(piece.transform))
+        {
+            yield return null;
+        }
+        
+        // Additional delay for polish
+        yield return new WaitForSeconds(delay);
+        
+        // Now check connections
+        CheckPieceConnections(piece);
+    }
+    
+    private void AnimateGroupScaleDeferred(HashSet<PuzzlePiece> group)
     {
         if (group == null || group.Count == 0) return;
         
-        // Kill any existing animations for pieces in this group
+        // Start coroutine to wait for movement and then animate
+        StartCoroutine(WaitForMovementAndAnimate(group));
+    }
+    
+    private IEnumerator WaitForMovementAndAnimate(HashSet<PuzzlePiece> group)
+    {
+        List<PuzzlePiece> validPieces = new List<PuzzlePiece>();
         foreach (PuzzlePiece piece in group)
+        {
+            if (piece != null && piece.transform != null)
+            {
+                validPieces.Add(piece);
+            }
+        }
+        
+        if (validPieces.Count == 0) yield break;
+        
+        // Wait for all movement tweens to complete
+        bool anyMoving = true;
+        while (anyMoving)
+        {
+            anyMoving = false;
+            foreach (PuzzlePiece piece in validPieces)
+            {
+                if (DOTween.IsTweening(piece.transform))
+                {
+                    anyMoving = true;
+                    break;
+                }
+            }
+            if (anyMoving)
+            {
+                yield return null;
+            }
+        }
+        
+        // Additional delay for polish
+        yield return new WaitForSeconds(delayAfterMovement);
+        
+        // Now animate with final positions
+        AnimateGroupScale(validPieces);
+    }
+    
+    private void AnimateGroupScale(List<PuzzlePiece> validPieces)
+    {
+        if (validPieces == null || validPieces.Count == 0) return;
+        
+        // Kill any existing animations for pieces in this group
+        foreach (PuzzlePiece piece in validPieces)
         {
             if (activeScaleTweens.ContainsKey(piece))
             {
@@ -233,95 +310,208 @@ public class ConnectionManager : MonoBehaviour
             }
         }
         
-        // Store original scales for all pieces
-        Dictionary<PuzzlePiece, Vector3> originalScales = new Dictionary<PuzzlePiece, Vector3>();
-        List<PuzzlePiece> validPieces = new List<PuzzlePiece>();
-        
-        foreach (PuzzlePiece piece in group)
+        // Get target positions from grid (final positions, not current)
+        List<Vector3> targetPositions = GetTargetWorldPositions(validPieces);
+        if (targetPositions.Count != validPieces.Count)
         {
-            if (piece != null && piece.transform != null)
-            {
-                originalScales[piece] = piece.transform.localScale;
-                validPieces.Add(piece);
-            }
+            Debug.LogWarning("[ConnectionManager] AnimateGroupScale: Failed to get target positions");
+            return;
         }
         
-        if (validPieces.Count == 0) return;
+        // Calculate center using target positions
+        Vector3 groupCenter = CalculateGroupCenterFromPositions(targetPositions);
         
-        // Create a single sequence that animates all pieces together
+        // Create a temporary parent container for the group
+        GameObject groupContainer = new GameObject("GroupContainer_Temp");
+        groupContainer.transform.position = groupCenter;
+        
+        // Store original parent, position, and sortingOrder for each piece
+        Dictionary<PuzzlePiece, Transform> originalParents = new Dictionary<PuzzlePiece, Transform>();
+        Dictionary<PuzzlePiece, Vector3> localPositions = new Dictionary<PuzzlePiece, Vector3>();
+        Dictionary<PuzzlePiece, int> originalCardSortingOrders = new Dictionary<PuzzlePiece, int>();
+        Dictionary<PuzzlePiece, int> originalBorderSortingOrders = new Dictionary<PuzzlePiece, int>();
+        
+        // Constants for animation sorting orders
+        const int ANIMATION_CARD_SORTING_ORDER = 10;
+        const int ANIMATION_BORDER_SORTING_ORDER = 11;
+        
+        for (int i = 0; i < validPieces.Count; i++)
+        {
+            PuzzlePiece piece = validPieces[i];
+            Vector3 targetPos = targetPositions[i];
+            
+            originalParents[piece] = piece.transform.parent;
+            
+            // Store and set card sorting order
+            SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
+            if (sr != null)
+            {
+                originalCardSortingOrders[piece] = sr.sortingOrder;
+                sr.sortingOrder = ANIMATION_CARD_SORTING_ORDER;
+            }
+            
+            // Store and set border sorting order
+            BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
+            if (borderRenderer != null)
+            {
+                // Get original border sorting order (check first border as reference)
+                int originalBorderOrder = 1; // default
+                if (borderRenderer.topBorder != null)
+                {
+                    SpriteRenderer borderSr = borderRenderer.topBorder.GetComponent<SpriteRenderer>();
+                    if (borderSr != null)
+                    {
+                        originalBorderOrder = borderSr.sortingOrder;
+                    }
+                }
+                originalBorderSortingOrders[piece] = originalBorderOrder;
+                borderRenderer.SetBordersSortingOrder(ANIMATION_BORDER_SORTING_ORDER);
+            }
+            
+            // Use target position (final position from grid)
+            piece.transform.SetParent(groupContainer.transform);
+            piece.transform.localPosition = groupContainer.transform.InverseTransformPoint(targetPos);
+            localPositions[piece] = piece.transform.localPosition;
+        }
+        
+        // Animate the container scale instead of individual cards
+        Vector3 originalScale = groupContainer.transform.localScale;
         Sequence groupSequence = DOTween.Sequence();
         
-        // Scale up all pieces together - Append first, then Join the rest
-        bool isFirst = true;
-        foreach (PuzzlePiece piece in validPieces)
-        {
-            Vector3 targetScale = originalScales[piece] * (1f + scaleIncrease);
-            Tween scaleUpTween = piece.transform.DOScale(targetScale, animationDuration / 2f)
-                .SetEase(Ease.OutQuad);
-            
-            if (isFirst)
-            {
-                groupSequence.Append(scaleUpTween);
-                isFirst = false;
-            }
-            else
-            {
-                groupSequence.Join(scaleUpTween);
-            }
-        }
+        // More spectacular animation with bounce effect
+        groupSequence.Append(groupContainer.transform.DOScale(originalScale * (1f + scaleIncrease), animationDuration / 2f)
+            .SetEase(Ease.OutBack)); // Bounce effect for more spectacular feel
+        groupSequence.Append(groupContainer.transform.DOScale(originalScale, animationDuration / 2f)
+            .SetEase(Ease.InQuad));
         
-        // Scale back down all pieces together - Append first, then Join the rest
-        isFirst = true;
-        foreach (PuzzlePiece piece in validPieces)
-        {
-            Tween scaleDownTween = piece.transform.DOScale(originalScales[piece], animationDuration / 2f)
-                .SetEase(Ease.InQuad);
-            
-            if (isFirst)
-            {
-                groupSequence.Append(scaleDownTween);
-                isFirst = false;
-            }
-            else
-            {
-                groupSequence.Join(scaleDownTween);
-            }
-        }
-        
-        // Ensure all scales are reset on complete or kill
         groupSequence.OnComplete(() => {
-            foreach (PuzzlePiece piece in validPieces)
+            // Restore original parents, positions, and sorting orders
+            for (int i = 0; i < validPieces.Count; i++)
             {
-                if (piece != null && piece.transform != null && originalScales.ContainsKey(piece))
+                PuzzlePiece piece = validPieces[i];
+                if (piece != null && piece.transform != null)
                 {
-                    piece.transform.localScale = originalScales[piece];
+                    Vector3 worldPos = groupContainer.transform.TransformPoint(localPositions[piece]);
+                    piece.transform.SetParent(originalParents[piece]);
+                    piece.transform.position = worldPos;
+                    
+                    // Restore card sorting order
+                    if (originalCardSortingOrders.ContainsKey(piece))
+                    {
+                        SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
+                        if (sr != null)
+                        {
+                            sr.sortingOrder = originalCardSortingOrders[piece];
+                        }
+                    }
+                    
+                    // Restore border sorting order
+                    if (originalBorderSortingOrders.ContainsKey(piece))
+                    {
+                        BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
+                        if (borderRenderer != null)
+                        {
+                            borderRenderer.SetBordersSortingOrder(originalBorderSortingOrders[piece]);
+                        }
+                    }
                 }
                 if (activeScaleTweens.ContainsKey(piece))
                 {
                     activeScaleTweens.Remove(piece);
                 }
             }
+            Destroy(groupContainer);
         });
         
         groupSequence.OnKill(() => {
-            foreach (PuzzlePiece piece in validPieces)
+            // Restore everything even if animation is killed
+            for (int i = 0; i < validPieces.Count; i++)
             {
-                if (piece != null && piece.transform != null && originalScales.ContainsKey(piece))
+                PuzzlePiece piece = validPieces[i];
+                if (piece != null && piece.transform != null)
                 {
-                    piece.transform.localScale = originalScales[piece];
+                    Vector3 worldPos = groupContainer.transform.TransformPoint(localPositions[piece]);
+                    piece.transform.SetParent(originalParents[piece]);
+                    piece.transform.position = worldPos;
+                    
+                    // Restore card sorting order
+                    if (originalCardSortingOrders.ContainsKey(piece))
+                    {
+                        SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
+                        if (sr != null)
+                        {
+                            sr.sortingOrder = originalCardSortingOrders[piece];
+                        }
+                    }
+                    
+                    // Restore border sorting order
+                    if (originalBorderSortingOrders.ContainsKey(piece))
+                    {
+                        BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
+                        if (borderRenderer != null)
+                        {
+                            borderRenderer.SetBordersSortingOrder(originalBorderSortingOrders[piece]);
+                        }
+                    }
                 }
                 if (activeScaleTweens.ContainsKey(piece))
                 {
                     activeScaleTweens.Remove(piece);
                 }
             }
+            Destroy(groupContainer);
         });
         
-        // Store the sequence for each piece (so we can track it)
+        // Store the sequence for tracking
         foreach (PuzzlePiece piece in validPieces)
         {
             activeScaleTweens[piece] = groupSequence;
         }
+    }
+    
+    private List<Vector3> GetTargetWorldPositions(List<PuzzlePiece> pieces)
+    {
+        List<Vector3> positions = new List<Vector3>();
+        
+        foreach (PuzzlePiece piece in pieces)
+        {
+            if (piece != null && grid != null)
+            {
+                // Get final position from grid coordinates
+                Vector2 worldPos2D = grid.GetWorldPosition(piece.currentGridRow, piece.currentGridCol);
+                Vector3 worldPos = new Vector3(worldPos2D.x, worldPos2D.y, 0f);
+                positions.Add(worldPos);
+            }
+        }
+        
+        return positions;
+    }
+    
+    private Vector3 CalculateGroupCenter(List<PuzzlePiece> pieces)
+    {
+        if (pieces == null || pieces.Count == 0) return Vector3.zero;
+        
+        Vector3 center = Vector3.zero;
+        foreach (PuzzlePiece piece in pieces)
+        {
+            if (piece != null && piece.transform != null)
+            {
+                center += piece.transform.position;
+            }
+        }
+        return center / pieces.Count;
+    }
+    
+    private Vector3 CalculateGroupCenterFromPositions(List<Vector3> positions)
+    {
+        if (positions == null || positions.Count == 0) return Vector3.zero;
+        
+        Vector3 center = Vector3.zero;
+        foreach (Vector3 pos in positions)
+        {
+            center += pos;
+        }
+        return center / positions.Count;
     }
     
     private HashSet<PuzzlePiece> FindConnectedGroup(PuzzlePiece startPiece)
