@@ -495,6 +495,18 @@ public class GameManager : MonoBehaviour
         return isGameComplete;
     }
     
+    // Public method to get all puzzle pieces (for hint system)
+    public List<PuzzlePiece> GetAllPieces()
+    {
+        return puzzlePieces;
+    }
+    
+    // Public method to get occupied cells (for hint system)
+    public Dictionary<Vector2Int, PuzzlePiece> GetOccupiedCells()
+    {
+        return occupiedCells;
+    }
+    
     // Вызывается после каждого хода для проверки победы
     public void OnPieceMoved()
     {
