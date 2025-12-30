@@ -37,6 +37,12 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
     
     public void OnPointerDown(PointerEventData eventData)
     {
+        // Check if game is complete - if so, disable all interactions
+        if (gameManager != null && gameManager.IsGameComplete())
+        {
+            return; // Don't allow any interactions when picture is complete
+        }
+        
         if (isDragging) return;
         
         PuzzlePiece clickedPiece = null;
@@ -138,6 +144,12 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
     
     public void OnDrag(PointerEventData eventData)
     {
+        // Check if game is complete - if so, disable all interactions
+        if (gameManager != null && gameManager.IsGameComplete())
+        {
+            return; // Don't allow dragging when picture is complete
+        }
+        
         if (!isDragging || selectedGroup == null) return;
         
         Vector3 worldPos = Camera.main.ScreenToWorldPoint(eventData.position);
@@ -197,6 +209,12 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
     
     public void OnPointerUp(PointerEventData eventData)
     {
+        // Check if game is complete - if so, disable all interactions
+        if (gameManager != null && gameManager.IsGameComplete())
+        {
+            return; // Don't allow interactions when picture is complete
+        }
+        
         if (!isDragging || selectedGroup == null) return;
         
         // Останавливаем все анимации перетаскивания

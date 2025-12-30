@@ -460,6 +460,16 @@ public class GameManager : MonoBehaviour
     {
         isGameComplete = true;
         
+        // Disable all piece interactions by disabling colliders
+        foreach (PuzzlePiece piece in puzzlePieces)
+        {
+            BoxCollider2D collider = piece.GetComponent<BoxCollider2D>();
+            if (collider != null)
+            {
+                collider.enabled = false; // Disable collider to prevent clicks
+            }
+        }
+        
         // Звук победы
         if (audioManager != null)
         {
@@ -477,6 +487,12 @@ public class GameManager : MonoBehaviour
         {
             levelCompleteUI.ShowLevelComplete();
         }
+    }
+    
+    // Public method to check if game is complete
+    public bool IsGameComplete()
+    {
+        return isGameComplete;
     }
     
     // Вызывается после каждого хода для проверки победы
