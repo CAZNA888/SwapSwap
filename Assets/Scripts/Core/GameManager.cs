@@ -28,6 +28,10 @@ public class GameManager : MonoBehaviour
     public GameObject puzzlePiecePrefab;
     public GameObject borderPartPrefab;
     
+    [Header("Level Complete Effects")]
+    public GameObject levelCompleteUIObject; // GameObject to turn on at level completion
+    public List<ParticleSystem> levelCompleteParticles = new List<ParticleSystem>();
+    
     // Components
     private PuzzleGrid puzzleGrid;
     private ImageSlicer imageSlicer;
@@ -476,16 +480,34 @@ public class GameManager : MonoBehaviour
             audioManager.PlayLevelComplete();
         }
         
+        // Включаем GameObject UI завершения
+        if (levelCompleteUIObject != null)
+        {
+            levelCompleteUIObject.SetActive(true);
+        }
+        
+        // Показываем UI завершения (через LevelCompleteUI компонент, если используется)
+        if (levelCompleteUI != null)
+        {
+            levelCompleteUI.ShowLevelComplete();
+        }
+        
+        // Запускаем все Particle Systems
+        if (levelCompleteParticles != null && levelCompleteParticles.Count > 0)
+        {
+            foreach (ParticleSystem particleSystem in levelCompleteParticles)
+            {
+                if (particleSystem != null)
+                {
+                    particleSystem.Play();
+                }
+            }
+        }
+        
         // Конфетти
         if (confettiEffect != null)
         {
             confettiEffect.PlayConfetti();
-        }
-        
-        // Показываем UI завершения
-        if (levelCompleteUI != null)
-        {
-            levelCompleteUI.ShowLevelComplete();
         }
     }
     
