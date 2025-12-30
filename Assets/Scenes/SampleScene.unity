@@ -1541,6 +1541,7 @@ MonoBehaviour:
   cardFlipClip: {fileID: 8300000, guid: eb1f17ffebf766f47ba0952d764178b5, type: 3}
   swipeClip: {fileID: 8300000, guid: b659b95fc0e566b4bb84ba8e6e754cf1, type: 3}
   levelCompleteClip: {fileID: 8300000, guid: d8af856c68c7211419d952aa547853d4, type: 3}
+  connectionClip: {fileID: 8300000, guid: 5ebd81486d06b8e4197bb5c5e808694e, type: 3}
   volume: 1
 --- !u!4 &1745270780
 Transform:
@@ -1671,6 +1672,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1934639047}
   - component: {fileID: 1934639046}
+  - component: {fileID: 1934639048}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1719,6 +1721,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1934639048
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1934639045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 915102387c4688840b010e2fcb48711b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  scaleIncrease: 0.1
+  animationDuration: 0.3
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

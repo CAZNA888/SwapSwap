@@ -99,6 +99,9 @@ public class GameManager : MonoBehaviour
             audioManager = audioObj.AddComponent<AudioManager>();
         }
         
+        // Pass AudioManager to ConnectionManager
+        connectionManager.SetAudioManager(audioManager);
+        
         cardDealer.Initialize(audioManager);
         cardFlipAnimator.Initialize(audioManager, connectionManager);
         

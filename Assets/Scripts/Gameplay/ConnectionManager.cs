@@ -1,15 +1,30 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
+using DG.Tweening;
 
 public class ConnectionManager : MonoBehaviour
 {
     private PuzzleGrid grid;
     private Dictionary<Vector2Int, PuzzlePiece> piecesOnGrid;
+    private AudioManager audioManager;
+    
+    [Header("Connection Animation")]
+    public float scaleIncrease = 0.075f; // 7.5% increase (between 5-10%)
+    public float animationDuration = 0.3f;
+    
+    // Track active animations to prevent conflicts
+    private Dictionary<PuzzlePiece, Tween> activeScaleTweens = new Dictionary<PuzzlePiece, Tween>();
     
     public void Initialize(PuzzleGrid puzzleGrid)
     {
         grid = puzzleGrid;
         piecesOnGrid = new Dictionary<Vector2Int, PuzzlePiece>();
+    }
+    
+    public void SetAudioManager(AudioManager audioMgr)
+    {
+        audioManager = audioMgr;
     }
     
     public void UpdatePieceOnGrid(PuzzlePiece piece, Vector2Int oldPosition, Vector2Int newPosition)
@@ -36,6 +51,13 @@ public class ConnectionManager : MonoBehaviour
     public void CheckPieceConnections(PuzzlePiece piece)
     {
         if (piece == null || grid == null) return;
+        
+        // Store old connection state
+        bool[] oldConnections = new bool[4];
+        if (piece.isConnected != null && piece.isConnected.Length == 4)
+        {
+            System.Array.Copy(piece.isConnected, oldConnections, 4);
+        }
         
         bool[] connections = new bool[4]; // 0=верх, 1=низ, 2=лево, 3=право
         
@@ -70,9 +92,41 @@ public class ConnectionManager : MonoBehaviour
             connections[3] = CheckConnection(piece, neighborIndex, 0, 1);
         }
         
+        // Check if new connections were made
+        bool hasNewConnections = false;
+        if (piece.isConnected != null && piece.isConnected.Length == 4)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if (connections[i] && !oldConnections[i])
+                {
+                    hasNewConnections = true;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            // First time checking connections - check if any connections exist
+            for (int i = 0; i < 4; i++)
+            {
+                if (connections[i])
+                {
+                    hasNewConnections = true;
+                    break;
+                }
+            }
+        }
+        
         // Обновляем границы
         piece.isConnected = connections;
         UpdateBorderVisibility(piece);
+        
+        // If new connections were made, animate the connected group
+        if (hasNewConnections)
+        {
+            AnimateConnectedGroup(piece);
+        }
     }
     
     private bool CheckConnection(PuzzlePiece piece, int neighborOriginalIndex, int rowOffset, int colOffset)
@@ -142,6 +196,198 @@ public class ConnectionManager : MonoBehaviour
         }
         
         Debug.Log($"[ConnectionManager] SyncWithOccupiedCells: синхронизировано {piecesOnGrid.Count} карточек");
+    }
+    
+    private void AnimateConnectedGroup(PuzzlePiece startPiece)
+    {
+        // Find all connected pieces in the group
+        HashSet<PuzzlePiece> connectedGroup = FindConnectedGroup(startPiece);
+        
+        if (connectedGroup.Count == 0) return;
+        
+        // Play sound when connection is made
+        if (audioManager != null)
+        {
+            audioManager.PlayConnection();
+        }
+        
+        // Animate the entire group together as one unit
+        AnimateGroupScale(connectedGroup);
+    }
+    
+    private void AnimateGroupScale(HashSet<PuzzlePiece> group)
+    {
+        if (group == null || group.Count == 0) return;
+        
+        // Kill any existing animations for pieces in this group
+        foreach (PuzzlePiece piece in group)
+        {
+            if (activeScaleTweens.ContainsKey(piece))
+            {
+                Tween existingTween = activeScaleTweens[piece];
+                if (existingTween != null && existingTween.IsActive())
+                {
+                    existingTween.Kill();
+                }
+                activeScaleTweens.Remove(piece);
+            }
+        }
+        
+        // Store original scales for all pieces
+        Dictionary<PuzzlePiece, Vector3> originalScales = new Dictionary<PuzzlePiece, Vector3>();
+        List<PuzzlePiece> validPieces = new List<PuzzlePiece>();
+        
+        foreach (PuzzlePiece piece in group)
+        {
+            if (piece != null && piece.transform != null)
+            {
+                originalScales[piece] = piece.transform.localScale;
+                validPieces.Add(piece);
+            }
+        }
+        
+        if (validPieces.Count == 0) return;
+        
+        // Create a single sequence that animates all pieces together
+        Sequence groupSequence = DOTween.Sequence();
+        
+        // Scale up all pieces together - Append first, then Join the rest
+        bool isFirst = true;
+        foreach (PuzzlePiece piece in validPieces)
+        {
+            Vector3 targetScale = originalScales[piece] * (1f + scaleIncrease);
+            Tween scaleUpTween = piece.transform.DOScale(targetScale, animationDuration / 2f)
+                .SetEase(Ease.OutQuad);
+            
+            if (isFirst)
+            {
+                groupSequence.Append(scaleUpTween);
+                isFirst = false;
+            }
+            else
+            {
+                groupSequence.Join(scaleUpTween);
+            }
+        }
+        
+        // Scale back down all pieces together - Append first, then Join the rest
+        isFirst = true;
+        foreach (PuzzlePiece piece in validPieces)
+        {
+            Tween scaleDownTween = piece.transform.DOScale(originalScales[piece], animationDuration / 2f)
+                .SetEase(Ease.InQuad);
+            
+            if (isFirst)
+            {
+                groupSequence.Append(scaleDownTween);
+                isFirst = false;
+            }
+            else
+            {
+                groupSequence.Join(scaleDownTween);
+            }
+        }
+        
+        // Ensure all scales are reset on complete or kill
+        groupSequence.OnComplete(() => {
+            foreach (PuzzlePiece piece in validPieces)
+            {
+                if (piece != null && piece.transform != null && originalScales.ContainsKey(piece))
+                {
+                    piece.transform.localScale = originalScales[piece];
+                }
+                if (activeScaleTweens.ContainsKey(piece))
+                {
+                    activeScaleTweens.Remove(piece);
+                }
+            }
+        });
+        
+        groupSequence.OnKill(() => {
+            foreach (PuzzlePiece piece in validPieces)
+            {
+                if (piece != null && piece.transform != null && originalScales.ContainsKey(piece))
+                {
+                    piece.transform.localScale = originalScales[piece];
+                }
+                if (activeScaleTweens.ContainsKey(piece))
+                {
+                    activeScaleTweens.Remove(piece);
+                }
+            }
+        });
+        
+        // Store the sequence for each piece (so we can track it)
+        foreach (PuzzlePiece piece in validPieces)
+        {
+            activeScaleTweens[piece] = groupSequence;
+        }
+    }
+    
+    private HashSet<PuzzlePiece> FindConnectedGroup(PuzzlePiece startPiece)
+    {
+        HashSet<PuzzlePiece> visited = new HashSet<PuzzlePiece>();
+        Queue<PuzzlePiece> queue = new Queue<PuzzlePiece>();
+        
+        queue.Enqueue(startPiece);
+        visited.Add(startPiece);
+        
+        while (queue.Count > 0)
+        {
+            PuzzlePiece current = queue.Dequeue();
+            
+            if (current == null || current.isConnected == null) continue;
+            
+            Vector2Int currentPos = new Vector2Int(current.currentGridRow, current.currentGridCol);
+            
+            // Check all 4 directions for connected neighbors
+            Vector2Int[] directions = new Vector2Int[]
+            {
+                new Vector2Int(-1, 0),  // Top
+                new Vector2Int(1, 0),   // Bottom
+                new Vector2Int(0, -1),  // Left
+                new Vector2Int(0, 1)    // Right
+            };
+            
+            for (int i = 0; i < 4; i++)
+            {
+                if (current.isConnected[i])
+                {
+                    Vector2Int neighborPos = currentPos + directions[i];
+                    
+                    if (piecesOnGrid.TryGetValue(neighborPos, out PuzzlePiece neighbor))
+                    {
+                        if (!visited.Contains(neighbor))
+                        {
+                            visited.Add(neighbor);
+                            queue.Enqueue(neighbor);
+                        }
+                    }
+                }
+            }
+        }
+        
+        return visited;
+    }
+    
+    // Method to reset all active animations (call this if needed)
+    public void ResetAllAnimations()
+    {
+        foreach (var kvp in activeScaleTweens)
+        {
+            if (kvp.Value != null && kvp.Value.IsActive())
+            {
+                kvp.Value.Kill();
+            }
+            
+            // Reset scale to original
+            if (kvp.Key != null && kvp.Key.transform != null)
+            {
+                kvp.Key.transform.localScale = Vector3.one;
+            }
+        }
+        
+        activeScaleTweens.Clear();
     }
 }
 

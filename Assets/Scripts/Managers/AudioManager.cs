@@ -7,6 +7,7 @@ public class AudioManager : MonoBehaviour
     public AudioClip cardFlipClip;
     public AudioClip swipeClip;
     public AudioClip levelCompleteClip;
+    public AudioClip connectionClip;
     
     [Header("Settings")]
     public float volume = 1f;
@@ -42,6 +43,11 @@ public class AudioManager : MonoBehaviour
     public void PlayLevelComplete()
     {
         PlaySound(levelCompleteClip);
+    }
+    
+    public void PlayConnection()
+    {
+        PlaySound(connectionClip);
     }
     
     private void PlaySound(AudioClip clip)
