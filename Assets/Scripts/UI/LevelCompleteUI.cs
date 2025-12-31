@@ -20,12 +20,14 @@ public class LevelCompleteUI : MonoBehaviour
     public float coinAnimationDuration = 1f;
     
     private MoneyManager moneyManager;
+    private GameManager gameManager; // Добавляем ссылку на GameManager
     private Vector2 moneyTargetPosition;
     private bool isAnimating = false;
     
     void Start()
     {
         moneyManager = FindObjectOfType<MoneyManager>();
+        gameManager = FindObjectOfType<GameManager>(); // Находим GameManager
         
         if (nextButton != null)
         {
@@ -66,49 +68,69 @@ public class LevelCompleteUI : MonoBehaviour
         if (isAnimating) return;
         
         isAnimating = true;
-        StartCoroutine(AnimateCoins());
+        StartCoroutine(AnimateCoinsAndLoadScene());
     }
     
-    private IEnumerator AnimateCoins()
+    private IEnumerator AnimateCoinsAndLoadScene()
     {
-        if (coinPrefab == null || coinSpawnPoint == null)
+        if (coinPrefab != null && coinSpawnPoint != null)
         {
-            Debug.LogWarning("Coin prefab or spawn point not set!");
-            yield break;
-        }
-        
-        List<GameObject> coins = new List<GameObject>();
-        
-        // Создаем монетки
-        for (int i = 0; i < coinsToSpawn; i++)
-        {
-            Vector3 spawnPos = coinSpawnPoint.position;
-            spawnPos += Random.insideUnitSphere * 0.2f; // Небольшое разброс
-            spawnPos.z = 0;
+            List<GameObject> coins = new List<GameObject>();
             
-            GameObject coin = Instantiate(coinPrefab, spawnPos, Quaternion.identity, transform);
-            coins.Add(coin);
-            
-            // Анимируем монетку к цели
-            MoneyAnimation moneyAnim = coin.GetComponent<MoneyAnimation>();
-            if (moneyAnim == null)
+            // Создаем монетки
+            for (int i = 0; i < coinsToSpawn; i++)
             {
-                moneyAnim = coin.AddComponent<MoneyAnimation>();
+                Vector3 spawnPos = coinSpawnPoint.position;
+                spawnPos += Random.insideUnitSphere * 0.2f; // Небольшое разброс
+                spawnPos.z = 0;
+                
+                GameObject coin = Instantiate(coinPrefab, spawnPos, Quaternion.identity, transform);
+                coins.Add(coin);
+                
+                // Анимируем монетку к цели
+                MoneyAnimation moneyAnim = coin.GetComponent<MoneyAnimation>();
+                if (moneyAnim == null)
+                {
+                    moneyAnim = coin.AddComponent<MoneyAnimation>();
+                }
+                
+                moneyAnim.Initialize(moneyTargetPosition);
+                moneyAnim.AnimateToTarget();
+                
+                yield return new WaitForSeconds(coinSpawnDelay);
             }
             
-            moneyAnim.Initialize(moneyTargetPosition);
-            moneyAnim.AnimateToTarget();
+            // Ждем завершения анимаций
+            yield return new WaitForSeconds(coinAnimationDuration);
             
-            yield return new WaitForSeconds(coinSpawnDelay);
+            // Начисляем деньги
+            if (moneyManager != null)
+            {
+                moneyManager.AddMoney(coinsToSpawn);
+            }
+            
+            // Удаляем монетки
+            foreach (GameObject coin in coins)
+            {
+                if (coin != null)
+                {
+                    Destroy(coin);
+                }
+            }
         }
         
-        // Ждем завершения анимаций
-        yield return new WaitForSeconds(coinAnimationDuration);
-        
-        // Начисляем деньги
-        if (moneyManager != null)
+        // ВАЖНО: Перезагружаем текущую сцену через GameManager
+        if (gameManager != null)
         {
-            moneyManager.AddMoney(coinsToSpawn);
+            Debug.Log($"Reloading current scene with animation. Current scene index: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex}");
+            gameManager.ReloadCurrentSceneWithAnimation();
+        }
+        else
+        {
+            Debug.LogError("GameManager not found! Cannot reload scene.");
+            // Fallback - перезагружаем текущую сцену по имени
+            string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
         }
         
         isAnimating = false;

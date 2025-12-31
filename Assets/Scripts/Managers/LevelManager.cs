@@ -55,15 +55,46 @@ public class LevelManager : MonoBehaviour
     
     void Awake()
     {
+        Debug.Log($"=== LevelManager Awake ===");
+        Debug.Log($"Scene: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
+        Debug.Log($"levelImages count: {(levelImages != null ? levelImages.Count : 0)}");
+        
         if (instance == null)
         {
             instance = this;
-            DontDestroyOnLoad(gameObject);
+            // НЕ используем DontDestroyOnLoad - LevelManager должен уничтожаться при переходе в другую сцену
+            // Прогресс уровня сохраняется через PlayerPrefs, поэтому данные не потеряются
+            
+            // Проверяем, что список levelImages заполнен
+            if (levelImages == null || levelImages.Count == 0)
+            {
+                Debug.LogError("LevelManager: levelImages list is empty! Please fill it in Inspector!");
+            }
+            else
+            {
+                Debug.Log($"LevelManager: Instance created with {levelImages.Count} level images");
+            }
+            
             LoadLevel();
         }
         else if (instance != this)
         {
+            Debug.LogWarning($"LevelManager: Duplicate found in scene {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}. Destroying duplicate.");
             Destroy(gameObject);
+        }
+        else
+        {
+            Debug.Log($"LevelManager: Already instance exists. levelImages count: {instance.levelImages.Count}");
+        }
+    }
+    
+    void OnDestroy()
+    {
+        // Сохраняем прогресс уровня перед уничтожением
+        if (instance == this)
+        {
+            SaveLevel();
+            Debug.Log("LevelManager: Saving level progress before destruction");
         }
     }
     
@@ -73,6 +104,15 @@ public class LevelManager : MonoBehaviour
     public void LoadLevel()
     {
         currentLevel = PlayerPrefs.GetInt(LEVEL_KEY, 0);
+    }
+    
+    /// <summary>
+    /// Сохраняет текущий уровень в PlayerPrefs
+    /// </summary>
+    public void SaveLevel()
+    {
+        PlayerPrefs.SetInt(LEVEL_KEY, currentLevel);
+        PlayerPrefs.Save();
     }
     
     /// <summary>

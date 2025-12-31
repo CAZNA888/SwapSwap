@@ -1,0 +1,289 @@
+using UnityEngine;
+using UnityEngine.UI;
+using System.Collections;
+using System.Collections.Generic;
+
+public class MenuProgressUI : MonoBehaviour
+{
+    [Header("UI References")]
+    [Tooltip("Родительский объект для сетки карточек (GridLayoutGroup)")]
+    public Transform cardsGridParent;
+    
+    [Tooltip("Префаб карточки меню")]
+    public GameObject menuCardPrefab;
+    
+    [Tooltip("Спрайт обратной стороны карточки (закрытая)")]
+    public Sprite cardBackSprite;
+    
+    [Header("Settings")]
+    [Tooltip("Размер сетки (по умолчанию 5x5)")]
+    public int gridSize = 5;
+    
+    [Tooltip("Длительность задержки между анимациями карточек")]
+    public float cardAnimationDelay = 0.05f;
+    
+    private MenuManager menuManager;
+    private ImageSlicer imageSlicer;
+    private List<MenuCard> menuCards = new List<MenuCard>();
+    private int currentImageIndex = -1;
+    private bool isInitialized = false;
+    
+    void Start()
+    {
+        menuManager = MenuManager.Instance;
+        if (menuManager == null)
+        {
+            Debug.LogError("MenuProgressUI: MenuManager not found!");
+            return;
+        }
+        
+        // Создаем ImageSlicer для разрезания картинок
+        imageSlicer = gameObject.AddComponent<ImageSlicer>();
+        
+        Initialize();
+    }
+    
+    /// <summary>
+    /// Инициализирует сетку карточек
+    /// </summary>
+    public void Initialize()
+    {
+        if (isInitialized) return;
+        
+        if (cardsGridParent == null)
+        {
+            Debug.LogError("MenuProgressUI: cardsGridParent is not set!");
+            return;
+        }
+        
+        // Настраиваем GridLayoutGroup, если он есть
+        GridLayoutGroup gridLayout = cardsGridParent.GetComponent<GridLayoutGroup>();
+        if (gridLayout != null)
+        {
+            gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            gridLayout.constraintCount = gridSize;
+        }
+        
+        // Создаем карточки
+        int totalCards = gridSize * gridSize;
+        for (int i = 0; i < totalCards; i++)
+        {
+            GameObject cardObj;
+            
+            if (menuCardPrefab != null)
+            {
+                cardObj = Instantiate(menuCardPrefab, cardsGridParent);
+            }
+            else
+            {
+                // Создаем карточку программно, если нет префаба
+                cardObj = new GameObject($"MenuCard_{i}");
+                cardObj.transform.SetParent(cardsGridParent);
+                
+                // Добавляем RectTransform
+                RectTransform rectTransform = cardObj.AddComponent<RectTransform>();
+                rectTransform.localScale = Vector3.one;
+                
+                // Добавляем Image
+                Image image = cardObj.AddComponent<Image>();
+                image.preserveAspect = true;
+            }
+            
+            // Получаем или создаем MenuCard компонент
+            MenuCard menuCard = cardObj.GetComponent<MenuCard>();
+            if (menuCard == null)
+            {
+                menuCard = cardObj.AddComponent<MenuCard>();
+            }
+            
+            // Если карточка была создана программно, устанавливаем Image
+            if (menuCard.cardImage == null)
+            {
+                Image image = cardObj.GetComponent<Image>();
+                if (image != null)
+                {
+                    menuCard.cardImage = image;
+                }
+            }
+            
+            // Устанавливаем спрайт обратной стороны
+            if (cardBackSprite != null)
+            {
+                menuCard.cardBackSprite = cardBackSprite;
+            }
+            
+            menuCards.Add(menuCard);
+        }
+        
+        isInitialized = true;
+        
+        // Загружаем текущую картинку
+        LoadCurrentMenuImage();
+    }
+    
+    /// <summary>
+    /// Загружает текущую картинку меню
+    /// </summary>
+    public void LoadCurrentMenuImage()
+    {
+        if (menuManager == null) return;
+        
+        int imageIndex = menuManager.GetCurrentMenuImageIndex();
+        StartCoroutine(LoadMenuImage(imageIndex));
+    }
+    
+    /// <summary>
+    /// Загружает и разрезает картинку меню
+    /// </summary>
+    private IEnumerator LoadMenuImage(int imageIndex)
+    {
+        if (currentImageIndex == imageIndex && menuCards.Count > 0 && menuCards[0].IsUnlocked())
+        {
+            // Картинка уже загружена, просто обновляем прогресс
+            UpdateProgress();
+            yield break;
+        }
+        
+        currentImageIndex = imageIndex;
+        
+        // Загружаем картинку через MenuManager
+        Sprite menuImage = null;
+        yield return StartCoroutine(menuManager.LoadMenuImageAsync(imageIndex, (sprite) => {
+            menuImage = sprite;
+        }));
+        
+        if (menuImage == null)
+        {
+            Debug.LogError($"MenuProgressUI: Failed to load menu image at index {imageIndex}");
+            yield break;
+        }
+        
+        // Разрезаем картинку на части
+        List<Sprite> slicedSprites = imageSlicer.SliceImage(menuImage, gridSize, gridSize);
+        
+        if (slicedSprites == null || slicedSprites.Count != gridSize * gridSize)
+        {
+            Debug.LogError($"MenuProgressUI: Failed to slice image! Expected {gridSize * gridSize} sprites, got {(slicedSprites != null ? slicedSprites.Count : 0)}");
+            yield break;
+        }
+        
+        // Устанавливаем спрайты для карточек
+        for (int i = 0; i < menuCards.Count && i < slicedSprites.Count; i++)
+        {
+            menuCards[i].SetCardSprite(slicedSprites[i]);
+        }
+        
+        // Обновляем прогресс
+        UpdateProgress();
+    }
+    
+    /// <summary>
+    /// Обновляет состояние всех карточек на основе прогресса
+    /// </summary>
+    public void UpdateProgress()
+    {
+        if (menuManager == null || !isInitialized) return;
+        
+        int imageIndex = menuManager.GetCurrentMenuImageIndex();
+        int unlockedCount = menuManager.GetUnlockedCardsCount(imageIndex);
+        
+        for (int i = 0; i < menuCards.Count; i++)
+        {
+            bool isUnlocked = i < unlockedCount;
+            menuCards[i].SetUnlocked(isUnlocked);
+        }
+    }
+    
+    /// <summary>
+    /// Анимирует переворот новой карточки
+    /// </summary>
+    public void AnimateNewCard()
+    {
+        if (menuManager == null || !isInitialized) return;
+        
+        int imageIndex = menuManager.GetCurrentMenuImageIndex();
+        int unlockedCount = menuManager.GetUnlockedCardsCount(imageIndex);
+        
+        // Проверяем, есть ли новая карточка для анимации
+        if (unlockedCount > 0 && unlockedCount <= menuCards.Count)
+        {
+            int cardIndex = unlockedCount - 1;
+            MenuCard newCard = menuCards[cardIndex];
+            
+            if (!newCard.IsUnlocked() && !newCard.IsAnimating())
+            {
+                StartCoroutine(AnimateCardFlip(newCard));
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Корутина для анимации переворота карточки
+    /// </summary>
+    private IEnumerator AnimateCardFlip(MenuCard card)
+    {
+        card.FlipCard(() => {
+            Debug.Log("MenuProgressUI: Card flip animation completed");
+        });
+        
+        yield return new WaitForSeconds(cardAnimationDelay);
+    }
+    
+    /// <summary>
+    /// Обновляет прогресс и анимирует новую карточку, если нужно
+    /// </summary>
+    public void RefreshProgress()
+    {
+        if (menuManager == null) return;
+        
+        // Обновляем прогресс в MenuManager
+        menuManager.UpdateProgress();
+        
+        // Обновляем визуальное состояние
+        UpdateProgress();
+        
+        // Проверяем, нужно ли анимировать новую карточку
+        if (menuManager.HasNewCardUnlocked())
+        {
+            AnimateNewCard();
+        }
+    }
+    
+    /// <summary>
+    /// Вызывается при возврате из уровня в меню
+    /// Обновляет прогресс и анимирует новую карточку, если нужно
+    /// </summary>
+    public void OnReturnFromLevel()
+    {
+        if (menuManager == null) return;
+        
+        // Обновляем прогресс в MenuManager
+        menuManager.UpdateProgress();
+        
+        // Обновляем визуальное состояние
+        UpdateProgress();
+        
+        // Проверяем, нужно ли анимировать новую карточку
+        if (menuManager.HasNewCardUnlocked())
+        {
+            AnimateNewCard();
+        }
+        
+        // Проверяем, нужно ли загрузить новую картинку
+        int newImageIndex = menuManager.GetCurrentMenuImageIndex();
+        if (newImageIndex != currentImageIndex)
+        {
+            LoadCurrentMenuImage();
+        }
+    }
+    
+    void OnEnable()
+    {
+        // При активации обновляем прогресс
+        if (isInitialized)
+        {
+            RefreshProgress();
+        }
+    }
+}
+

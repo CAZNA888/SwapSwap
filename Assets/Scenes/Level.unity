@@ -2889,6 +2889,88 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1729738172}
   m_CullTransparentMesh: 1
+--- !u!1 &1733133782
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1733133784}
+  - component: {fileID: 1733133783}
+  m_Layer: 0
+  m_Name: LevelManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1733133783
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1733133782}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63ee6ab661b70594695fcd68f0699bdd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  useAddressables: 1
+  levelImages:
+  - name: cat
+    sprite: {fileID: -81096595, guid: 11514cda10da2c14ea34005677549f3c, type: 3}
+    addressableKey: Assets/Sprites/UI/LevelImages/cat.png
+  - name: cutecat
+    sprite: {fileID: -2023690594, guid: d967c0b58ce587248ba15231fd47eed0, type: 3}
+    addressableKey: Assets/Sprites/UI/LevelImages/cutecat.png
+  - name: gora
+    sprite: {fileID: -532509571, guid: 62fa78c3a8c735e4087878736b08c8a3, type: 3}
+    addressableKey: Assets/Sprites/UI/LevelImages/gora.png
+  - name: pes
+    sprite: {fileID: -652139845, guid: c9ac4570172241048b1f39d07da9432c, type: 3}
+    addressableKey: Assets/Sprites/UI/LevelImages/pes.png
+  - name: scorp
+    sprite: {fileID: 56795684, guid: ca72e5d2fb9e9da429c599681e0a701f, type: 3}
+    addressableKey: Assets/Sprites/UI/LevelImages/scorp.png
+  - name: tiger
+    sprite: {fileID: 1437040456, guid: b5c1fcdabb4f32146866a356189c725a, type: 3}
+    addressableKey: Assets/Sprites/UI/LevelImages/tiger.png
+  - name: volk
+    sprite: {fileID: 21300000, guid: b6ad31ef97f32f04693f515cdd533517, type: 3}
+    addressableKey: 
+  - name: babochka
+    sprite: {fileID: 222651943, guid: b6ad31ef97f32f04693f515cdd533517, type: 3}
+    addressableKey: Assets/Sprites/UI/LevelImages/volk.png
+  - name: Group 1 (1)_0
+    sprite: {fileID: -1398352938, guid: fb2ed3d4b6638e249b5615c661cc8f22, type: 3}
+    addressableKey: Group 1 (1)
+  - name: babochka
+    sprite: {fileID: 1400816909, guid: 32d24539f9a6289498e020f827d4ec11, type: 3}
+    addressableKey: Assets/Sprites/UI/LevelImages/babochka.png
+  startGridSize: 3
+  gridSizeIncreasePeriod: 5
+  maxGridSize: 8
+  difficultLevelPeriod: 3
+  difficultLevelUIObject: {fileID: 1014544676}
+  difficultLevelDisplayDuration: 3
+--- !u!4 &1733133784
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1733133782}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 159.50746, y: 1363.273, z: 1.9800686}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1739154195
 GameObject:
   m_ObjectHideFlags: 0
@@ -3465,7 +3547,6 @@ GameObject:
   - component: {fileID: 1934639047}
   - component: {fileID: 1934639046}
   - component: {fileID: 1934639048}
-  - component: {fileID: 1934639049}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -3544,56 +3625,6 @@ MonoBehaviour:
   hintScale: 1.2
   hintDuration: 0.5
   pulseCount: 3
---- !u!114 &1934639049
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1934639045}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 63ee6ab661b70594695fcd68f0699bdd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  useAddressables: 1
-  levelImages:
-  - name: cat
-    sprite: {fileID: -81096595, guid: 11514cda10da2c14ea34005677549f3c, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/cat.png
-  - name: cutecat
-    sprite: {fileID: -2023690594, guid: d967c0b58ce587248ba15231fd47eed0, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/cutecat.png
-  - name: gora
-    sprite: {fileID: -532509571, guid: 62fa78c3a8c735e4087878736b08c8a3, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/gora.png
-  - name: pes
-    sprite: {fileID: -652139845, guid: c9ac4570172241048b1f39d07da9432c, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/pes.png
-  - name: scorp
-    sprite: {fileID: 56795684, guid: ca72e5d2fb9e9da429c599681e0a701f, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/scorp.png
-  - name: tiger
-    sprite: {fileID: 1437040456, guid: b5c1fcdabb4f32146866a356189c725a, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/tiger.png
-  - name: volk
-    sprite: {fileID: 21300000, guid: b6ad31ef97f32f04693f515cdd533517, type: 3}
-    addressableKey: 
-  - name: babochka
-    sprite: {fileID: 222651943, guid: b6ad31ef97f32f04693f515cdd533517, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/volk.png
-  - name: Group 1 (1)_0
-    sprite: {fileID: -1398352938, guid: fb2ed3d4b6638e249b5615c661cc8f22, type: 3}
-    addressableKey: Group 1 (1)
-  - name: babochka
-    sprite: {fileID: 1400816909, guid: 32d24539f9a6289498e020f827d4ec11, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/babochka.png
-  startGridSize: 3
-  gridSizeIncreasePeriod: 5
-  maxGridSize: 8
-  difficultLevelPeriod: 3
-  difficultLevelUIObject: {fileID: 1014544676}
-  difficultLevelDisplayDuration: 3
 --- !u!1 &1985141832
 GameObject:
   m_ObjectHideFlags: 0
@@ -3821,3 +3852,4 @@ SceneRoots:
   - {fileID: 1313673417}
   - {fileID: 1914978861}
   - {fileID: 1553934219}
+  - {fileID: 1733133784}
