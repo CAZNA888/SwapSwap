@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: LevelImages
+  m_EditorClassIdentifier: 
+  m_GroupName: LevelImages
+  m_Data:
+    m_SerializedData: []
+  m_GUID: b6c9a34130e74224aa8491ffd90b6d66
+  m_SerializeEntries:
+  - m_GUID: 11514cda10da2c14ea34005677549f3c
+    m_Address: Assets/Sprites/UI/LevelImages/cat.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 32d24539f9a6289498e020f827d4ec11
+    m_Address: Assets/Sprites/UI/LevelImages/babochka.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 62fa78c3a8c735e4087878736b08c8a3
+    m_Address: Assets/Sprites/UI/LevelImages/gora.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b5c1fcdabb4f32146866a356189c725a
+    m_Address: Assets/Sprites/UI/LevelImages/tiger.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b6ad31ef97f32f04693f515cdd533517
+    m_Address: Assets/Sprites/UI/LevelImages/volk.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c9ac4570172241048b1f39d07da9432c
+    m_Address: Assets/Sprites/UI/LevelImages/pes.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ca72e5d2fb9e9da429c599681e0a701f
+    m_Address: Assets/Sprites/UI/LevelImages/scorp.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d967c0b58ce587248ba15231fd47eed0
+    m_Address: Assets/Sprites/UI/LevelImages/cutecat.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fb2ed3d4b6638e249b5615c661cc8f22
+    m_Address: Group 1 (1)
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 5992a501ad2725d4f905948126cf4b6e, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: e3bc65c2265595841b0bf2ca7a951932, type: 2}
+    - {fileID: 11400000, guid: af8bcad5af8ec624bb1d2afe0fe89fa0, type: 2}

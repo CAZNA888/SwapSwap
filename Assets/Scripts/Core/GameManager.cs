@@ -9,11 +9,14 @@ using DG.Tweening;
 public class GameManager : MonoBehaviour
 {
     [Header("Puzzle Settings")]
+    [Tooltip("Устанавливается автоматически через LevelManager. Оставьте пустым для автоматической настройки.")]
     public Sprite sourceImage;
     public Sprite cardBackSprite;
     public Sprite borderSprite;
-    public int gridRows = 3;
-    public int gridCols = 3;
+    [Tooltip("Устанавливается автоматически через LevelManager. Оставьте 0 для автоматической настройки.")]
+    public int gridRows = 0;
+    [Tooltip("Устанавливается автоматически через LevelManager. Оставьте 0 для автоматической настройки.")]
+    public int gridCols = 0;
     public float fieldWidth = 10f;
     public float fieldHeight = 10f;
     public float cardSpacing = 0.1f;
@@ -55,6 +58,7 @@ public class GameManager : MonoBehaviour
     private MoneyManager moneyManager;
     private LevelCompleteUI levelCompleteUI;
     private ConfettiEffect confettiEffect;
+    private LevelManager levelManager;
     
     // Game State
     private List<PuzzlePiece> puzzlePieces;
@@ -141,6 +145,24 @@ public class GameManager : MonoBehaviour
             confettiEffect = confettiObj.AddComponent<ConfettiEffect>();
         }
         
+        // Инициализация LevelManager
+        levelManager = LevelManager.Instance;
+        if (levelManager != null)
+        {
+            // Получаем размерность сетки из LevelManager
+            int calculatedGridSize = levelManager.CalculateGridSize();
+            if (gridRows == 0) gridRows = calculatedGridSize;
+            if (gridCols == 0) gridCols = calculatedGridSize;
+            
+            Debug.Log($"LevelManager: {levelManager.GetLevelInfo()}");
+        }
+        else
+        {
+            Debug.LogWarning("LevelManager not found! Using default values.");
+            if (gridRows == 0) gridRows = 3;
+            if (gridCols == 0) gridCols = 3;
+        }
+        
         occupiedCells = new Dictionary<Vector2Int, PuzzlePiece>();
         puzzlePieces = new List<PuzzlePiece>();
     }
@@ -152,10 +174,35 @@ public class GameManager : MonoBehaviour
     
     private IEnumerator GameSequence()
     {
-        // 1. Разрезаем изображение
+        // 0. Показываем UI сложного уровня, если это сложный уровень
+        if (levelManager != null && levelManager.IsDifficultLevel())
+        {
+            yield return StartCoroutine(levelManager.ShowDifficultLevelUI());
+        }
+        
+        // 1. Загружаем картинку из LevelManager, если она не установлена
+        if (sourceImage == null && levelManager != null)
+        {
+            if (levelManager.useAddressables)
+            {
+                // Асинхронная загрузка через Addressables
+                Sprite loadedSprite = null;
+                yield return StartCoroutine(levelManager.LoadLevelImageAsync((sprite) => {
+                    loadedSprite = sprite;
+                }));
+                sourceImage = loadedSprite;
+            }
+            else
+            {
+                // Синхронная загрузка из Unity
+                sourceImage = levelManager.GetLevelImage();
+            }
+        }
+        
+        // Проверяем наличие картинки
         if (sourceImage == null)
         {
-            Debug.LogError("Source image is not set!");
+            Debug.LogError("Source image is not set and LevelManager failed to load it!");
             yield break;
         }
         
@@ -520,6 +567,12 @@ public class GameManager : MonoBehaviour
         if (confettiEffect != null)
         {
             confettiEffect.PlayConfetti();
+        }
+        
+        // Увеличиваем уровень через LevelManager
+        if (levelManager != null)
+        {
+            levelManager.IncrementLevel();
         }
     }
     
