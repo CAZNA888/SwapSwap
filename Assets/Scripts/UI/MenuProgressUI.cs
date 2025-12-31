@@ -27,6 +27,10 @@ public class MenuProgressUI : MonoBehaviour
     private List<MenuCard> menuCards = new List<MenuCard>();
     private int currentImageIndex = -1;
     private bool isInitialized = false;
+    private bool shouldAnimateNewCard = false;
+    
+    private const string LAST_UNLOCKED_COUNT_KEY = "LastUnlockedCardCount";
+    private const string LAST_IMAGE_INDEX_KEY = "LastImageIndex";
     
     void Start()
     {
@@ -139,8 +143,8 @@ public class MenuProgressUI : MonoBehaviour
     {
         if (currentImageIndex == imageIndex && menuCards.Count > 0 && menuCards[0].IsUnlocked())
         {
-            // Картинка уже загружена, просто обновляем прогресс
-            UpdateProgress();
+            // Картинка уже загружена, проверяем новую карточку
+            CheckAndAnimateNewCard();
             yield break;
         }
         
@@ -173,14 +177,65 @@ public class MenuProgressUI : MonoBehaviour
             menuCards[i].SetCardSprite(slicedSprites[i]);
         }
         
-        // Обновляем прогресс
-        UpdateProgress();
+        // Проверяем новую карточку ПЕРЕД обновлением прогресса
+        CheckAndAnimateNewCard();
+    }
+    
+    /// <summary>
+    /// Проверяет, нужно ли показать анимацию новой карточки
+    /// </summary>
+    private void CheckAndAnimateNewCard()
+    {
+        if (menuManager == null || !isInitialized) return;
+        
+        int imageIndex = menuManager.GetCurrentMenuImageIndex();
+        
+        // Получаем текущее количество открытых карточек ДО обновления прогресса
+        int previousUnlockedCount = menuManager.GetUnlockedCardsCount(imageIndex);
+        
+        // Загружаем сохраненное значение из PlayerPrefs
+        int savedImageIndex = PlayerPrefs.GetInt(LAST_IMAGE_INDEX_KEY, -1);
+        int savedUnlockedCount = PlayerPrefs.GetInt(LAST_UNLOCKED_COUNT_KEY, 0);
+        
+        // Проверяем, была ли открыта новая карточка
+        bool hasNewCard = menuManager.HasNewCardUnlocked();
+        
+        // Если это та же картинка и количество увеличилось, показываем анимацию
+        bool shouldAnimate = (savedImageIndex == imageIndex && previousUnlockedCount > savedUnlockedCount) || hasNewCard;
+        
+        Debug.Log($"MenuProgressUI: savedImageIndex={savedImageIndex}, currentImageIndex={imageIndex}, savedUnlocked={savedUnlockedCount}, currentUnlocked={previousUnlockedCount}, shouldAnimate={shouldAnimate}");
+        
+        // Обновляем прогресс в MenuManager
+        menuManager.UpdateProgress();
+        
+        // Получаем новое количество открытых карточек после обновления
+        int unlockedCount = menuManager.GetUnlockedCardsCount(imageIndex);
+        
+        if (shouldAnimate && unlockedCount > 0 && unlockedCount <= menuCards.Count)
+        {
+            Debug.Log($"MenuProgressUI: Will animate new card at index {unlockedCount - 1}");
+            // Устанавливаем все карточки в правильное состояние, но последнюю оставляем закрытой
+            UpdateProgress(skipLastCard: true);
+            
+            // Запускаем анимацию переворота последней карточки
+            StartCoroutine(AnimateNewCardOnReturn());
+        }
+        else
+        {
+            // Просто обновляем прогресс без анимации
+            UpdateProgress();
+        }
+        
+        // Сохраняем текущие значения
+        PlayerPrefs.SetInt(LAST_IMAGE_INDEX_KEY, imageIndex);
+        PlayerPrefs.SetInt(LAST_UNLOCKED_COUNT_KEY, unlockedCount);
+        PlayerPrefs.Save();
     }
     
     /// <summary>
     /// Обновляет состояние всех карточек на основе прогресса
     /// </summary>
-    public void UpdateProgress()
+    public void UpdateProgress(bool skipLastCard = false)
     {
         if (menuManager == null || !isInitialized) return;
         
@@ -190,7 +245,17 @@ public class MenuProgressUI : MonoBehaviour
         for (int i = 0; i < menuCards.Count; i++)
         {
             bool isUnlocked = i < unlockedCount;
-            menuCards[i].SetUnlocked(isUnlocked);
+            
+            // Если skipLastCard = true и это последняя карточка, оставляем её закрытой
+            if (skipLastCard && i == unlockedCount - 1 && unlockedCount > 0)
+            {
+                menuCards[i].SetUnlocked(false); // Оставляем закрытой для анимации
+                shouldAnimateNewCard = true;
+            }
+            else
+            {
+                menuCards[i].SetUnlocked(isUnlocked);
+            }
         }
     }
     
@@ -257,16 +322,29 @@ public class MenuProgressUI : MonoBehaviour
     {
         if (menuManager == null) return;
         
+        // Проверяем, была ли открыта новая карточка ДО обновления прогресса
+        bool hasNewCard = menuManager.HasNewCardUnlocked();
+        int imageIndex = menuManager.GetCurrentMenuImageIndex();
+        int currentUnlocked = menuManager.GetUnlockedCardsCount(imageIndex);
+        
         // Обновляем прогресс в MenuManager
         menuManager.UpdateProgress();
         
-        // Обновляем визуальное состояние
-        UpdateProgress();
+        // Получаем новое количество открытых карточек после обновления
+        int unlockedCount = menuManager.GetUnlockedCardsCount(imageIndex);
         
-        // Проверяем, нужно ли анимировать новую карточку
-        if (menuManager.HasNewCardUnlocked())
+        if (hasNewCard && unlockedCount > 0 && unlockedCount <= menuCards.Count)
         {
-            AnimateNewCard();
+            // Устанавливаем все карточки в правильное состояние, но последнюю оставляем закрытой
+            UpdateProgress(skipLastCard: true);
+            
+            // Запускаем анимацию переворота последней карточки
+            StartCoroutine(AnimateNewCardOnReturn());
+        }
+        else
+        {
+            // Просто обновляем прогресс без анимации
+            UpdateProgress();
         }
         
         // Проверяем, нужно ли загрузить новую картинку
@@ -277,13 +355,59 @@ public class MenuProgressUI : MonoBehaviour
         }
     }
     
+    /// <summary>
+    /// Корутина для анимации новой карточки при возврате из уровня
+    /// </summary>
+    private IEnumerator AnimateNewCardOnReturn()
+    {
+        if (menuManager == null || !isInitialized) yield break;
+        
+        int imageIndex = menuManager.GetCurrentMenuImageIndex();
+        int unlockedCount = menuManager.GetUnlockedCardsCount(imageIndex);
+        
+        if (unlockedCount > 0 && unlockedCount <= menuCards.Count)
+        {
+            int cardIndex = unlockedCount - 1;
+            MenuCard newCard = menuCards[cardIndex];
+            
+            // Убеждаемся, что карточка закрыта перед анимацией
+            if (newCard.IsUnlocked())
+            {
+                newCard.SetUnlocked(false);
+            }
+            
+            // Небольшая задержка перед анимацией (чтобы игрок увидел закрытую карточку)
+            yield return new WaitForSeconds(0.5f);
+            
+            // Анимируем переворот (используется та же анимация, что и в GameManager)
+            newCard.FlipCard(() => {
+                Debug.Log("MenuProgressUI: New card flip animation completed after level completion");
+            });
+        }
+        
+        shouldAnimateNewCard = false;
+    }
+    
     void OnEnable()
     {
-        // При активации обновляем прогресс
+        // При активации проверяем новую карточку
         if (isInitialized)
         {
-            RefreshProgress();
+            // Небольшая задержка, чтобы убедиться, что все загружено
+            StartCoroutine(DelayedCheckForNewCard());
         }
+    }
+    
+    /// <summary>
+    /// Корутина для отложенной проверки новой карточки
+    /// </summary>
+    private IEnumerator DelayedCheckForNewCard()
+    {
+        // Ждем один кадр, чтобы убедиться, что все компоненты инициализированы
+        yield return null;
+        
+        // Проверяем новую карточку
+        CheckAndAnimateNewCard();
     }
 }
 

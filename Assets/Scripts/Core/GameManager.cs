@@ -749,12 +749,13 @@ public class GameManager : MonoBehaviour
             levelManager.IncrementLevel();
         }
         
-        // Обновляем прогресс меню
-        MenuManager menuManager = MenuManager.Instance;
-        if (menuManager != null)
-        {
-            menuManager.UpdateProgress();
-        }
+        // НЕ обновляем прогресс меню здесь - это будет сделано в MenuProgressUI
+        // чтобы можно было правильно определить новую карточку и показать анимацию
+        // MenuManager menuManager = MenuManager.Instance;
+        // if (menuManager != null)
+        // {
+        //     menuManager.UpdateProgress();
+        // }
     }
     
     // Public method to check if game is complete
