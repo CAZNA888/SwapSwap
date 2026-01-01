@@ -409,5 +409,46 @@ public class MenuProgressUI : MonoBehaviour
         // Проверяем новую карточку
         CheckAndAnimateNewCard();
     }
+    
+    /// <summary>
+    /// Открывает все карточки текущей картинки и обновляет UI
+    /// </summary>
+    public void UnlockAllCardsForCurrentImage()
+    {
+        if (menuManager == null || !isInitialized) return;
+        
+        int imageIndex = menuManager.GetCurrentMenuImageIndex();
+        
+        // Открываем все карточки в MenuManager
+        menuManager.UnlockAllCardsForImage(imageIndex);
+        
+        // Обновляем визуальное отображение
+        UpdateProgress();
+        
+        Debug.Log($"MenuProgressUI: Unlocked all cards for image {imageIndex}");
+    }
+    
+    /// <summary>
+    /// Открывает все карточки для указанной картинки и обновляет UI (если это текущая картинка)
+    /// </summary>
+    public void UnlockAllCardsForImage(int imageIndex)
+    {
+        if (menuManager == null || !isInitialized) return;
+        
+        // Открываем все карточки в MenuManager
+        menuManager.UnlockAllCardsForImage(imageIndex);
+        
+        // Обновляем визуальное отображение только если это текущая картинка
+        int currentImageIndex = menuManager.GetCurrentMenuImageIndex();
+        if (imageIndex == currentImageIndex)
+        {
+            UpdateProgress();
+            Debug.Log($"MenuProgressUI: Unlocked all cards for current image {imageIndex}");
+        }
+        else
+        {
+            Debug.Log($"MenuProgressUI: Unlocked all cards for image {imageIndex} (not current, UI not updated)");
+        }
+    }
 }
 

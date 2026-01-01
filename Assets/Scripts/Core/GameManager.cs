@@ -783,6 +783,94 @@ public class GameManager : MonoBehaviour
         CheckWinCondition();
     }
     
+    /// <summary>
+    /// Мгновенно завершает уровень, размещая все карточки в правильные позиции
+    /// </summary>
+    public void CompleteLevelInstantly()
+    {
+        if (isGameComplete)
+        {
+            Debug.Log("GameManager: Level is already complete!");
+            return;
+        }
+        
+        if (puzzlePieces == null || puzzlePieces.Count == 0)
+        {
+            Debug.LogWarning("GameManager: No puzzle pieces to complete!");
+            return;
+        }
+        
+        if (puzzleGrid == null)
+        {
+            Debug.LogError("GameManager: PuzzleGrid is not initialized!");
+            return;
+        }
+        
+        Debug.Log("GameManager: Completing level instantly...");
+        
+        // Очищаем occupiedCells для пересчета
+        occupiedCells.Clear();
+        
+        // Размещаем каждую карточку в правильную позицию
+        foreach (PuzzlePiece piece in puzzlePieces)
+        {
+            // Вычисляем правильную позицию
+            Vector2Int correctPos = piece.GetOriginalPosition(gridCols);
+            int correctRow = correctPos.x;
+            int correctCol = correctPos.y;
+            
+            // Получаем ячейку для правильной позиции
+            GridCell targetCell = puzzleGrid.GetCellAt(correctRow, correctCol);
+            if (targetCell == null)
+            {
+                Debug.LogError($"GameManager: Cannot find cell at ({correctRow}, {correctCol})!");
+                continue;
+            }
+            
+            // Получаем текущую ячейку карточки
+            GridCell currentCell = puzzleGrid.GetCellAt(piece.currentGridRow, piece.currentGridCol);
+            
+            // Перемещаем карточку в правильную позицию (без анимации для мгновенного завершения)
+            Vector2 worldPos = puzzleGrid.GetWorldPosition(correctRow, correctCol);
+            piece.transform.position = new Vector3(worldPos.x, worldPos.y, 0f);
+            piece.SetPosition(correctRow, correctCol);
+            
+            // Обновляем ячейки
+            if (currentCell != null)
+            {
+                currentCell.SetPiece(null);
+            }
+            targetCell.SetPiece(piece);
+            
+            // Обновляем occupiedCells
+            Vector2Int oldPos = new Vector2Int(piece.currentGridRow, piece.currentGridCol);
+            Vector2Int newPos = new Vector2Int(correctRow, correctCol);
+            
+            if (oldPos != newPos)
+            {
+                occupiedCells.Remove(oldPos);
+            }
+            occupiedCells[newPos] = piece;
+            
+            // Обновляем connectionManager
+            if (connectionManager != null)
+            {
+                connectionManager.UpdatePieceOnGrid(piece, oldPos, newPos);
+            }
+        }
+        
+        // Обновляем все соединения
+        if (connectionManager != null)
+        {
+            connectionManager.CheckAllConnections();
+        }
+        
+        Debug.Log("GameManager: All pieces placed in correct positions. Checking win condition...");
+        
+        // Проверяем условие победы
+        CheckWinCondition();
+    }
+    
     // Загрузка сцены по индексу с анимацией монеток
     public void LoadSceneByIndex(int sceneIndex)
     {

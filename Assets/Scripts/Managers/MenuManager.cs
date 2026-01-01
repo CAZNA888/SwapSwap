@@ -335,5 +335,29 @@ public class MenuManager : MonoBehaviour
         
         return $"Menu Progress: Image {imageIndex}, Card {cardIndex}, Unlocked: {unlockedCount}/{cardsPerImage}, Completed: {isCompleted}";
     }
+    
+    /// <summary>
+    /// Открывает все карточки для указанной картинки
+    /// </summary>
+    public void UnlockAllCardsForImage(int imageIndex)
+    {
+        if (imageIndex < 0)
+        {
+            Debug.LogWarning($"MenuManager: Invalid image index: {imageIndex}");
+            return;
+        }
+        
+        SetUnlockedCardsCount(imageIndex, cardsPerImage);
+        Debug.Log($"MenuManager: Unlocked all {cardsPerImage} cards for image {imageIndex}");
+    }
+    
+    /// <summary>
+    /// Открывает все карточки для текущей картинки
+    /// </summary>
+    public void UnlockAllCardsForCurrentImage()
+    {
+        int imageIndex = GetCurrentMenuImageIndex();
+        UnlockAllCardsForImage(imageIndex);
+    }
 }
 
