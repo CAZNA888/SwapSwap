@@ -2938,9 +2938,6 @@ MonoBehaviour:
   - name: tiger
     sprite: {fileID: 1437040456, guid: b5c1fcdabb4f32146866a356189c725a, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/tiger.png
-  - name: volk
-    sprite: {fileID: 21300000, guid: b6ad31ef97f32f04693f515cdd533517, type: 3}
-    addressableKey: 
   - name: babochka
     sprite: {fileID: 222651943, guid: b6ad31ef97f32f04693f515cdd533517, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/volk.png

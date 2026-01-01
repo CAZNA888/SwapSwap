@@ -65,6 +65,7 @@ public class GameManager : MonoBehaviour
     private Dictionary<Vector2Int, PuzzlePiece> occupiedCells;
     private List<Sprite> slicedSprites;
     private bool isGameComplete = false;
+    private bool isLoadingScene = false; // Флаг для предотвращения повторных вызовов
     
     void Awake()
     {
@@ -785,12 +786,21 @@ public class GameManager : MonoBehaviour
     // Загрузка сцены по индексу с анимацией монеток
     public void LoadSceneByIndex(int sceneIndex)
     {
+        // Проверяем, не запущена ли уже загрузка сцены
+        if (isLoadingScene)
+        {
+            Debug.LogWarning("LoadSceneByIndex: Scene loading is already in progress! Ignoring duplicate call.");
+            return;
+        }
+        
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         
         Debug.Log($"LoadSceneByIndex: current={currentSceneIndex}, target={sceneIndex}");
         
         if (sceneIndex >= 0 && sceneIndex < SceneManager.sceneCountInBuildSettings)
         {
+            isLoadingScene = true; // Устанавливаем флаг перед запуском корутины
+            
             // Если загружаем ту же сцену - используем имя для гарантированной перезагрузки
             if (sceneIndex == currentSceneIndex)
             {
@@ -816,7 +826,13 @@ public class GameManager : MonoBehaviour
         if (coinStartPoint == null || coinFinishPoint == null || coinPrefab == null)
         {
             Debug.LogWarning("Coin animation parameters not set! Loading scene without animation.");
-            yield return new WaitForSeconds(1f);
+            // Начисляем деньги без анимации
+            if (moneyManager != null)
+            {
+                moneyManager.AddMoney(moneyAmount);
+            }
+            yield return new WaitForSeconds(0.5f); // Минимальная задержка
+            isLoadingScene = false;
             SceneManager.LoadScene(sceneIndex);
             yield break;
         }
@@ -831,7 +847,13 @@ public class GameManager : MonoBehaviour
         if (canvas == null)
         {
             Debug.LogWarning("Canvas not found! Loading scene without animation.");
-            yield return new WaitForSeconds(1f);
+            // Начисляем деньги без анимации
+            if (moneyManager != null)
+            {
+                moneyManager.AddMoney(moneyAmount);
+            }
+            yield return new WaitForSeconds(0.5f);
+            isLoadingScene = false;
             SceneManager.LoadScene(sceneIndex);
             yield break;
         }
@@ -844,7 +866,13 @@ public class GameManager : MonoBehaviour
         if (canvasRect == null)
         {
             Debug.LogWarning("Canvas must have RectTransform component!");
-            yield return new WaitForSeconds(1f);
+            // Начисляем деньги без анимации
+            if (moneyManager != null)
+            {
+                moneyManager.AddMoney(moneyAmount);
+            }
+            yield return new WaitForSeconds(0.5f);
+            isLoadingScene = false;
             SceneManager.LoadScene(sceneIndex);
             yield break;
         }
@@ -879,7 +907,7 @@ public class GameManager : MonoBehaviour
             
             // Устанавливаем начальную позицию с небольшим разбросом
             coinRect.anchoredPosition = startLocalPos;
-            coinRect.anchoredPosition += Random.insideUnitCircle * 20f; // Небольшой разброс в пикселях
+            coinRect.anchoredPosition += Random.insideUnitCircle * 20f;
             
             coins.Add(coin);
             
@@ -909,10 +937,10 @@ public class GameManager : MonoBehaviour
             yield return new WaitForSeconds(coinSpawnDelay);
         }
         
-        // Ждем завершения анимаций
+        // Ждем завершения анимаций (но не слишком долго)
         yield return new WaitForSeconds(coinAnimationDuration);
         
-        // Удаляем все монетки (на случай, если они еще не удалились)
+        // Удаляем все монетки
         foreach (GameObject coin in coins)
         {
             if (coin != null)
@@ -927,14 +955,14 @@ public class GameManager : MonoBehaviour
             moneyManager.AddMoney(moneyAmount);
         }
         
-        // Ждем 1 секунду перед загрузкой сцены
-        yield return new WaitForSeconds(1f);
+        // Минимальная задержка перед загрузкой сцены
+        yield return new WaitForSeconds(0.3f);
         
-        // Очищаем все объекты перед загрузкой новой сцены
-        CleanupBeforeSceneLoad();
+        // НЕ вызываем CleanupBeforeSceneLoad() здесь, так как он останавливает корутины!
+        // Unity сам уничтожит все объекты при загрузке новой сцены
         
-        // Ждем один кадр, чтобы уничтожение объектов завершилось
-        yield return null;
+        // Сбрасываем флаг перед загрузкой сцены
+        isLoadingScene = false;
         
         // Загружаем сцену
         SceneManager.LoadScene(sceneIndex);
@@ -947,7 +975,13 @@ public class GameManager : MonoBehaviour
         if (coinStartPoint == null || coinFinishPoint == null || coinPrefab == null)
         {
             Debug.LogWarning("Coin animation parameters not set! Loading scene without animation.");
-            yield return new WaitForSeconds(1f);
+            // Начисляем деньги без анимации
+            if (moneyManager != null)
+            {
+                moneyManager.AddMoney(moneyAmount);
+            }
+            yield return new WaitForSeconds(0.5f);
+            isLoadingScene = false;
             SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
             yield break;
         }
@@ -962,7 +996,13 @@ public class GameManager : MonoBehaviour
         if (canvas == null)
         {
             Debug.LogWarning("Canvas not found! Loading scene without animation.");
-            yield return new WaitForSeconds(1f);
+            // Начисляем деньги без анимации
+            if (moneyManager != null)
+            {
+                moneyManager.AddMoney(moneyAmount);
+            }
+            yield return new WaitForSeconds(0.5f);
+            isLoadingScene = false;
             SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
             yield break;
         }
@@ -975,7 +1015,13 @@ public class GameManager : MonoBehaviour
         if (canvasRect == null)
         {
             Debug.LogWarning("Canvas must have RectTransform component!");
-            yield return new WaitForSeconds(1f);
+            // Начисляем деньги без анимации
+            if (moneyManager != null)
+            {
+                moneyManager.AddMoney(moneyAmount);
+            }
+            yield return new WaitForSeconds(0.5f);
+            isLoadingScene = false;
             SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
             yield break;
         }
@@ -1010,7 +1056,7 @@ public class GameManager : MonoBehaviour
             
             // Устанавливаем начальную позицию с небольшим разбросом
             coinRect.anchoredPosition = startLocalPos;
-            coinRect.anchoredPosition += Random.insideUnitCircle * 20f; // Небольшой разброс в пикселях
+            coinRect.anchoredPosition += Random.insideUnitCircle * 20f;
             
             coins.Add(coin);
             
@@ -1043,7 +1089,7 @@ public class GameManager : MonoBehaviour
         // Ждем завершения анимаций
         yield return new WaitForSeconds(coinAnimationDuration);
         
-        // Удаляем все монетки (на случай, если они еще не удалились)
+        // Удаляем все монетки
         foreach (GameObject coin in coins)
         {
             if (coin != null)
@@ -1058,16 +1104,16 @@ public class GameManager : MonoBehaviour
             moneyManager.AddMoney(moneyAmount);
         }
         
-        // Ждем 1 секунду перед загрузкой сцены
-        yield return new WaitForSeconds(1f);
+        // Минимальная задержка перед загрузкой сцены
+        yield return new WaitForSeconds(0.3f);
         
-        // Очищаем все объекты перед загрузкой новой сцены
-        CleanupBeforeSceneLoad();
+        // НЕ вызываем CleanupBeforeSceneLoad() здесь, так как он останавливает корутины!
+        // Unity сам уничтожит все объекты при загрузке новой сцены
         
-        // Ждем один кадр, чтобы уничтожение объектов завершилось
-        yield return null;
+        // Сбрасываем флаг перед загрузкой сцены
+        isLoadingScene = false;
         
-        // Загружаем по имени - это гарантирует перезагрузку
+        // Загружаем по имени
         Debug.Log($"Loading scene by name: {sceneName}");
         SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
     }
@@ -1085,8 +1131,9 @@ public class GameManager : MonoBehaviour
         
         Debug.Log("Cleaning up before scene reload...");
         
-        // Останавливаем все корутины
-        StopAllCoroutines();
+        // НЕ останавливаем корутины здесь, так как это остановит корутину загрузки сцены!
+        // StopAllCoroutines(); // УБРАНО - останавливает корутину загрузки сцены!
+        // При загрузке новой сцены Unity автоматически остановит все корутины
         
         // Уничтожаем все puzzle pieces
         if (puzzlePieces != null)

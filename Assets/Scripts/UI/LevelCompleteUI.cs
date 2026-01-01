@@ -68,61 +68,24 @@ public class LevelCompleteUI : MonoBehaviour
         if (isAnimating) return;
         
         isAnimating = true;
-        StartCoroutine(AnimateCoinsAndLoadScene());
-    }
-    
-    private IEnumerator AnimateCoinsAndLoadScene()
-    {
-        if (coinPrefab != null && coinSpawnPoint != null)
+        
+        // Отключаем кнопку, чтобы предотвратить повторные нажатия
+        if (nextButton != null)
         {
-            List<GameObject> coins = new List<GameObject>();
-            
-            // Создаем монетки
-            for (int i = 0; i < coinsToSpawn; i++)
-            {
-                Vector3 spawnPos = coinSpawnPoint.position;
-                spawnPos += Random.insideUnitSphere * 0.2f; // Небольшое разброс
-                spawnPos.z = 0;
-                
-                GameObject coin = Instantiate(coinPrefab, spawnPos, Quaternion.identity, transform);
-                coins.Add(coin);
-                
-                // Анимируем монетку к цели
-                MoneyAnimation moneyAnim = coin.GetComponent<MoneyAnimation>();
-                if (moneyAnim == null)
-                {
-                    moneyAnim = coin.AddComponent<MoneyAnimation>();
-                }
-                
-                moneyAnim.Initialize(moneyTargetPosition);
-                moneyAnim.AnimateToTarget();
-                
-                yield return new WaitForSeconds(coinSpawnDelay);
-            }
-            
-            // Ждем завершения анимаций
-            yield return new WaitForSeconds(coinAnimationDuration);
-            
-            // Начисляем деньги
-            if (moneyManager != null)
-            {
-                moneyManager.AddMoney(coinsToSpawn);
-            }
-            
-            // Удаляем монетки
-            foreach (GameObject coin in coins)
-            {
-                if (coin != null)
-                {
-                    Destroy(coin);
-                }
-            }
+            nextButton.interactable = false;
         }
         
-        // ВАЖНО: Перезагружаем текущую сцену через GameManager
+        // Скрываем панель сразу, чтобы не мешать загрузке
+        if (levelCompletePanel != null)
+        {
+            levelCompletePanel.SetActive(false);
+        }
+        
+        // Сразу вызываем загрузку сцены через GameManager
+        // GameManager сам обработает анимацию монет и начисление денег
         if (gameManager != null)
         {
-            Debug.Log($"Reloading current scene with animation. Current scene index: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex}");
+            Debug.Log($"Loading next scene. Current scene index: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex}");
             gameManager.ReloadCurrentSceneWithAnimation();
         }
         else
@@ -132,8 +95,6 @@ public class LevelCompleteUI : MonoBehaviour
             string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
             UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
         }
-        
-        isAnimating = false;
     }
 }
 
