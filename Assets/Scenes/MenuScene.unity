@@ -402,6 +402,12 @@ MonoBehaviour:
   - name: pes
     sprite: {fileID: -652139845, guid: c9ac4570172241048b1f39d07da9432c, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/pes.png
+  - name: Group158
+    sprite: {fileID: -1796511635, guid: 8cb5545f6a8c1464aabb9753df73932e, type: 3}
+    addressableKey: Assets/Sprites/UI/LevelImages/Group 158.png
+  - name: Group179
+    sprite: {fileID: 1497195887, guid: e246af0f41ea00144b6dc093008f8be8, type: 3}
+    addressableKey: Assets/Sprites/UI/LevelImages/Group 179.png
   cardsPerImage: 25
 --- !u!4 &318400738
 Transform:
@@ -1826,7 +1832,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -33.54001, y: -21.19}
+  m_AnchoredPosition: {x: -33.54004, y: -21.189941}
   m_SizeDelta: {x: 160, y: 160}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &1550027381
