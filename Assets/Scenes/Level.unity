@@ -3927,7 +3927,9 @@ MonoBehaviour:
   levelCompleteClip: {fileID: 8300000, guid: d8af856c68c7211419d952aa547853d4, type: 3}
   connectionClip: {fileID: 8300000, guid: 5ebd81486d06b8e4197bb5c5e808694e, type: 3}
   coinClip: {fileID: 8300000, guid: ee3854df011df9c4aadc99df36a4b511, type: 3}
-  volume: 1
+  backgroundMusicClip: {fileID: 8300000, guid: 0a45a14e0298cef47b36dca010c38dc7, type: 3}
+  sfxVolume: 1
+  musicVolume: 1
 --- !u!4 &1745270780
 Transform:
   m_ObjectHideFlags: 0
@@ -4157,8 +4159,8 @@ MonoBehaviour:
   cardSpacing: 0
   cardSpan: -0.01
   cardHeight: -0.01
-  spriteBaseWidth: 3.6
-  colliderEffectiveWidth: 3.6
+  spriteBaseWidth: 3.68
+  colliderEffectiveWidth: 3.68
   deckPosition: {x: 5, y: -5}
   moneyTargetPosition: {x: -8, y: 4}
   dealDelay: 0.1

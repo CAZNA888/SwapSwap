@@ -139,9 +139,9 @@ TextureImporter:
       name: Group 277_0
       rect:
         serializedVersion: 2
-        x: 79
+        x: 72
         y: 1
-        width: 355
+        width: 368
         height: 511
       alignment: 0
       pivot: {x: 0, y: 0}
