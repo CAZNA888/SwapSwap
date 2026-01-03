@@ -27,6 +27,12 @@ public class GameManager : MonoBehaviour
     [Tooltip("Вертикальное расстояние между карточками (высота)")]
     public float cardHeight = 0.1f;
     
+    [Header("Collider Settings")]
+    [Tooltip("Базовая ширина спрайта карточки в единицах Unity (обычно 3.68 для спрайта 368×512 при Pixels Per Unit = 100)")]
+    public float spriteBaseWidth = 3.68f;
+    [Tooltip("Эффективная ширина коллайдера в единицах Unity (обычно 3.6 для учета прозрачных краев спрайта)")]
+    public float colliderEffectiveWidth = 3.6f;
+    
     [Header("Positions")]
     public Vector2 deckPosition = new Vector2(5f, -5f);
     public Vector2 moneyTargetPosition = new Vector2(-8f, 4f);
@@ -516,10 +522,10 @@ public class GameManager : MonoBehaviour
             
             // ВАЖНО: Размер коллайдера должен быть установлен в базовый размер спрайта (до масштабирования)
             // После масштабирования через SetCardSize() коллайдер автоматически масштабируется вместе с transform
-            // Корректируем ширину коллайдера: используем 3.6 вместо 3.68 для точного соответствия визуальному размеру
+            // Корректируем ширину коллайдера: используем colliderEffectiveWidth вместо spriteBaseWidth для точного соответствия визуальному размеру
             // (спрайт может иметь прозрачные края, поэтому визуальный размер меньше bounds.size)
             Vector2 baseColliderSize = cardBackSprite != null ? new Vector2(
-                cardBackSprite.bounds.size.x * (3.6f / 3.68f), // Корректируем ширину: 3.6 вместо 3.68
+                cardBackSprite.bounds.size.x * (colliderEffectiveWidth / spriteBaseWidth), // Корректируем ширину коллайдера
                 cardBackSprite.bounds.size.y
             ) : cardSize; // Fallback если нет спрайта
             

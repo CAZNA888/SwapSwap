@@ -3530,12 +3530,12 @@ MonoBehaviour:
   - name: Group299
     sprite: {fileID: 1361955581, guid: a61a4403113de2f4682047df8d06f72f, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 299.png
-  startGridSize: 8
-  gridSizeIncreasePeriod: 10
+  startGridSize: 2
+  gridSizeIncreasePeriod: 25
   maxGridSize: 8
-  difficultLevelPeriod: 5
+  difficultLevelPeriod: 10
   difficultLevelUIObject: {fileID: 1014544676}
-  difficultLevelDisplayDuration: 5
+  difficultLevelDisplayDuration: 10
 --- !u!4 &1733133784
 Transform:
   m_ObjectHideFlags: 0
@@ -4157,6 +4157,8 @@ MonoBehaviour:
   cardSpacing: 0
   cardSpan: -0.01
   cardHeight: -0.01
+  spriteBaseWidth: 3.6
+  colliderEffectiveWidth: 3.6
   deckPosition: {x: 5, y: -5}
   moneyTargetPosition: {x: -8, y: 4}
   dealDelay: 0.1
