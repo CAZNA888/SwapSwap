@@ -4150,8 +4150,8 @@ MonoBehaviour:
   sourceImage: {fileID: 0}
   cardBackSprite: {fileID: 1662436762, guid: 5b427e9ff1fb6e3459778285b195dd6c, type: 3}
   borderSprite: {fileID: -1932661072, guid: 05549dc17bdcfe34a8b67df5d14dd1cb, type: 3}
-  gridRows: 3
-  gridCols: 3
+  gridRows: 8
+  gridCols: 8
   fieldWidth: 8
   fieldHeight: 12
   cardSpacing: 0

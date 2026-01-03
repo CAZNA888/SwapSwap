@@ -166,7 +166,12 @@ public class LevelManager : MonoBehaviour
             gridSize += 1; // Дополнительное увеличение для сложного уровня
         }
         
-        return Mathf.Min(gridSize, maxGridSize);
+        int finalSize = Mathf.Min(gridSize, maxGridSize);
+        
+        // Логирование для диагностики
+        Debug.Log($"LevelManager.CalculateGridSize: level={level}, baseSize={baseSize}, increase={increase} (level/{gridSizeIncreasePeriod}), gridSize={gridSize}, isDifficult={IsDifficultLevel(level)}, finalSize={finalSize} (max={maxGridSize})");
+        
+        return finalSize;
     }
     
     /// <summary>

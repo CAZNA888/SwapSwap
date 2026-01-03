@@ -139,10 +139,10 @@ TextureImporter:
       name: gora_0
       rect:
         serializedVersion: 2
-        x: 128
+        x: 64
         y: 0
-        width: 768
-        height: 1024
+        width: 384
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -150,7 +150,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 4c853bef7b0754d44bf9c105ac56389d
+      spriteID: c8751eedd2d1d2b4ba2cdb49979b0916
       internalID: -532509571
       vertices: []
       indices: 

@@ -185,6 +185,34 @@ public class GameManager : MonoBehaviour
             return;
         }
         
+        // Инициализация LevelManager ПЕРЕД инициализацией других компонентов
+        levelManager = LevelManager.Instance;
+        if (levelManager != null)
+        {
+            Debug.Log("GameManager: LevelManager found");
+            // Получаем размерность сетки из LevelManager
+            int calculatedGridSize = levelManager.CalculateGridSize();
+            // ВСЕГДА используем значения из LevelManager, независимо от значений в инспекторе
+            // gridRows и gridCols всегда равны друг другу
+            gridRows = calculatedGridSize;
+            gridCols = calculatedGridSize;
+            
+            Debug.Log($"LevelManager: {levelManager.GetLevelInfo()}");
+            Debug.Log($"GameManager: Grid size set to {gridRows}x{gridCols} from LevelManager");
+        }
+        else
+        {
+            Debug.LogWarning("GameManager: LevelManager not found! Using default values.");
+            if (gridRows == 0) gridRows = 3;
+            if (gridCols == 0) gridCols = 3;
+            // Убеждаемся, что они равны
+            gridRows = gridCols = Mathf.Max(gridRows, gridCols);
+        }
+        
+        // Финальная проверка: gridRows и gridCols всегда должны быть равны
+        gridCols = gridRows;
+        Debug.Log($"GameManager: Final grid size - Rows: {gridRows}, Cols: {gridCols} (must be equal)");
+        
         // Инициализация всех компонентов
         puzzleGrid = GetComponent<PuzzleGrid>();
         if (puzzleGrid == null)
@@ -289,25 +317,6 @@ public class GameManager : MonoBehaviour
         else
         {
             Debug.Log("GameManager: ConfettiEffect found");
-        }
-        
-        // Инициализация LevelManager
-        levelManager = LevelManager.Instance;
-        if (levelManager != null)
-        {
-            Debug.Log("GameManager: LevelManager found");
-            // Получаем размерность сетки из LevelManager
-            int calculatedGridSize = levelManager.CalculateGridSize();
-            if (gridRows == 0) gridRows = calculatedGridSize;
-            if (gridCols == 0) gridCols = calculatedGridSize;
-            
-            Debug.Log($"LevelManager: {levelManager.GetLevelInfo()}");
-        }
-        else
-        {
-            Debug.LogWarning("GameManager: LevelManager not found! Using default values.");
-            if (gridRows == 0) gridRows = 3;
-            if (gridCols == 0) gridCols = 3;
         }
         
         occupiedCells = new Dictionary<Vector2Int, PuzzlePiece>();

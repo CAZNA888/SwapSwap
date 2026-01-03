@@ -139,10 +139,10 @@ TextureImporter:
       name: cat_0
       rect:
         serializedVersion: 2
-        x: 128
+        x: 64
         y: 0
-        width: 768
-        height: 1024
+        width: 384
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}

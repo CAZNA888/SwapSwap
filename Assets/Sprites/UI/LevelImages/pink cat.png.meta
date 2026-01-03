@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: ca72e5d2fb9e9da429c599681e0a701f
+guid: 1bf33c9361c183b48bdfb9b61c04d9fa
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -136,7 +136,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: scorp_0
+      name: pink cat_0
       rect:
         serializedVersion: 2
         x: 64
@@ -150,8 +150,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1e87a282a5ed71048979a91f39003bb8
-      internalID: 56795684
+      spriteID: ff79cc6fd6d352a4897f730af49fe14c
+      internalID: -1841428023
       vertices: []
       indices: 
       edges: []
@@ -167,7 +167,7 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      scorp_0: 56795684
+      pink cat_0: -1841428023
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
