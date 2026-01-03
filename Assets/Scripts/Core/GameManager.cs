@@ -72,6 +72,7 @@ public class GameManager : MonoBehaviour
     private List<Sprite> slicedSprites;
     private bool isGameComplete = false;
     private bool isLoadingScene = false; // Флаг для предотвращения повторных вызовов
+    private Vector3 originalCardScale = Vector3.one; // Store original card scale (all cards have same size on same level)
     
     void Awake()
     {
@@ -548,6 +549,13 @@ public class GameManager : MonoBehaviour
             // Устанавливаем размер карточки - это масштабирует весь префаб (включая рамки)
             piece.SetCardSize(cardSize);
             
+            // Store original scale from first card (all cards have same size on same level)
+            if (i == 0)
+            {
+                originalCardScale = piece.transform.localScale;
+                Debug.Log($"GameManager: Stored original card scale: {originalCardScale}");
+            }
+            
             // Устанавливаем спрайт обратной стороны
             SpriteRenderer sr = pieceObj.GetComponent<SpriteRenderer>();
             if (sr != null)
@@ -893,6 +901,12 @@ public class GameManager : MonoBehaviour
             Vector2 worldPos = puzzleGrid.GetWorldPosition(correctRow, correctCol);
             piece.transform.position = new Vector3(worldPos.x, worldPos.y, 0f);
             piece.SetPosition(correctRow, correctCol);
+            
+            // Restore original scale (all cards must be brought to their starting size)
+            if (piece != null && piece.transform != null)
+            {
+                piece.transform.localScale = originalCardScale;
+            }
             
             // Обновляем ячейки
             if (currentCell != null)

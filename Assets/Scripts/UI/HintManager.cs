@@ -9,7 +9,7 @@ public class HintManager : MonoBehaviour
     public GameManager gameManager;
     
     [Header("Animation Settings")]
-    public float hintScale = 1.2f; // Scale increase for hint animation
+    public float hintScale = 1.05f; // 5% increase (1.05 = 105% of original)
     public float hintDuration = 0.5f; // Duration of one pulse
     public int pulseCount = 3; // Number of pulses
     
@@ -762,7 +762,8 @@ public class HintManager : MonoBehaviour
             
             if (piece != null && piece.transform != null)
             {
-                piece.transform.localScale = Vector3.one;
+                // DON'T reset scale - the animation's OnComplete will restore original scale
+                // Just restore sorting orders
                 
                 // Восстанавливаем sortingOrder карточки
                 if (originalCardSortingOrders.ContainsKey(piece))
@@ -847,7 +848,8 @@ public class HintManager : MonoBehaviour
             PuzzlePiece piece = kvp.Key;
             if (piece != null && piece.transform != null)
             {
-                piece.transform.localScale = Vector3.one;
+                // DON'T reset scale - the animation's OnComplete will restore original scale
+                // Just restore sorting orders
                 
                 // Восстанавливаем sortingOrder карточки
                 if (originalCardSortingOrders.ContainsKey(piece))

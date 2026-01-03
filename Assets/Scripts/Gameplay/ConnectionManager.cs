@@ -12,7 +12,7 @@ public class ConnectionManager : MonoBehaviour
     private AudioManager audioManager;
     
     [Header("Connection Animation")]
-    public float scaleIncrease = 0.1f; // 10% increase (more spectacular)
+    public float scaleIncrease = 0.05f; // 5% increase (same as hint animation)
     public float animationDuration = 0.3f;
     public float delayAfterMovement = 0.1f; // Delay before scale animation starts
     
@@ -325,9 +325,10 @@ public class ConnectionManager : MonoBehaviour
         GameObject groupContainer = new GameObject("GroupContainer_Temp");
         groupContainer.transform.position = groupCenter;
         
-        // Store original parent, position, and sortingOrder for each piece
+        // Store original parent, position, scale, and sortingOrder for each piece
         Dictionary<PuzzlePiece, Transform> originalParents = new Dictionary<PuzzlePiece, Transform>();
         Dictionary<PuzzlePiece, Vector3> localPositions = new Dictionary<PuzzlePiece, Vector3>();
+        Dictionary<PuzzlePiece, Vector3> originalScales = new Dictionary<PuzzlePiece, Vector3>(); // Store original scales
         Dictionary<PuzzlePiece, int> originalCardSortingOrders = new Dictionary<PuzzlePiece, int>();
         Dictionary<PuzzlePiece, int> originalBorderSortingOrders = new Dictionary<PuzzlePiece, int>();
         
@@ -341,6 +342,9 @@ public class ConnectionManager : MonoBehaviour
             Vector3 targetPos = targetPositions[i];
             
             originalParents[piece] = piece.transform.parent;
+            
+            // Store original scale BEFORE moving to container
+            originalScales[piece] = piece.transform.localScale;
             
             // Store and set card sorting order
             SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
@@ -395,6 +399,12 @@ public class ConnectionManager : MonoBehaviour
                     piece.transform.SetParent(originalParents[piece]);
                     piece.transform.position = worldPos;
                     
+                    // Restore original scale (not Vector3.one!)
+                    if (originalScales.ContainsKey(piece))
+                    {
+                        piece.transform.localScale = originalScales[piece];
+                    }
+                    
                     // Restore card sorting order
                     if (originalCardSortingOrders.ContainsKey(piece))
                     {
@@ -433,6 +443,12 @@ public class ConnectionManager : MonoBehaviour
                     Vector3 worldPos = groupContainer.transform.TransformPoint(localPositions[piece]);
                     piece.transform.SetParent(originalParents[piece]);
                     piece.transform.position = worldPos;
+                    
+                    // Restore original scale (not Vector3.one!)
+                    if (originalScales.ContainsKey(piece))
+                    {
+                        piece.transform.localScale = originalScales[piece];
+                    }
                     
                     // Restore card sorting order
                     if (originalCardSortingOrders.ContainsKey(piece))
@@ -570,11 +586,8 @@ public class ConnectionManager : MonoBehaviour
                 kvp.Value.Kill();
             }
             
-            // Reset scale to original
-            if (kvp.Key != null && kvp.Key.transform != null)
-            {
-                kvp.Key.transform.localScale = Vector3.one;
-            }
+            // Don't reset scale to Vector3.one - cards have different sizes
+            // The animation's OnComplete will restore original scale
         }
         
         activeScaleTweens.Clear();
