@@ -21,6 +21,12 @@ public class GameManager : MonoBehaviour
     public float fieldHeight = 10f;
     public float cardSpacing = 0.1f;
     
+    [Header("Settings")]
+    [Tooltip("Горизонтальное расстояние между карточками (ширина)")]
+    public float cardSpan = 0.1f;
+    [Tooltip("Вертикальное расстояние между карточками (высота)")]
+    public float cardHeight = 0.1f;
+    
     [Header("Positions")]
     public Vector2 deckPosition = new Vector2(5f, -5f);
     public Vector2 moneyTargetPosition = new Vector2(-8f, 4f);
@@ -191,7 +197,7 @@ public class GameManager : MonoBehaviour
             Debug.Log("GameManager: PuzzleGrid found");
         }
         
-        puzzleGrid.Initialize(gridRows, gridCols, fieldWidth, fieldHeight, cardSpacing);
+        puzzleGrid.Initialize(gridRows, gridCols, fieldWidth, fieldHeight, cardSpan, cardHeight);
         puzzleGrid.deckPosition = deckPosition;
         puzzleGrid.CreateGridCells(); // Создаем ячейки с коллайдерами
         Debug.Log($"GameManager: PuzzleGrid initialized with {gridRows}x{gridCols} grid");
@@ -413,19 +419,54 @@ public class GameManager : MonoBehaviour
         puzzlePieces.Clear();
         occupiedCells.Clear();
         
-        // Получаем размер карточки из CardBack спрайта (соотношение 3:4)
-        Vector2 cardSize;
+        // ГИБРИДНОЕ РЕШЕНИЕ: Размер из сетки с сохранением соотношения сторон карточки
+        // Получаем размер ячейки из сетки (зависит от gridRows и gridCols)
+        Vector2 cellSize = puzzleGrid.GetCardSize();
+        
+        // Получаем соотношение сторон из CardBack (если есть)
+        float cardAspectRatio = 1f; // По умолчанию квадрат
         if (cardBackSprite != null)
         {
-            cardSize = new Vector2(
+            Vector2 cardBackSize = new Vector2(
                 cardBackSprite.bounds.size.x,
                 cardBackSprite.bounds.size.y
             );
+            cardAspectRatio = cardBackSize.x / cardBackSize.y;
+        }
+        
+        // Проверяем, есть ли отрицательный spacing (для перекрытия карточек)
+        bool hasNegativeSpacing = (cardSpan < 0 || cardHeight < 0);
+        
+        // Вычисляем размер карточки с сохранением соотношения сторон
+        Vector2 cardSize;
+        
+        if (hasNegativeSpacing)
+        {
+            // При отрицательном spacing используем размер из сетки напрямую
+            // (он уже учитывает отрицательный spacing и делает карточки больше)
+            cardSize = cellSize;
         }
         else
         {
-            cardSize = puzzleGrid.GetCardSize();
+            // При положительном spacing ограничиваем размером ячейки с сохранением aspect ratio
+            float cellAspectRatio = cellSize.x / cellSize.y;
+            
+            if (cardAspectRatio > cellAspectRatio)
+            {
+                // Ширина ограничивает - используем ширину ячейки
+                cardSize = new Vector2(cellSize.x, cellSize.x / cardAspectRatio);
+            }
+            else
+            {
+                // Высота ограничивает - используем высоту ячейки
+                cardSize = new Vector2(cellSize.y * cardAspectRatio, cellSize.y);
+            }
         }
+        
+        Debug.Log($"GameManager: Grid {gridRows}x{gridCols} - Cell size: {cellSize.x:F2}x{cellSize.y:F2}, Card size: {cardSize.x:F2}x{cardSize.y:F2}, Aspect ratio: {cardAspectRatio:F2}, Negative spacing: {hasNegativeSpacing} (cardSpan={cardSpan:F2}, cardHeight={cardHeight:F2})");
+        
+        // Передаем реальный размер карточки в PuzzleGrid для правильного позиционирования
+        puzzleGrid.SetActualCardSize(cardSize);
         
         for (int i = 0; i < gridRows * gridCols; i++)
         {
@@ -435,12 +476,12 @@ public class GameManager : MonoBehaviour
             {
                 pieceObj = Instantiate(puzzlePiecePrefab);
                 
-                // Если есть PuzzlePieceSetup, обновляем размер из CardBack
+                // Если есть PuzzlePieceSetup, обновляем размер из CardBack (для внутренней логики префаба)
                 PuzzlePieceSetup setup = pieceObj.GetComponent<PuzzlePieceSetup>();
                 if (setup != null && cardBackSprite != null)
                 {
                     setup.UpdateSizeFromCardBack(cardBackSprite);
-                    cardSize = setup.cardSize; // Обновляем cardSize из префаба
+                    // НЕ переопределяем cardSize из префаба - используем наш расчет
                 }
             }
             else
@@ -481,12 +522,11 @@ public class GameManager : MonoBehaviour
             // Инициализируем карточку
             Sprite frontSprite = slicedSprites[i];
             
-            // Масштабируем frontSprite под размер карточки (из CardBack)
-            Sprite scaledFrontSprite = ScaleSpriteToSize(frontSprite, cardSize);
+            // НЕ масштабируем спрайт - используем оригинальный
+            // Размер будет применен через SetCardSize к transform префаба (масштабирует весь префаб)
+            piece.Initialize(i, frontSprite, cardBackSprite, puzzleGrid);
             
-            piece.Initialize(i, scaledFrontSprite, cardBackSprite, puzzleGrid);
-            
-            // Устанавливаем размер карточки под размер CardBack
+            // Устанавливаем размер карточки - это масштабирует весь префаб (включая рамки)
             piece.SetCardSize(cardSize);
             
             // Устанавливаем спрайт обратной стороны
@@ -1297,38 +1337,6 @@ public class GameManager : MonoBehaviour
         int currentIndex = SceneManager.GetActiveScene().buildIndex;
         Debug.Log($"Reloading scene with animation. Current index: {currentIndex}");
         LoadSceneByIndex(currentIndex);
-    }
-    
-    // Масштабирует спрайт до нужного размера
-    private Sprite ScaleSpriteToSize(Sprite sourceSprite, Vector2 targetSize)
-    {
-        if (sourceSprite == null) return null;
-        
-        // Получаем текущий размер спрайта в мировых единицах
-        Vector2 currentSize = sourceSprite.bounds.size;
-        
-        // Вычисляем масштаб
-        float scaleX = targetSize.x / currentSize.x;
-        float scaleY = targetSize.y / currentSize.y;
-        
-        // Вычисляем новый размер текстуры в пикселях
-        int newWidth = Mathf.RoundToInt(sourceSprite.texture.width * scaleX);
-        int newHeight = Mathf.RoundToInt(sourceSprite.texture.height * scaleY);
-        
-        // Масштабируем текстуру
-        Texture2D scaledTexture = ScaleTexture(GetReadableTexture(sourceSprite.texture), newWidth, newHeight);
-        
-        // Создаем новый спрайт
-        Sprite scaledSprite = Sprite.Create(
-            scaledTexture,
-            new Rect(0, 0, scaledTexture.width, scaledTexture.height),
-            new Vector2(0.5f, 0.5f),
-            sourceSprite.pixelsPerUnit
-        );
-        
-        scaledSprite.name = sourceSprite.name + "_Scaled";
-        
-        return scaledSprite;
     }
     
     // Масштабирует текстуру с использованием высококачественного алгоритма

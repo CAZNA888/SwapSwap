@@ -4152,9 +4152,11 @@ MonoBehaviour:
   borderSprite: {fileID: -1932661072, guid: 05549dc17bdcfe34a8b67df5d14dd1cb, type: 3}
   gridRows: 3
   gridCols: 3
-  fieldWidth: 11.01
-  fieldHeight: 15.09
+  fieldWidth: 10.5
+  fieldHeight: 14
   cardSpacing: 0
+  cardSpan: -0.2
+  cardHeight: -0.05
   deckPosition: {x: 5, y: -5}
   moneyTargetPosition: {x: -8, y: 4}
   dealDelay: 0.1

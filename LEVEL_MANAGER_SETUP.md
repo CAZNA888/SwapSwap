@@ -426,3 +426,4 @@ int imageIndex = currentLevel % levelImages.Count; // Текущая форму�
 **Дата создания:** 2024  
 **Автор:** AI Assistant
 
+

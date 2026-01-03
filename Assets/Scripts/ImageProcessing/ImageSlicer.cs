@@ -83,12 +83,22 @@ public class ImageSlicer : MonoBehaviour
                 sliceTexture.wrapMode = TextureWrapMode.Clamp;
                 sliceTexture.Apply();
                 
-                // Создаем спрайт
+                // ВАЖНО: Вычисляем pixelsPerUnit так, чтобы кусочек имел тот же размер в мировых единицах, что и исходный спрайт
+                // Размер исходного спрайта в мировых единицах
+                Vector2 sourceSizeInUnits = sourceSprite.bounds.size;
+                
+                // Вычисляем новый pixelsPerUnit для кусочка
+                // Используем среднее значение для более точного результата
+                float newPixelsPerUnitX = currentSliceWidth / sourceSizeInUnits.x;
+                float newPixelsPerUnitY = currentSliceHeight / sourceSizeInUnits.y;
+                float newPixelsPerUnit = (newPixelsPerUnitX + newPixelsPerUnitY) / 2f;
+                
+                // Создаем спрайт с правильным pixelsPerUnit, чтобы он имел тот же размер в мировых единицах
                 Sprite sliceSprite = Sprite.Create(
                     sliceTexture,
                     new Rect(0, 0, currentSliceWidth, currentSliceHeight),
                     new Vector2(0.5f, 0.5f), // Pivot в центре
-                    sourceSprite.pixelsPerUnit
+                    newPixelsPerUnit
                 );
                 
                 sliceSprite.name = $"Slice_{row}_{col}_Index_{row * cols + col}";

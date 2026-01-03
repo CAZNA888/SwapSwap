@@ -99,18 +99,19 @@ public class PuzzlePiece : MonoBehaviour
         return originalPos.x == currentGridRow && originalPos.y == currentGridCol;
     }
     
-    // Устанавливает размер спрайта под размер CardBack
+    // Устанавливает размер карточки через масштабирование префаба
     public void SetCardSize(Vector2 targetSize)
     {
-        if (spriteRenderer != null && spriteRenderer.sprite != null)
+        if (spriteRenderer != null && backSprite != null)
         {
-            // Масштабируем transform чтобы спрайт был нужного размера
-            Sprite sprite = spriteRenderer.sprite;
-            Vector2 spriteSize = sprite.bounds.size;
+            // Используем размер backSprite (CardBack) как базовый размер префаба
+            Vector2 baseSize = backSprite.bounds.size;
             
-            float scaleX = targetSize.x / spriteSize.x;
-            float scaleY = targetSize.y / spriteSize.y;
+            // Вычисляем масштаб для всего префаба
+            float scaleX = targetSize.x / baseSize.x;
+            float scaleY = targetSize.y / baseSize.y;
             
+            // Применяем масштаб ко всему префабу (включая дочерние элементы - рамки)
             transform.localScale = new Vector3(scaleX, scaleY, 1f);
         }
     }

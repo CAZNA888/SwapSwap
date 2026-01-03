@@ -8,7 +8,13 @@ public class PuzzleGrid : MonoBehaviour
     public int gridCols = 3;
     public float fieldWidth = 10f;
     public float fieldHeight = 10f;
-    public float cardSpacing = 0.1f;
+    public float cardSpacing = 0.1f; // Оставляем для обратной совместимости
+    
+    [Header("Card Spacing")]
+    [Tooltip("Горизонтальное расстояние между карточками (ширина)")]
+    public float cardSpan = 0.1f;
+    [Tooltip("Вертикальное расстояние между карточками (высота)")]
+    public float cardHeight = 0.1f;
     
     [Header("Deck Position")]
     public Vector2 deckPosition = new Vector2(5f, -5f);
@@ -17,6 +23,7 @@ public class PuzzleGrid : MonoBehaviour
     public GameObject gridCellPrefab; // Опциональный префаб для ячейки
     
     private Vector2 cardSize;
+    private Vector2 actualCardSize; // Реальный размер карточки после учета aspect ratio
     private Vector2 fieldStartPosition; // Левый верхний угол поля
     private Dictionary<Vector2Int, GridCell> gridCells = new Dictionary<Vector2Int, GridCell>();
     
@@ -26,13 +33,16 @@ public class PuzzleGrid : MonoBehaviour
         CalculateFieldStartPosition();
     }
     
-    public void Initialize(int rows, int cols, float width, float height, float spacing)
+    public void Initialize(int rows, int cols, float width, float height, float span, float heightSpacing)
     {
         gridRows = rows;
         gridCols = cols;
         fieldWidth = width;
         fieldHeight = height;
-        cardSpacing = spacing;
+        cardSpan = span;
+        cardHeight = heightSpacing;
+        
+        Debug.Log($"PuzzleGrid.Initialize: cardSpan={cardSpan:F2}, cardHeight={cardHeight:F2}");
         
         CalculateCardSize();
         CalculateFieldStartPosition();
@@ -40,9 +50,9 @@ public class PuzzleGrid : MonoBehaviour
     
     private void CalculateCardSize()
     {
-        float cardWidth = (fieldWidth / gridCols) - cardSpacing;
-        float cardHeight = (fieldHeight / gridRows) - cardSpacing;
-        cardSize = new Vector2(cardWidth, cardHeight);
+        float cardWidth = (fieldWidth / gridCols) - cardSpan;
+        float cardHeightValue = (fieldHeight / gridRows) - cardHeight;
+        cardSize = new Vector2(cardWidth, cardHeightValue);
     }
     
     private void CalculateFieldStartPosition()
@@ -71,20 +81,37 @@ public class PuzzleGrid : MonoBehaviour
         return GetCardSize();
     }
     
+    // Устанавливает реальный размер карточки (после учета aspect ratio)
+    public void SetActualCardSize(Vector2 actualSize)
+    {
+        actualCardSize = actualSize;
+        Debug.Log($"PuzzleGrid.SetActualCardSize: actualCardSize={actualSize.x:F2}x{actualSize.y:F2}, calculated cardSize={cardSize.x:F2}x{cardSize.y:F2}");
+    }
+    
     public Vector2 GetWorldPosition(int row, int col)
     {
+        // Используем реальный размер карточки если он установлен, иначе используем расчетный
+        Vector2 sizeToUse = actualCardSize != Vector2.zero ? actualCardSize : cardSize;
+        
         // Расчет позиции от левого верхнего угла
-        float x = fieldStartPosition.x + (col * (cardSize.x + cardSpacing)) + (cardSize.x / 2f);
-        float y = fieldStartPosition.y - (row * (cardSize.y + cardSpacing)) - (cardSize.y / 2f);
+        // Используем реальный размер карточки + spacing для шага, чтобы карточки правильно позиционировались
+        float cellWidth = sizeToUse.x + cardSpan;
+        float cellHeight = sizeToUse.y + cardHeight;
+        
+        float x = fieldStartPosition.x + (col * cellWidth) + (sizeToUse.x / 2f);
+        float y = fieldStartPosition.y - (row * cellHeight) - (sizeToUse.y / 2f);
         return new Vector2(x, y);
     }
     
     public Vector2Int GetGridPosition(Vector2 worldPos)
     {
         // Обратное преобразование
+        // Используем реальный размер карточки если он установлен
+        Vector2 sizeToUse = actualCardSize != Vector2.zero ? actualCardSize : cardSize;
+        
         Vector2 localPos = worldPos - fieldStartPosition;
-        int col = Mathf.FloorToInt((localPos.x) / (cardSize.x + cardSpacing));
-        int row = Mathf.FloorToInt((fieldStartPosition.y - localPos.y) / (cardSize.y + cardSpacing));
+        int col = Mathf.FloorToInt((localPos.x) / (sizeToUse.x + cardSpan));
+        int row = Mathf.FloorToInt((fieldStartPosition.y - localPos.y) / (sizeToUse.y + cardHeight));
         
         // Ограничение границами
         col = Mathf.Clamp(col, 0, gridCols - 1);
@@ -202,7 +229,7 @@ public class PuzzleGrid : MonoBehaviour
                     cell = cellObj.AddComponent<GridCell>();
                 }
                 
-                Vector2 cellSize = new Vector2(cardSize.x + cardSpacing, cardSize.y + cardSpacing);
+                Vector2 cellSize = new Vector2(cardSize.x + cardSpan, cardSize.y + cardHeight);
                 cell.Initialize(row, col, this, cellSize);
                 
                 Vector2Int key = new Vector2Int(row, col);
