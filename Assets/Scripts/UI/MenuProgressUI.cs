@@ -211,6 +211,53 @@ public class MenuProgressUI : MonoBehaviour
         // Получаем новое количество открытых карточек после обновления
         int unlockedCount = menuManager.GetUnlockedCardsCount(imageIndex);
         
+        // ПРОВЕРЯЕМ: заполнена ли текущая картинка
+        bool isCurrentImageCompleted = menuManager.IsImageCompleted(imageIndex);
+        
+        if (isCurrentImageCompleted)
+        {
+            // Картинка заполнена - проверяем, есть ли следующая
+            int nextImageIndex = imageIndex + 1;
+            if (nextImageIndex < menuManager.menuImages.Count)
+            {
+                Debug.Log($"MenuProgressUI: Current image {imageIndex} is completed, switching to next image {nextImageIndex}");
+                
+                // Переключаемся на следующую картинку
+                // Убеждаемся, что уровень установлен на начало следующей картинки
+                int currentLevel = PlayerPrefs.GetInt("CurrentLevel", 0);
+                int targetLevel = nextImageIndex * menuManager.cardsPerImage;
+                
+                // Устанавливаем уровень только если он меньше целевого (чтобы не откатывать прогресс)
+                if (currentLevel < targetLevel)
+                {
+                    PlayerPrefs.SetInt("CurrentLevel", targetLevel);
+                    PlayerPrefs.Save();
+                }
+                
+                // Обновляем индекс картинки после установки уровня
+                int newImageIndex = menuManager.GetCurrentMenuImageIndex();
+                
+                // Сбрасываем сохраненные значения для новой картинки
+                PlayerPrefs.SetInt(LAST_IMAGE_INDEX_KEY, newImageIndex);
+                PlayerPrefs.SetInt(LAST_UNLOCKED_COUNT_KEY, 0);
+                PlayerPrefs.Save();
+                
+                // Закрываем все карточки перед загрузкой новой картинки
+                for (int i = 0; i < menuCards.Count; i++)
+                {
+                    menuCards[i].SetUnlocked(false);
+                }
+                
+                // Загружаем новую картинку
+                LoadCurrentMenuImage();
+                return;
+            }
+            else
+            {
+                Debug.Log($"MenuProgressUI: Current image {imageIndex} is completed, but no more images available");
+            }
+        }
+        
         if (shouldAnimate && unlockedCount > 0 && unlockedCount <= menuCards.Count)
         {
             Debug.Log($"MenuProgressUI: Will animate new card at index {unlockedCount - 1}");
@@ -333,7 +380,55 @@ public class MenuProgressUI : MonoBehaviour
         // Получаем новое количество открытых карточек после обновления
         int unlockedCount = menuManager.GetUnlockedCardsCount(imageIndex);
         
-        if (hasNewCard && unlockedCount > 0 && unlockedCount <= menuCards.Count)
+        // ПРОВЕРЯЕМ: заполнена ли текущая картинка
+        bool isCurrentImageCompleted = menuManager.IsImageCompleted(imageIndex);
+        
+        if (isCurrentImageCompleted)
+        {
+            // Картинка заполнена - проверяем, есть ли следующая
+            int nextImageIndex = imageIndex + 1;
+            if (nextImageIndex < menuManager.menuImages.Count)
+            {
+                Debug.Log($"MenuProgressUI: Current image {imageIndex} is completed, switching to next image {nextImageIndex}");
+                
+                // Переключаемся на следующую картинку
+                // Убеждаемся, что уровень установлен на начало следующей картинки
+                int currentLevel = PlayerPrefs.GetInt("CurrentLevel", 0);
+                int targetLevel = nextImageIndex * menuManager.cardsPerImage;
+                
+                // Устанавливаем уровень только если он меньше целевого (чтобы не откатывать прогресс)
+                if (currentLevel < targetLevel)
+                {
+                    PlayerPrefs.SetInt("CurrentLevel", targetLevel);
+                    PlayerPrefs.Save();
+                }
+                
+                // Обновляем индекс картинки после установки уровня
+                int newImageIndex = menuManager.GetCurrentMenuImageIndex();
+                
+                // Сбрасываем сохраненные значения для новой картинки
+                PlayerPrefs.SetInt(LAST_IMAGE_INDEX_KEY, newImageIndex);
+                PlayerPrefs.SetInt(LAST_UNLOCKED_COUNT_KEY, 0);
+                PlayerPrefs.Save();
+                
+                // Закрываем все карточки перед загрузкой новой картинки
+                for (int i = 0; i < menuCards.Count; i++)
+                {
+                    menuCards[i].SetUnlocked(false);
+                }
+                
+                // Загружаем новую картинку
+                LoadCurrentMenuImage();
+                return;
+            }
+            else
+            {
+                Debug.Log($"MenuProgressUI: Current image {imageIndex} is completed, but no more images available");
+                // Просто обновляем прогресс без анимации
+                UpdateProgress();
+            }
+        }
+        else if (hasNewCard && unlockedCount > 0 && unlockedCount <= menuCards.Count)
         {
             // Устанавливаем все карточки в правильное состояние, но последнюю оставляем закрытой
             UpdateProgress(skipLastCard: true);
@@ -347,9 +442,9 @@ public class MenuProgressUI : MonoBehaviour
             UpdateProgress();
         }
         
-        // Проверяем, нужно ли загрузить новую картинку
-        int newImageIndex = menuManager.GetCurrentMenuImageIndex();
-        if (newImageIndex != currentImageIndex)
+        // Проверяем, нужно ли загрузить новую картинку (на случай, если переключение произошло выше)
+        int finalImageIndex = menuManager.GetCurrentMenuImageIndex();
+        if (finalImageIndex != imageIndex)
         {
             LoadCurrentMenuImage();
         }

@@ -3535,7 +3535,7 @@ MonoBehaviour:
   maxGridSize: 8
   difficultLevelPeriod: 10
   difficultLevelUIObject: {fileID: 1014544676}
-  difficultLevelDisplayDuration: 10
+  difficultLevelDisplayDuration: 3
 --- !u!4 &1733133784
 Transform:
   m_ObjectHideFlags: 0

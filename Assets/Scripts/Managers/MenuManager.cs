@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TMPro;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -15,6 +16,10 @@ public class MenuManager : MonoBehaviour
     [Header("Settings")]
     [Tooltip("Количество карточек на одну картинку (по умолчанию 25 для сетки 5x5)")]
     public int cardsPerImage = 25;
+    
+    [Header("UI")]
+    [Tooltip("TextMeshProUGUI для отображения номера уровня (только цифры)")]
+    public TextMeshProUGUI levelText;
     
     private const string MENU_PROGRESS_KEY = "MenuProgress_";
     private string currentMenuSceneName;
@@ -50,6 +55,11 @@ public class MenuManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+    }
+    
+    void Start()
+    {
+        UpdateLevelDisplay();
     }
     
     void OnDestroy()
@@ -123,6 +133,18 @@ public class MenuManager : MonoBehaviour
     }
     
     /// <summary>
+    /// Обновляет отображение номера уровня
+    /// </summary>
+    public void UpdateLevelDisplay()
+    {
+        if (levelText != null)
+        {
+            int currentLevel = PlayerPrefs.GetInt("CurrentLevel", 0);
+            levelText.text = currentLevel.ToString();
+        }
+    }
+    
+    /// <summary>
     /// Обновляет прогресс меню на основе текущего уровня
     /// Вызывается при возврате из уровня
     /// </summary>
@@ -148,6 +170,9 @@ public class MenuManager : MonoBehaviour
             SetUnlockedCardsCount(imageIndex, unlockedCount);
             Debug.Log($"MenuManager: Updated progress for image {imageIndex}: {unlockedCount}/{cardsPerImage} cards unlocked");
         }
+        
+        // Обновляем отображение уровня
+        UpdateLevelDisplay();
     }
     
     /// <summary>

@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class AudioManager : MonoBehaviour
 {
@@ -23,11 +24,19 @@ public class AudioManager : MonoBehaviour
     [Range(0f, 1f)]
     public float musicVolume = 1f;
     
+    [Tooltip("Громкость фоновой музыки во время звуков (0 = полностью приглушена, 1 = полная громкость)")]
+    [Range(0f, 1f)]
+    public float musicVolumeDuringSFX = 0.3f;
+    
     private const string SFX_VOLUME_KEY = "SFXVolume";
     private const string MUSIC_VOLUME_KEY = "MusicVolume";
     
     private AudioSource sfxAudioSource; // Для звуков
     private AudioSource musicAudioSource; // Для фоновой музыки
+    
+    // Счетчик активных звуков для управления громкостью музыки
+    private int activeSoundsCount = 0;
+    private float originalMusicVolume; // Сохраняем оригинальную громкость музыки
     
     void Awake()
     {
@@ -86,6 +95,7 @@ public class AudioManager : MonoBehaviour
         if (musicAudioSource != null)
         {
             musicAudioSource.volume = musicVolume;
+            originalMusicVolume = musicVolume; // Сохраняем оригинальную громкость
         }
     }
     
@@ -107,7 +117,10 @@ public class AudioManager : MonoBehaviour
     public void SetMusicVolume(float volume)
     {
         musicVolume = Mathf.Clamp01(volume);
-        if (musicAudioSource != null)
+        originalMusicVolume = musicVolume; // Обновляем оригинальную громкость
+        
+        // Применяем громкость только если нет активных звуков
+        if (musicAudioSource != null && activeSoundsCount == 0)
         {
             musicAudioSource.volume = musicVolume;
         }
@@ -122,6 +135,7 @@ public class AudioManager : MonoBehaviour
         {
             musicAudioSource.clip = backgroundMusicClip;
             musicAudioSource.volume = musicVolume;
+            originalMusicVolume = musicVolume; // Сохраняем оригинальную громкость
             musicAudioSource.Play();
         }
     }
@@ -193,8 +207,59 @@ public class AudioManager : MonoBehaviour
     {
         if (clip != null && sfxAudioSource != null)
         {
+            // Увеличиваем счетчик активных звуков
+            OnSoundStart();
+            
+            // Воспроизводим звук
             sfxAudioSource.PlayOneShot(clip, sfxVolume);
+            
+            // Запускаем корутину для отслеживания окончания звука
+            StartCoroutine(WaitForSoundEnd(clip.length));
         }
+    }
+    
+    /// <summary>
+    /// Обрабатывает начало воспроизведения звука - приглушает музыку
+    /// </summary>
+    private void OnSoundStart()
+    {
+        activeSoundsCount++;
+        
+        // Если это первый звук, приглушаем музыку
+        if (activeSoundsCount == 1 && musicAudioSource != null && musicAudioSource.isPlaying)
+        {
+            // Сохраняем текущую громкость (на случай если она уже была изменена)
+            originalMusicVolume = musicAudioSource.volume;
+            
+            // Приглушаем музыку
+            float reducedVolume = originalMusicVolume * musicVolumeDuringSFX;
+            musicAudioSource.volume = reducedVolume;
+        }
+    }
+    
+    /// <summary>
+    /// Обрабатывает окончание воспроизведения звука - восстанавливает громкость музыки
+    /// </summary>
+    private void OnSoundEnd()
+    {
+        activeSoundsCount = Mathf.Max(0, activeSoundsCount - 1);
+        
+        // Если все звуки закончились, восстанавливаем нормальную громкость музыки
+        if (activeSoundsCount == 0 && musicAudioSource != null && musicAudioSource.isPlaying)
+        {
+            musicAudioSource.volume = originalMusicVolume;
+        }
+    }
+    
+    /// <summary>
+    /// Корутина, которая ждет окончания звука
+    /// </summary>
+    private IEnumerator WaitForSoundEnd(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        
+        // Уведомляем об окончании звука
+        OnSoundEnd();
     }
 }
 
