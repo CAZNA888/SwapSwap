@@ -62,6 +62,22 @@ public class PuzzleGrid : MonoBehaviour
         fieldStartPosition = new Vector2(-fieldWidth / 2f, fieldHeight / 2f);
     }
     
+    // Пересчитывает начальную позицию поля на основе реальных размеров карточек
+    private void RecalculateFieldStartPosition()
+    {
+        Vector2 sizeToUse = actualCardSize != Vector2.zero ? actualCardSize : cardSize;
+        // Общая ширина всех карточек: (размер + spacing) * количество - последний spacing
+        float totalWidth = (sizeToUse.x + cardSpan) * gridCols - cardSpan;
+        // Общая высота всех карточек: (размер + spacing) * количество - последний spacing
+        float totalHeight = (sizeToUse.y + cardHeight) * gridRows - cardHeight;
+        
+        // fieldStartPosition - это левый верхний угол (левый край первой карточки, верхний край первой карточки)
+        // Центрируем поле в (0,0), значит левый край = -totalWidth/2
+        fieldStartPosition = new Vector2(-totalWidth / 2f, totalHeight / 2f);
+        
+        Debug.Log($"PuzzleGrid.RecalculateFieldStartPosition: sizeToUse={sizeToUse.x:F2}x{sizeToUse.y:F2}, totalWidth={totalWidth:F2}, totalHeight={totalHeight:F2}, fieldStartPosition={fieldStartPosition}, cardSpan={cardSpan:F2}, cardHeight={cardHeight:F2}");
+    }
+    
     public Vector2 GetCardSize()
     {
         return cardSize;
@@ -85,6 +101,7 @@ public class PuzzleGrid : MonoBehaviour
     public void SetActualCardSize(Vector2 actualSize)
     {
         actualCardSize = actualSize;
+        RecalculateFieldStartPosition();
         Debug.Log($"PuzzleGrid.SetActualCardSize: actualCardSize={actualSize.x:F2}x{actualSize.y:F2}, calculated cardSize={cardSize.x:F2}x{cardSize.y:F2}");
     }
     
@@ -94,12 +111,24 @@ public class PuzzleGrid : MonoBehaviour
         Vector2 sizeToUse = actualCardSize != Vector2.zero ? actualCardSize : cardSize;
         
         // Расчет позиции от левого верхнего угла
-        // Используем реальный размер карточки + spacing для шага, чтобы карточки правильно позиционировались
+        // fieldStartPosition - это левый край первой карточки
+        // Для позиционирования центра: leftEdge + смещение по колонкам + половина ширины
+        // Шаг между карточками: cardWidth + spacing
         float cellWidth = sizeToUse.x + cardSpan;
         float cellHeight = sizeToUse.y + cardHeight;
         
+        // Позиция центра карточки: левый край + смещение по колонкам + половина ширины
         float x = fieldStartPosition.x + (col * cellWidth) + (sizeToUse.x / 2f);
         float y = fieldStartPosition.y - (row * cellHeight) - (sizeToUse.y / 2f);
+        
+        // Отладочная информация для первых двух карточек в первой строке
+        if (row == 0 && col <= 1)
+        {
+            float leftEdge = x - sizeToUse.x / 2f;
+            float rightEdge = x + sizeToUse.x / 2f;
+            Debug.Log($"GetWorldPosition(row={row}, col={col}): center=({x:F3}, {y:F3}), leftEdge={leftEdge:F3}, rightEdge={rightEdge:F3}, sizeToUse={sizeToUse.x:F3}, cellWidth={cellWidth:F3}, cardSpan={cardSpan:F3}, fieldStartPosition.x={fieldStartPosition.x:F3}");
+        }
+        
         return new Vector2(x, y);
     }
     

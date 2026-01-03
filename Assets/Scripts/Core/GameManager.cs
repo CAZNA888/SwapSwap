@@ -503,7 +503,17 @@ public class GameManager : MonoBehaviour
             {
                 collider = pieceObj.AddComponent<BoxCollider2D>();
             }
-            collider.size = cardSize;
+            
+            // ВАЖНО: Размер коллайдера должен быть установлен в базовый размер спрайта (до масштабирования)
+            // После масштабирования через SetCardSize() коллайдер автоматически масштабируется вместе с transform
+            // Корректируем ширину коллайдера: используем 3.6 вместо 3.68 для точного соответствия визуальному размеру
+            // (спрайт может иметь прозрачные края, поэтому визуальный размер меньше bounds.size)
+            Vector2 baseColliderSize = cardBackSprite != null ? new Vector2(
+                cardBackSprite.bounds.size.x * (3.6f / 3.68f), // Корректируем ширину: 3.6 вместо 3.68
+                cardBackSprite.bounds.size.y
+            ) : cardSize; // Fallback если нет спрайта
+            
+            collider.size = baseColliderSize;
             // Убеждаемся, что коллайдер всегда активен и не триггер
             collider.enabled = true;
             collider.isTrigger = false; // НЕ триггер для карточек
