@@ -19,6 +19,9 @@ public class ConnectionManager : MonoBehaviour
     // Track active animations to prevent conflicts
     private Dictionary<PuzzlePiece, Tween> activeScaleTweens = new Dictionary<PuzzlePiece, Tween>();
     
+    // Сохраняем originalScales для восстановления при прерывании
+    private Dictionary<PuzzlePiece, Vector3> originalScales = new Dictionary<PuzzlePiece, Vector3>();
+    
     // Queue for deferred animations
     private Dictionary<PuzzlePiece, Action> queuedAnimations = new Dictionary<PuzzlePiece, Action>();
     
@@ -308,6 +311,12 @@ public class ConnectionManager : MonoBehaviour
                 }
                 activeScaleTweens.Remove(piece);
             }
+            
+            // Сохраняем originalScale в классе перед началом новой анимации
+            if (piece != null && piece.transform != null && !this.originalScales.ContainsKey(piece))
+            {
+                this.originalScales[piece] = piece.transform.localScale;
+            }
         }
         
         // Get target positions from grid (final positions, not current)
@@ -328,7 +337,7 @@ public class ConnectionManager : MonoBehaviour
         // Store original parent, position, scale, and sortingOrder for each piece
         Dictionary<PuzzlePiece, Transform> originalParents = new Dictionary<PuzzlePiece, Transform>();
         Dictionary<PuzzlePiece, Vector3> localPositions = new Dictionary<PuzzlePiece, Vector3>();
-        Dictionary<PuzzlePiece, Vector3> originalScales = new Dictionary<PuzzlePiece, Vector3>(); // Store original scales
+        Dictionary<PuzzlePiece, Vector3> localOriginalScales = new Dictionary<PuzzlePiece, Vector3>(); // Локальная копия для этой анимации
         Dictionary<PuzzlePiece, int> originalCardSortingOrders = new Dictionary<PuzzlePiece, int>();
         Dictionary<PuzzlePiece, int> originalBorderSortingOrders = new Dictionary<PuzzlePiece, int>();
         
@@ -343,8 +352,16 @@ public class ConnectionManager : MonoBehaviour
             
             originalParents[piece] = piece.transform.parent;
             
-            // Store original scale BEFORE moving to container
-            originalScales[piece] = piece.transform.localScale;
+            // Используем сохраненный scale из класса, если есть
+            if (this.originalScales.ContainsKey(piece))
+            {
+                localOriginalScales[piece] = this.originalScales[piece];
+            }
+            else
+            {
+                localOriginalScales[piece] = piece.transform.localScale;
+                this.originalScales[piece] = localOriginalScales[piece];
+            }
             
             // Store and set card sorting order
             SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
@@ -400,9 +417,15 @@ public class ConnectionManager : MonoBehaviour
                     piece.transform.position = worldPos;
                     
                     // Restore original scale (not Vector3.one!)
-                    if (originalScales.ContainsKey(piece))
+                    if (localOriginalScales.ContainsKey(piece))
                     {
-                        piece.transform.localScale = originalScales[piece];
+                        piece.transform.localScale = localOriginalScales[piece];
+                    }
+                    
+                    // Удаляем из словаря после успешного завершения
+                    if (this.originalScales.ContainsKey(piece))
+                    {
+                        this.originalScales.Remove(piece);
                     }
                     
                     // Restore card sorting order
@@ -445,9 +468,15 @@ public class ConnectionManager : MonoBehaviour
                     piece.transform.position = worldPos;
                     
                     // Restore original scale (not Vector3.one!)
-                    if (originalScales.ContainsKey(piece))
+                    if (localOriginalScales.ContainsKey(piece))
                     {
-                        piece.transform.localScale = originalScales[piece];
+                        piece.transform.localScale = localOriginalScales[piece];
+                    }
+                    
+                    // Удаляем из словаря при прерывании
+                    if (this.originalScales.ContainsKey(piece))
+                    {
+                        this.originalScales.Remove(piece);
                     }
                     
                     // Restore card sorting order
@@ -579,18 +608,51 @@ public class ConnectionManager : MonoBehaviour
     // Method to reset all active animations (call this if needed)
     public void ResetAllAnimations()
     {
+        // Собираем все твины в список перед перечислением, чтобы избежать модификации коллекции
+        List<Tween> tweensToKill = new List<Tween>();
         foreach (var kvp in activeScaleTweens)
         {
             if (kvp.Value != null && kvp.Value.IsActive())
             {
-                kvp.Value.Kill();
+                tweensToKill.Add(kvp.Value);
             }
-            
-            // Don't reset scale to Vector3.one - cards have different sizes
-            // The animation's OnComplete will restore original scale
+        }
+        
+        // Убиваем все твины (OnKill callback восстановит позиции и scale для карточек в контейнерах)
+        foreach (Tween tween in tweensToKill)
+        {
+            tween.Kill();
+        }
+        
+        // Собираем все карточки и их scale в список перед перечислением
+        List<KeyValuePair<PuzzlePiece, Vector3>> scalesToRestore = new List<KeyValuePair<PuzzlePiece, Vector3>>();
+        foreach (var kvp in originalScales)
+        {
+            scalesToRestore.Add(kvp);
+        }
+        
+        // Восстанавливаем scale только для карточек, которые НЕ находятся внутри временного контейнера
+        // Карточки внутри контейнера будут восстановлены через OnKill callback
+        foreach (var kvp in scalesToRestore)
+        {
+            PuzzlePiece piece = kvp.Key;
+            if (piece != null && piece.transform != null)
+            {
+                // Проверяем, не находится ли карточка внутри временного контейнера анимации
+                Transform parent = piece.transform.parent;
+                bool isInAnimationContainer = parent != null && parent.name.Contains("GroupContainer_Temp");
+                
+                // Восстанавливаем scale только если карточка не в контейнере
+                // (карточки в контейнере будут восстановлены через OnKill callback)
+                if (!isInAnimationContainer)
+                {
+                    piece.transform.localScale = kvp.Value;
+                }
+            }
         }
         
         activeScaleTweens.Clear();
+        originalScales.Clear(); // Очищаем словарь после восстановления
     }
 }
 

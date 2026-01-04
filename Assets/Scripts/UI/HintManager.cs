@@ -16,6 +16,7 @@ public class HintManager : MonoBehaviour
     private Dictionary<PuzzlePiece, Tween> activeHintAnimations = new Dictionary<PuzzlePiece, Tween>();
     private Dictionary<PuzzlePiece, int> originalCardSortingOrders = new Dictionary<PuzzlePiece, int>();
     private Dictionary<PuzzlePiece, int> originalBorderSortingOrders = new Dictionary<PuzzlePiece, int>();
+    private Dictionary<PuzzlePiece, Vector3> originalScales = new Dictionary<PuzzlePiece, Vector3>(); // Сохраняем оригинальные scale
     private PuzzleGrid grid;
     private Dictionary<Vector2Int, PuzzlePiece> occupiedCells;
     
@@ -618,6 +619,16 @@ public class HintManager : MonoBehaviour
         
         StopAnimationsForPieces(new[] { piece1, piece2 });
         
+        // Сохраняем originalScale ПЕРЕД началом анимации
+        if (piece1 != null && piece1.transform != null && !originalScales.ContainsKey(piece1))
+        {
+            originalScales[piece1] = piece1.transform.localScale;
+        }
+        if (piece2 != null && piece2.transform != null && !originalScales.ContainsKey(piece2))
+        {
+            originalScales[piece2] = piece2.transform.localScale;
+        }
+        
         // Сохраняем оригинальные sortingOrder для первой карточки
         SpriteRenderer sr1 = piece1.GetComponent<SpriteRenderer>();
         if (sr1 != null)
@@ -684,6 +695,15 @@ public class HintManager : MonoBehaviour
         if (group == null || group.Count == 0) return;
         
         StopAnimationsForPieces(group.ToArray());
+        
+        // Сохраняем originalScale для всех карточек группы ПЕРЕД началом анимации
+        foreach (PuzzlePiece piece in group)
+        {
+            if (piece != null && piece.transform != null && !originalScales.ContainsKey(piece))
+            {
+                originalScales[piece] = piece.transform.localScale;
+            }
+        }
         
         // Анимируем все карточки группы с правильным sortingOrder
         for (int i = 0; i < group.Count; i++)
@@ -762,8 +782,12 @@ public class HintManager : MonoBehaviour
             
             if (piece != null && piece.transform != null)
             {
-                // DON'T reset scale - the animation's OnComplete will restore original scale
-                // Just restore sorting orders
+                // Восстанавливаем scale при прерывании анимации
+                if (originalScales.ContainsKey(piece))
+                {
+                    piece.transform.localScale = originalScales[piece];
+                    originalScales.Remove(piece);
+                }
                 
                 // Восстанавливаем sortingOrder карточки
                 if (originalCardSortingOrders.ContainsKey(piece))
@@ -793,7 +817,17 @@ public class HintManager : MonoBehaviour
     private Sequence CreatePulseSequence(Transform target, PuzzlePiece piece)
     {
         Sequence seq = DOTween.Sequence();
-        Vector3 originalScale = target.localScale;
+        
+        // Используем сохраненный originalScale из словаря, если есть
+        Vector3 originalScale = originalScales.ContainsKey(piece) 
+            ? originalScales[piece] 
+            : target.localScale;
+        
+        // Если scale не был сохранен, сохраняем его сейчас
+        if (!originalScales.ContainsKey(piece))
+        {
+            originalScales[piece] = originalScale;
+        }
         
         // Create pulse animation (scale up and down)
         for (int i = 0; i < pulseCount; i++)
@@ -805,6 +839,12 @@ public class HintManager : MonoBehaviour
         seq.OnComplete(() => {
             // Ensure scale is back to original
             target.localScale = originalScale;
+            
+            // Удаляем из словаря после завершения анимации
+            if (originalScales.ContainsKey(piece))
+            {
+                originalScales.Remove(piece);
+            }
             
             // Восстанавливаем оригинальные sortingOrder
             if (piece != null)
@@ -833,10 +873,19 @@ public class HintManager : MonoBehaviour
             }
         });
         
+        // Добавляем OnKill для восстановления scale при прерывании
+        seq.OnKill(() => {
+            if (piece != null && piece.transform != null && originalScales.ContainsKey(piece))
+            {
+                piece.transform.localScale = originalScales[piece];
+                originalScales.Remove(piece);
+            }
+        });
+        
         return seq;
     }
     
-    private void StopAllHints()
+    public void StopAllHints()
     {
         foreach (var kvp in activeHintAnimations)
         {
@@ -848,8 +897,12 @@ public class HintManager : MonoBehaviour
             PuzzlePiece piece = kvp.Key;
             if (piece != null && piece.transform != null)
             {
-                // DON'T reset scale - the animation's OnComplete will restore original scale
-                // Just restore sorting orders
+                // Восстанавливаем scale при прерывании анимации
+                if (originalScales.ContainsKey(piece))
+                {
+                    piece.transform.localScale = originalScales[piece];
+                    originalScales.Remove(piece);
+                }
                 
                 // Восстанавливаем sortingOrder карточки
                 if (originalCardSortingOrders.ContainsKey(piece))

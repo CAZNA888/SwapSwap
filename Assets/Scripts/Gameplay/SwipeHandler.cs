@@ -45,6 +45,9 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         
         if (isDragging) return;
         
+        // Останавливаем все анимации scale перед началом свайпа
+        StopAllScaleAnimations();
+        
         PuzzlePiece clickedPiece = null;
         
         // Используем OverlapPointAll чтобы получить все коллайдеры
@@ -1773,6 +1776,23 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                     }
                 }
             }
+        }
+    }
+    
+    // Останавливает все анимации scale перед началом свайпа
+    private void StopAllScaleAnimations()
+    {
+        // Останавливаем анимации подсказок
+        HintManager hintManager = FindObjectOfType<HintManager>();
+        if (hintManager != null)
+        {
+            hintManager.StopAllHints();
+        }
+        
+        // Останавливаем анимации соединений
+        if (connectionManager != null)
+        {
+            connectionManager.ResetAllAnimations();
         }
     }
 }
