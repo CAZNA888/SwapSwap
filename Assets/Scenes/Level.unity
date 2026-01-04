@@ -3527,7 +3527,7 @@ MonoBehaviour:
   - name: babochka
     sprite: {fileID: 222651943, guid: b6ad31ef97f32f04693f515cdd533517, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/volk.png
-  startGridSize: 5
+  startGridSize: 3
   gridSizeIncreasePeriod: 25
   maxGridSize: 8
   difficultLevelPeriod: 10
@@ -4156,7 +4156,7 @@ MonoBehaviour:
   fieldHeight: 12
   cardSpacing: 0
   cardSpan: -0.01
-  cardHeight: -0.01
+  cardHeight: -0.02
   spriteBaseWidth: 3.68
   colliderEffectiveWidth: 3.68
   deckPosition: {x: 5, y: -5}

@@ -27,10 +27,78 @@ public class ImageSlicer : MonoBehaviour
         // Получаем читаемую текстуру
         Texture2D fullTexture = GetReadableTexture(sourceSprite.texture);
         
-        // Вырезаем только область спрайта из текстуры
-        Texture2D spriteTexture = new Texture2D(spriteWidth, spriteHeight, TextureFormat.RGBA32, false);
+        // ВАЖНО: Вычисляем размер кусочка с округлением вверх для равномерного распределения
+        int sliceWidth = Mathf.CeilToInt((float)spriteWidth / cols);
+        int sliceHeight = Mathf.CeilToInt((float)spriteHeight / rows);
+        
+        // Обрезаем изображение до размера, который делится нацело на количество колонок/строк
+        int adjustedWidth = sliceWidth * cols;
+        int adjustedHeight = sliceHeight * rows;
+        
+        // Обрезаем текстуру спрайта с центрированием (обрезаем поровну с обеих сторон)
+        int cropX = (spriteWidth - adjustedWidth) / 2;
+        int cropY = (spriteHeight - adjustedHeight) / 2;
+        
+        // ВАЖНО: Проверяем границы, чтобы не выйти за пределы исходной текстуры
+        int sourceX = spriteX + cropX;
+        int sourceY = spriteY + cropY;
+        
+        // Проверяем, что координаты не отрицательные
+        if (sourceX < 0)
+        {
+            adjustedWidth += sourceX; // Уменьшаем ширину на величину отрицательного смещения
+            sourceX = 0;
+            Debug.LogWarning($"Корректировка cropX: смещение было отрицательным, скорректирована ширина до {adjustedWidth}");
+        }
+        
+        if (sourceY < 0)
+        {
+            adjustedHeight += sourceY; // Уменьшаем высоту на величину отрицательного смещения
+            sourceY = 0;
+            Debug.LogWarning($"Корректировка cropY: смещение было отрицательным, скорректирована высота до {adjustedHeight}");
+        }
+        
+        // Проверяем, что не выходим за правую границу
+        if (sourceX + adjustedWidth > fullTexture.width)
+        {
+            adjustedWidth = fullTexture.width - sourceX;
+            Debug.LogWarning($"Корректировка ширины: обрезано до {adjustedWidth} (граница текстуры: {fullTexture.width})");
+        }
+        
+        // Проверяем, что не выходим за нижнюю границу
+        if (sourceY + adjustedHeight > fullTexture.height)
+        {
+            adjustedHeight = fullTexture.height - sourceY;
+            Debug.LogWarning($"Корректировка высоты: обрезано до {adjustedHeight} (граница текстуры: {fullTexture.height})");
+        }
+        
+        // Проверяем валидность финальных размеров
+        if (adjustedWidth <= 0 || adjustedHeight <= 0)
+        {
+            Debug.LogError($"Неверные размеры после обрезки: {adjustedWidth}×{adjustedHeight}. " +
+                          $"Исходные: {spriteWidth}×{spriteHeight}, crop: {cropX}×{cropY}, " +
+                          $"spritePos: {spriteX}×{spriteY}, textureSize: {fullTexture.width}×{fullTexture.height}");
+            return null;
+        }
+        
+        // Пересчитываем размеры кусочков на основе скорректированных размеров
+        sliceWidth = adjustedWidth / cols;
+        sliceHeight = adjustedHeight / rows;
+        adjustedWidth = sliceWidth * cols; // Гарантируем, что делится нацело
+        adjustedHeight = sliceHeight * rows;
+        
+        // Логирование об обрезке
+        if (adjustedWidth != spriteWidth || adjustedHeight != spriteHeight)
+        {
+            Debug.Log($"Изображение обрезано: {spriteWidth}×{spriteHeight} → {adjustedWidth}×{adjustedHeight} " +
+                     $"(обрезано {spriteWidth - adjustedWidth}×{spriteHeight - adjustedHeight} пикселей, " +
+                     $"смещение: {cropX}×{cropY}, sourcePos: {sourceX}×{sourceY})");
+        }
+        
+        // Вырезаем обрезанную область спрайта из текстуры
+        Texture2D spriteTexture = new Texture2D(adjustedWidth, adjustedHeight, TextureFormat.RGBA32, false);
         // Используем GetPixels напрямую для сохранения максимального качества (float precision)
-        Color[] spritePixels = fullTexture.GetPixels(spriteX, spriteY, spriteWidth, spriteHeight);
+        Color[] spritePixels = fullTexture.GetPixels(sourceX, sourceY, adjustedWidth, adjustedHeight);
         spriteTexture.SetPixels(spritePixels);
         
         // КРИТИЧНО: Устанавливаем point filtering ДО Apply() для предотвращения размытия
@@ -38,44 +106,22 @@ public class ImageSlicer : MonoBehaviour
         spriteTexture.wrapMode = TextureWrapMode.Clamp;
         spriteTexture.Apply();
         
-        // Вычисляем размеры кусочков с учетом остатков
-        int sliceWidth = spriteWidth / cols;
-        int sliceHeight = spriteHeight / rows;
-        int widthRemainder = spriteWidth % cols;
-        int heightRemainder = spriteHeight % rows;
-        
-        Debug.Log($"Размер каждого кусочка: {sliceWidth}×{sliceHeight} пикселей");
-        if (widthRemainder > 0 || heightRemainder > 0)
-        {
-            Debug.LogWarning($"Остатки при делении: ширина {widthRemainder}, высота {heightRemainder}. Последние кусочки будут немного больше.");
-        }
+        Debug.Log($"Размер каждого кусочка: {sliceWidth}×{sliceHeight} пикселей (все кусочки одинакового размера)");
         
         for (int row = 0; row < rows; row++)
         {
             for (int col = 0; col < cols; col++)
             {
-                // Вычисляем координаты для вырезки (относительно обрезанного спрайта)
+                // Все кусочки теперь имеют одинаковый размер (sliceWidth × sliceHeight)
+                // Вычисляем координаты: базовый размер * индекс
                 int x = col * sliceWidth;
                 int y = (rows - 1 - row) * sliceHeight; // Инвертируем Y для Unity координат
                 
-                // Для последних кусочков учитываем остаток
-                int currentSliceWidth = sliceWidth;
-                int currentSliceHeight = sliceHeight;
-                
-                if (col == cols - 1 && widthRemainder > 0)
-                {
-                    currentSliceWidth += widthRemainder;
-                }
-                if (row == rows - 1 && heightRemainder > 0)
-                {
-                    currentSliceHeight += heightRemainder;
-                }
-                
                 // Создаем новую текстуру для кусочка с явным форматом
-                Texture2D sliceTexture = new Texture2D(currentSliceWidth, currentSliceHeight, TextureFormat.RGBA32, false);
+                Texture2D sliceTexture = new Texture2D(sliceWidth, sliceHeight, TextureFormat.RGBA32, false);
                 
                 // Используем GetPixels напрямую для сохранения максимального качества
-                Color[] pixels = spriteTexture.GetPixels(x, y, currentSliceWidth, currentSliceHeight);
+                Color[] pixels = spriteTexture.GetPixels(x, y, sliceWidth, sliceHeight);
                 sliceTexture.SetPixels(pixels);
                 
                 // КРИТИЧНО: Устанавливаем point filtering ДО Apply() для предотвращения размытия и артефактов
@@ -85,29 +131,27 @@ public class ImageSlicer : MonoBehaviour
                 
                 // ВАЖНО: Вычисляем pixelsPerUnit так, чтобы размер нарезанного спрайта в мировых единицах
                 // совпадал с размером исходного спрайта (и back спрайта)
+                // Теперь все кусочки имеют одинаковый размер, поэтому sizeRatio одинаков для всех
+                // Используем размеры обрезанного изображения (adjustedWidth/adjustedHeight)
                 float pixelsPerUnitToUse;
                 
                 if (targetPixelsPerUnit.HasValue)
                 {
-                    // Вычисляем соотношение размеров: размер кусочка / размер исходного спрайта
-                    float sizeRatioX = (float)currentSliceWidth / spriteWidth;
-                    float sizeRatioY = (float)currentSliceHeight / spriteHeight;
+                    // Вычисляем соотношение размеров: размер кусочка / размер обрезанного спрайта
+                    float sizeRatioX = (float)sliceWidth / adjustedWidth;
+                    float sizeRatioY = (float)sliceHeight / adjustedHeight;
                     
                     // Используем среднее соотношение (обычно они одинаковые для квадратной сетки)
                     // Если кусочек в 2 раза меньше, то PPU должен быть в 2 раза меньше,
                     // чтобы размер в мировых единицах был таким же
                     float sizeRatio = (sizeRatioX + sizeRatioY) / 2f;
                     pixelsPerUnitToUse = targetPixelsPerUnit.Value * sizeRatio;
-                    
-                    Debug.Log($"Slice {row}x{col}: size={currentSliceWidth}x{currentSliceHeight}, " +
-                             $"source={spriteWidth}x{spriteHeight}, ratio={sizeRatio:F2}, " +
-                             $"PPU={pixelsPerUnitToUse:F2} (target={targetPixelsPerUnit.Value:F2})");
                 }
                 else
                 {
                     // Если targetPixelsPerUnit не указан, вычисляем на основе исходного спрайта
-                    float sizeRatioX = (float)currentSliceWidth / spriteWidth;
-                    float sizeRatioY = (float)currentSliceHeight / spriteHeight;
+                    float sizeRatioX = (float)sliceWidth / adjustedWidth;
+                    float sizeRatioY = (float)sliceHeight / adjustedHeight;
                     float sizeRatio = (sizeRatioX + sizeRatioY) / 2f;
                     pixelsPerUnitToUse = sourceSprite.pixelsPerUnit * sizeRatio;
                 }
@@ -115,7 +159,7 @@ public class ImageSlicer : MonoBehaviour
                 // Создаем спрайт с правильным pixelsPerUnit
                 Sprite sliceSprite = Sprite.Create(
                     sliceTexture,
-                    new Rect(0, 0, currentSliceWidth, currentSliceHeight),
+                    new Rect(0, 0, sliceWidth, sliceHeight),
                     new Vector2(0.5f, 0.5f), // Pivot в центре
                     pixelsPerUnitToUse
                 );
