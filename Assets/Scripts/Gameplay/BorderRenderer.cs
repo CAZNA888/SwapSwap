@@ -165,7 +165,11 @@ public class BorderRenderer : MonoBehaviour
         borderObj.transform.localRotation = Quaternion.identity;
         
         // Масштабируем под нужный размер (чтобы точно покрывал карточку)
-        Vector2 spriteSize = partSprite.bounds.size;
+        // ИСПРАВЛЕНО: Используем rect и pixelsPerUnit вместо bounds.size для стабильности
+        Vector2 spriteSize = new Vector2(
+            partSprite.rect.width / partSprite.pixelsPerUnit,
+            partSprite.rect.height / partSprite.pixelsPerUnit
+        );
         float scaleX = targetSize.x / spriteSize.x;
         float scaleY = targetSize.y / spriteSize.y;
         borderObj.transform.localScale = new Vector3(scaleX, scaleY, 1f);

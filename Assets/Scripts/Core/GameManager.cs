@@ -388,7 +388,14 @@ public class GameManager : MonoBehaviour
         Debug.Log($"GameManager: Image ready. Size: {sourceImage.texture.width}x{sourceImage.texture.height}");
         Debug.Log($"GameManager: Slicing image. Grid: {gridRows}x{gridCols}");
         
-        slicedSprites = imageSlicer.SliceImage(sourceImage, gridRows, gridCols);
+        // Используем тот же pixelsPerUnit, что и у cardBackSprite
+        float? targetPixelsPerUnit = cardBackSprite != null ? cardBackSprite.pixelsPerUnit : null;
+        if (targetPixelsPerUnit.HasValue)
+        {
+            Debug.Log($"GameManager: Using backSprite.pixelsPerUnit={targetPixelsPerUnit.Value:F2} for sliced sprites");
+        }
+        
+        slicedSprites = imageSlicer.SliceImage(sourceImage, gridRows, gridCols, targetPixelsPerUnit);
         
         if (slicedSprites == null || slicedSprites.Count != gridRows * gridCols)
         {
@@ -443,9 +450,11 @@ public class GameManager : MonoBehaviour
         float cardAspectRatio = 1f; // По умолчанию квадрат
         if (cardBackSprite != null)
         {
+            // ИСПРАВЛЕНО: Используем rect и pixelsPerUnit вместо bounds.size
+            // Это гарантирует одинаковые размеры на всех устройствах независимо от pixel ratio
             Vector2 cardBackSize = new Vector2(
-                cardBackSprite.bounds.size.x,
-                cardBackSprite.bounds.size.y
+                cardBackSprite.rect.width / cardBackSprite.pixelsPerUnit,
+                cardBackSprite.rect.height / cardBackSprite.pixelsPerUnit
             );
             cardAspectRatio = cardBackSize.x / cardBackSize.y;
         }
@@ -522,11 +531,11 @@ public class GameManager : MonoBehaviour
             
             // ВАЖНО: Размер коллайдера должен быть установлен в базовый размер спрайта (до масштабирования)
             // После масштабирования через SetCardSize() коллайдер автоматически масштабируется вместе с transform
+            // ИСПРАВЛЕНО: Используем rect и pixelsPerUnit вместо bounds.size для стабильности на всех устройствах
             // Корректируем ширину коллайдера: используем colliderEffectiveWidth вместо spriteBaseWidth для точного соответствия визуальному размеру
-            // (спрайт может иметь прозрачные края, поэтому визуальный размер меньше bounds.size)
             Vector2 baseColliderSize = cardBackSprite != null ? new Vector2(
-                cardBackSprite.bounds.size.x * (colliderEffectiveWidth / spriteBaseWidth), // Корректируем ширину коллайдера
-                cardBackSprite.bounds.size.y
+                (cardBackSprite.rect.width / cardBackSprite.pixelsPerUnit) * (colliderEffectiveWidth / spriteBaseWidth), // Корректируем ширину коллайдера
+                cardBackSprite.rect.height / cardBackSprite.pixelsPerUnit
             ) : cardSize; // Fallback если нет спрайта
             
             collider.size = baseColliderSize;

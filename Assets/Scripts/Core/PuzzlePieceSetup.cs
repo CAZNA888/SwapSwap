@@ -137,7 +137,11 @@ public class PuzzlePieceSetup : MonoBehaviour
         // Масштабируем спрайт под нужный размер
         if (borderSprite != null)
         {
-            Vector2 spriteSize = borderSprite.bounds.size;
+            // ИСПРАВЛЕНО: Используем rect и pixelsPerUnit вместо bounds.size для стабильности
+            Vector2 spriteSize = new Vector2(
+                borderSprite.rect.width / borderSprite.pixelsPerUnit,
+                borderSprite.rect.height / borderSprite.pixelsPerUnit
+            );
             float scaleX = size.x / spriteSize.x;
             float scaleY = size.y / spriteSize.y;
             borderObj.transform.localScale = new Vector3(scaleX, scaleY, 1f);
@@ -165,9 +169,10 @@ public class PuzzlePieceSetup : MonoBehaviour
     {
         if (cardBack != null)
         {
+            // ИСПРАВЛЕНО: Используем rect и pixelsPerUnit вместо bounds.size для стабильности
             cardSize = new Vector2(
-                cardBack.bounds.size.x,
-                cardBack.bounds.size.y
+                cardBack.rect.width / cardBack.pixelsPerUnit,
+                cardBack.rect.height / cardBack.pixelsPerUnit
             );
             
             // Обновляем коллайдер

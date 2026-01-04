@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class ImageSlicer : MonoBehaviour
 {
-    public List<Sprite> SliceImage(Sprite sourceSprite, int rows, int cols)
+    public List<Sprite> SliceImage(Sprite sourceSprite, int rows, int cols, float? targetPixelsPerUnit = null)
     {
         if (sourceSprite == null)
         {
@@ -83,25 +83,51 @@ public class ImageSlicer : MonoBehaviour
                 sliceTexture.wrapMode = TextureWrapMode.Clamp;
                 sliceTexture.Apply();
                 
-                // ВАЖНО: Вычисляем pixelsPerUnit так, чтобы кусочек имел тот же размер в мировых единицах, что и исходный спрайт
-                // Размер исходного спрайта в мировых единицах
-                Vector2 sourceSizeInUnits = sourceSprite.bounds.size;
+                // ВАЖНО: Вычисляем pixelsPerUnit так, чтобы размер нарезанного спрайта в мировых единицах
+                // совпадал с размером исходного спрайта (и back спрайта)
+                float pixelsPerUnitToUse;
                 
-                // Вычисляем новый pixelsPerUnit для кусочка
-                // Используем среднее значение для более точного результата
-                float newPixelsPerUnitX = currentSliceWidth / sourceSizeInUnits.x;
-                float newPixelsPerUnitY = currentSliceHeight / sourceSizeInUnits.y;
-                float newPixelsPerUnit = (newPixelsPerUnitX + newPixelsPerUnitY) / 2f;
+                if (targetPixelsPerUnit.HasValue)
+                {
+                    // Вычисляем соотношение размеров: размер кусочка / размер исходного спрайта
+                    float sizeRatioX = (float)currentSliceWidth / spriteWidth;
+                    float sizeRatioY = (float)currentSliceHeight / spriteHeight;
+                    
+                    // Используем среднее соотношение (обычно они одинаковые для квадратной сетки)
+                    // Если кусочек в 2 раза меньше, то PPU должен быть в 2 раза меньше,
+                    // чтобы размер в мировых единицах был таким же
+                    float sizeRatio = (sizeRatioX + sizeRatioY) / 2f;
+                    pixelsPerUnitToUse = targetPixelsPerUnit.Value * sizeRatio;
+                    
+                    Debug.Log($"Slice {row}x{col}: size={currentSliceWidth}x{currentSliceHeight}, " +
+                             $"source={spriteWidth}x{spriteHeight}, ratio={sizeRatio:F2}, " +
+                             $"PPU={pixelsPerUnitToUse:F2} (target={targetPixelsPerUnit.Value:F2})");
+                }
+                else
+                {
+                    // Если targetPixelsPerUnit не указан, вычисляем на основе исходного спрайта
+                    float sizeRatioX = (float)currentSliceWidth / spriteWidth;
+                    float sizeRatioY = (float)currentSliceHeight / spriteHeight;
+                    float sizeRatio = (sizeRatioX + sizeRatioY) / 2f;
+                    pixelsPerUnitToUse = sourceSprite.pixelsPerUnit * sizeRatio;
+                }
                 
-                // Создаем спрайт с правильным pixelsPerUnit, чтобы он имел тот же размер в мировых единицах
+                // Создаем спрайт с правильным pixelsPerUnit
                 Sprite sliceSprite = Sprite.Create(
                     sliceTexture,
                     new Rect(0, 0, currentSliceWidth, currentSliceHeight),
                     new Vector2(0.5f, 0.5f), // Pivot в центре
-                    newPixelsPerUnit
+                    pixelsPerUnitToUse
                 );
                 
                 sliceSprite.name = $"Slice_{row}_{col}_Index_{row * cols + col}";
+                
+                #if UNITY_EDITOR
+                // В редакторе принудительно обновляем bounds
+                // Это помогает избежать проблем с неправильным bounds.size для динамически созданных спрайтов
+                UnityEditor.EditorUtility.SetDirty(sliceSprite);
+                #endif
+                
                 slicedSprites.Add(sliceSprite);
             }
         }

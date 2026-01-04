@@ -36,6 +36,30 @@ public class PuzzlePiece : MonoBehaviour
         backSprite = back;
         grid = puzzleGrid;
         
+        #if UNITY_EDITOR
+        // ДИАГНОСТИКА: Проверяем размеры
+        // ИСПРАВЛЕНО: Используем rect и pixelsPerUnit для консистентности
+        if (frontSprite != null && backSprite != null)
+        {
+            Vector2 frontSize = new Vector2(
+                frontSprite.rect.width / frontSprite.pixelsPerUnit,
+                frontSprite.rect.height / frontSprite.pixelsPerUnit
+            );
+            Vector2 backSize = new Vector2(
+                backSprite.rect.width / backSprite.pixelsPerUnit,
+                backSprite.rect.height / backSprite.pixelsPerUnit
+            );
+            
+            // Для диагностики также показываем bounds.size (может отличаться на разных устройствах)
+            Vector2 frontBounds = frontSprite.bounds.size;
+            Vector2 backBounds = backSprite.bounds.size;
+            
+            Debug.Log($"PuzzlePiece {index}: " +
+                     $"Front size (rect/PPU)={frontSize}, bounds={frontBounds}, " +
+                     $"Back size (rect/PPU)={backSize}, bounds={backBounds}");
+        }
+        #endif
+        
         // Устанавливаем обратную сторону по умолчанию
         if (spriteRenderer != null && backSprite != null)
         {
@@ -81,7 +105,55 @@ public class PuzzlePiece : MonoBehaviour
         isFlipped = !isFlipped;
         if (spriteRenderer != null)
         {
-            spriteRenderer.sprite = isFlipped ? frontSprite : backSprite;
+            Sprite newSprite = isFlipped ? frontSprite : backSprite;
+            spriteRenderer.sprite = newSprite;
+            
+            // Проверяем, что размеры спрайтов совпадают после переворота
+            // ИСПРАВЛЕНО: Используем rect и pixelsPerUnit вместо bounds.size для стабильности
+            // Это гарантирует одинаковые размеры на всех устройствах независимо от pixel ratio
+            if (newSprite != null && backSprite != null)
+            {
+                // Используем расчет на основе rect и pixelsPerUnit вместо bounds.size
+                Vector2 newSpriteSize = new Vector2(
+                    newSprite.rect.width / newSprite.pixelsPerUnit,
+                    newSprite.rect.height / newSprite.pixelsPerUnit
+                );
+                Vector2 backSpriteSize = new Vector2(
+                    backSprite.rect.width / backSprite.pixelsPerUnit,
+                    backSprite.rect.height / backSprite.pixelsPerUnit
+                );
+                
+                // Вычисляем размер с учетом текущего масштаба
+                Vector2 newSpriteSizeScaled = newSpriteSize * new Vector2(transform.localScale.x, transform.localScale.y);
+                Vector2 backSpriteSizeScaled = backSpriteSize * new Vector2(transform.localScale.x, transform.localScale.y);
+                
+                float sizeDiffX = Mathf.Abs(newSpriteSizeScaled.x - backSpriteSizeScaled.x) / Mathf.Max(newSpriteSizeScaled.x, backSpriteSizeScaled.x);
+                float sizeDiffY = Mathf.Abs(newSpriteSizeScaled.y - backSpriteSizeScaled.y) / Mathf.Max(newSpriteSizeScaled.y, backSpriteSizeScaled.y);
+                
+                // Если разница значительная, это указывает на проблему с pixelsPerUnit
+                if (sizeDiffX > 0.01f || sizeDiffY > 0.01f)
+                {
+                    Debug.LogWarning($"PuzzlePiece {originalIndex}: After flip, sprite size mismatch! " +
+                                   $"newSprite (scaled): {newSpriteSizeScaled.x:F4}x{newSpriteSizeScaled.y:F4}, " +
+                                   $"backSprite (scaled): {backSpriteSizeScaled.x:F4}x{backSpriteSizeScaled.y:F4}, " +
+                                   $"Difference: {sizeDiffX*100:F2}%/{sizeDiffY*100:F2}%. " +
+                                   $"This indicates a pixelsPerUnit calculation issue in ImageSlicer.");
+                    
+                    // Корректируем масштаб только если разница критическая (>5%)
+                    if (sizeDiffX > 0.05f || sizeDiffY > 0.05f)
+                    {
+                        float scaleCorrectionX = backSpriteSizeScaled.x / newSpriteSizeScaled.x;
+                        float scaleCorrectionY = backSpriteSizeScaled.y / newSpriteSizeScaled.y;
+                        Vector3 currentScale = transform.localScale;
+                        transform.localScale = new Vector3(
+                            currentScale.x * scaleCorrectionX,
+                            currentScale.y * scaleCorrectionY,
+                            currentScale.z
+                        );
+                        Debug.LogWarning($"PuzzlePiece {originalIndex}: Applied scale correction: {scaleCorrectionX:F4}x{scaleCorrectionY:F4}");
+                    }
+                }
+            }
         }
     }
     
@@ -104,8 +176,12 @@ public class PuzzlePiece : MonoBehaviour
     {
         if (spriteRenderer != null && backSprite != null)
         {
-            // Используем размер backSprite (CardBack) как базовый размер префаба
-            Vector2 baseSize = backSprite.bounds.size;
+            // ВАЖНО: Используем расчет на основе rect и pixelsPerUnit вместо bounds.size
+            // Это гарантирует стабильные размеры независимо от pixel ratio устройства
+            Vector2 baseSize = new Vector2(
+                backSprite.rect.width / backSprite.pixelsPerUnit,
+                backSprite.rect.height / backSprite.pixelsPerUnit
+            );
             
             // Вычисляем масштаб для всего префаба
             float scaleX = targetSize.x / baseSize.x;

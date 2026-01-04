@@ -30,8 +30,8 @@ public class CardPrefabBuilder : MonoBehaviour
         }
         
         cardSize = new Vector2(
-            cardBackSprite.bounds.size.x,
-            cardBackSprite.bounds.size.y
+            cardBackSprite.rect.width / cardBackSprite.pixelsPerUnit,
+            cardBackSprite.rect.height / cardBackSprite.pixelsPerUnit
         );
         
         Debug.Log($"✓ Размер карточки определен: {cardSize.x:F2} x {cardSize.y:F2} единиц");
@@ -436,7 +436,11 @@ public class CardPrefabBuilder : MonoBehaviour
         borderObj.transform.localRotation = Quaternion.identity;
         
         // Масштабируем под нужный размер
-        Vector2 spriteSize = triangleSprite.bounds.size;
+        // ИСПРАВЛЕНО: Используем rect и pixelsPerUnit вместо bounds.size для стабильности
+        Vector2 spriteSize = new Vector2(
+            triangleSprite.rect.width / triangleSprite.pixelsPerUnit,
+            triangleSprite.rect.height / triangleSprite.pixelsPerUnit
+        );
         float scaleX = targetSize.x / spriteSize.x;
         float scaleY = targetSize.y / spriteSize.y;
         borderObj.transform.localScale = new Vector3(scaleX, scaleY, 1f);
@@ -526,9 +530,10 @@ public class CardPrefabBuilder : MonoBehaviour
         
         if (cardBackSprite != null)
         {
+            // ИСПРАВЛЕНО: Используем rect и pixelsPerUnit вместо bounds.size для стабильности
             Vector2 cardSize = new Vector2(
-                cardBackSprite.bounds.size.x,
-                cardBackSprite.bounds.size.y
+                cardBackSprite.rect.width / cardBackSprite.pixelsPerUnit,
+                cardBackSprite.rect.height / cardBackSprite.pixelsPerUnit
             );
             Debug.Log($"CardBack размер: {cardSize.x:F2} x {cardSize.y:F2} (мировых единиц)");
             Debug.Log($"CardBack пиксели: {cardBackSprite.texture.width} x {cardBackSprite.texture.height}");
@@ -561,9 +566,10 @@ public class CardPrefabBuilder : MonoBehaviour
         
         if (borderSprite != null)
         {
+            // ИСПРАВЛЕНО: Используем rect и pixelsPerUnit вместо bounds.size для стабильности
             Vector2 borderSize = new Vector2(
-                borderSprite.bounds.size.x,
-                borderSprite.bounds.size.y
+                borderSprite.rect.width / borderSprite.pixelsPerUnit,
+                borderSprite.rect.height / borderSprite.pixelsPerUnit
             );
             Debug.Log($"Border размер: {borderSize.x:F2} x {borderSize.y:F2} (мировых единиц)");
             Debug.Log($"Border пиксели: {borderSprite.texture.width} x {borderSprite.texture.height}");
@@ -571,9 +577,10 @@ public class CardPrefabBuilder : MonoBehaviour
             
             if (cardBackSprite != null)
             {
+                // ИСПРАВЛЕНО: Используем rect и pixelsPerUnit вместо bounds.size для стабильности
                 Vector2 cardSize = new Vector2(
-                    cardBackSprite.bounds.size.x,
-                    cardBackSprite.bounds.size.y
+                    cardBackSprite.rect.width / cardBackSprite.pixelsPerUnit,
+                    cardBackSprite.rect.height / cardBackSprite.pixelsPerUnit
                 );
                 
                 if (Mathf.Abs(borderSize.x - cardSize.x) < 0.01f && 
@@ -598,9 +605,10 @@ public class CardPrefabBuilder : MonoBehaviour
     {
         if (cardBackSprite != null)
         {
+            // ИСПРАВЛЕНО: Используем rect и pixelsPerUnit вместо bounds.size для стабильности
             Vector2 size = new Vector2(
-                cardBackSprite.bounds.size.x,
-                cardBackSprite.bounds.size.y
+                cardBackSprite.rect.width / cardBackSprite.pixelsPerUnit,
+                cardBackSprite.rect.height / cardBackSprite.pixelsPerUnit
             );
             Debug.Log($"Размер карточки: {size.x:F2} x {size.y:F2} (мировых единиц)");
             Debug.Log($"Соотношение сторон: {size.x / size.y:F2}:1");

@@ -88,10 +88,11 @@ public class PuzzleGrid : MonoBehaviour
     {
         if (cardBackSprite != null)
         {
-            // Получаем размер спрайта в мировых единицах
-            float width = cardBackSprite.bounds.size.x;
-            float height = cardBackSprite.bounds.size.y;
-            return new Vector2(width, height);
+            // Используем расчет на основе rect и pixelsPerUnit для стабильности
+            return new Vector2(
+                cardBackSprite.rect.width / cardBackSprite.pixelsPerUnit,
+                cardBackSprite.rect.height / cardBackSprite.pixelsPerUnit
+            );
         }
         // Fallback на расчетный размер
         return GetCardSize();

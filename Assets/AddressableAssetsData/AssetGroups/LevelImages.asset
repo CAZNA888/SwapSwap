@@ -612,11 +612,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: ca72e5d2fb9e9da429c599681e0a701f
-    m_Address: Assets/Sprites/UI/LevelImages/scorp.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: cd1b4a2966225824d8262fe3cacac997
     m_Address: Assets/Sprites/UI/LevelImages/Group 287.png
     m_ReadOnly: 0

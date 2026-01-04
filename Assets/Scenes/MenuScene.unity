@@ -122,6 +122,140 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &62671373
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 62671374}
+  - component: {fileID: 62671376}
+  - component: {fileID: 62671375}
+  m_Layer: 5
+  m_Name: Text (TMP) (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &62671374
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 62671373}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1076470622}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 600, y: 50}
+  m_Pivot: {x: 0, y: 0}
+--- !u!114 &62671375
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 62671373}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: 0.0.5
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
+  m_sharedMaterial: {fileID: 2164040, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 100
+  m_fontSizeBase: 100
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_enableWordWrapping: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 1
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &62671376
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 62671373}
+  m_CullTransparentMesh: 1
 --- !u!1 &114759838
 GameObject:
   m_ObjectHideFlags: 0
@@ -521,27 +655,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   useAddressables: 1
   menuImages:
-  - name: babochka
-    sprite: {fileID: 1400816909, guid: 32d24539f9a6289498e020f827d4ec11, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/babochka.png
-  - name: cat
-    sprite: {fileID: -81096595, guid: 11514cda10da2c14ea34005677549f3c, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/cat.png
   - name: cutecat
     sprite: {fileID: -2023690594, guid: d967c0b58ce587248ba15231fd47eed0, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/cutecat.png
-  - name: gora
-    sprite: {fileID: -532509571, guid: 62fa78c3a8c735e4087878736b08c8a3, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/gora.png
-  - name: pes
-    sprite: {fileID: -652139845, guid: c9ac4570172241048b1f39d07da9432c, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/pes.png
-  - name: Group158
-    sprite: {fileID: -1796511635, guid: 8cb5545f6a8c1464aabb9753df73932e, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/Group 158.png
-  - name: Group179
-    sprite: {fileID: 1497195887, guid: e246af0f41ea00144b6dc093008f8be8, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/Group 179.png
+  - name: group156
+    sprite: {fileID: -1096969534, guid: 1333a99e992089446b963c7a73504c86, type: 3}
+    addressableKey: Assets/Sprites/UI/LevelImages/Group 156.png
+  - name: group156
+    sprite: {fileID: 1363158706, guid: 4de29f23f31a2b64dbfee08180e922c0, type: 3}
+    addressableKey: Assets/Sprites/UI/LevelImages/Group 156.png
+  - name: group183
+    sprite: {fileID: -464681596, guid: 68b0cb3261afc3b49a061b4cb62be504, type: 3}
+    addressableKey: Assets/Sprites/UI/LevelImages/Group 183.png
+  - name: group177
+    sprite: {fileID: -792544933, guid: dd6531c65a59dd4479d380a3f40a9d7e, type: 3}
+    addressableKey: Assets/Sprites/UI/LevelImages/Group 177.png
+  - name: group192
+    sprite: {fileID: 1671368530, guid: 2125f46ab401b0946aadb58bf470a202, type: 3}
+    addressableKey: Assets/Sprites/UI/LevelImages/Group 192.png
+  - name: Group196
+    sprite: {fileID: 1669060823, guid: 5742b86b6dd232e4ebe4f7be052cd3ac, type: 3}
+    addressableKey: Assets/Sprites/UI/LevelImages/Group 196.png
   cardsPerImage: 25
   levelText: {fileID: 907223154}
 --- !u!4 &318400738
@@ -2791,6 +2925,7 @@ RectTransform:
   - {fileID: 720924602}
   - {fileID: 974409190}
   - {fileID: 828346642}
+  - {fileID: 62671374}
   - {fileID: 907223153}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
