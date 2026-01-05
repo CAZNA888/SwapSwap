@@ -414,6 +414,12 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         Sequence swapSeq = DOTween.Sequence();
         swapSeq.AppendInterval(maxDuration);
         swapSeq.OnComplete(() => {
+            // ИСПРАВЛЕНО: Синхронизируем позиции с grid координатами после завершения анимации
+            Vector2 worldPos1 = grid.GetWorldPosition(piece1.currentGridRow, piece1.currentGridCol);
+            piece1.transform.position = new Vector3(worldPos1.x, worldPos1.y, 0f);
+            Vector2 worldPos2 = grid.GetWorldPosition(piece2.currentGridRow, piece2.currentGridCol);
+            piece2.transform.position = new Vector3(worldPos2.x, worldPos2.y, 0f);
+            
             // Проверяем соединения ПОСЛЕ завершения анимации перемещения
             if (oldPos1 != newPos1)
             {
@@ -503,6 +509,10 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         Sequence moveSeq = DOTween.Sequence();
         moveSeq.AppendInterval(moveDuration);
         moveSeq.OnComplete(() => {
+            // ИСПРАВЛЕНО: Синхронизируем позицию с grid координатами после завершения анимации
+            Vector2 worldPos = grid.GetWorldPosition(piece.currentGridRow, piece.currentGridCol);
+            piece.transform.position = new Vector3(worldPos.x, worldPos.y, 0f);
+            
             // Проверяем соединения ПОСЛЕ завершения анимации перемещения
             if (oldPos != newPosInt)
             {
@@ -916,6 +926,27 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             sequence.Join(tween);
         }
         sequence.OnComplete(() => {
+            // ИСПРАВЛЕНО: Синхронизируем позиции всех карточек группы с grid координатами
+            foreach (PuzzlePiece piece in group)
+            {
+                Vector2 worldPos = grid.GetWorldPosition(piece.currentGridRow, piece.currentGridCol);
+                piece.transform.position = new Vector3(worldPos.x, worldPos.y, 0f);
+            }
+            
+            // Синхронизируем позиции мешающих карточек
+            foreach (PuzzlePiece piece in piecesToMove)
+            {
+                Vector2 worldPos = grid.GetWorldPosition(piece.currentGridRow, piece.currentGridCol);
+                piece.transform.position = new Vector3(worldPos.x, worldPos.y, 0f);
+            }
+            
+            // Синхронизируем позиции оставшихся карточек
+            foreach (PuzzlePiece piece in remainingPiecesToMove)
+            {
+                Vector2 worldPos = grid.GetWorldPosition(piece.currentGridRow, piece.currentGridCol);
+                piece.transform.position = new Vector3(worldPos.x, worldPos.y, 0f);
+            }
+            
             // Проверяем соединения ПОСЛЕ завершения всех анимаций перемещения
             foreach (PuzzlePiece piece in movedPieces)
             {
@@ -1793,6 +1824,20 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         if (connectionManager != null)
         {
             connectionManager.ResetAllAnimations();
+        }
+        
+        // ИСПРАВЛЕНО: Синхронизируем позиции всех карточек после остановки анимаций
+        // Это гарантирует правильное позиционирование даже если анимации были прерваны
+        if (occupiedCells != null)
+        {
+            foreach (var kvp in occupiedCells)
+            {
+                PuzzlePiece piece = kvp.Value;
+                if (piece != null)
+                {
+                    piece.SyncPositionWithGrid();
+                }
+            }
         }
     }
 }

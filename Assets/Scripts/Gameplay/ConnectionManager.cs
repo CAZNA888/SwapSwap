@@ -412,7 +412,10 @@ public class ConnectionManager : MonoBehaviour
                 PuzzlePiece piece = validPieces[i];
                 if (piece != null && piece.transform != null)
                 {
-                    Vector3 worldPos = groupContainer.transform.TransformPoint(localPositions[piece]);
+                    // ИСПРАВЛЕНО: Используем актуальные grid координаты вместо сохраненной позиции
+                    // Это гарантирует правильное позиционирование даже если карточка была перемещена во время анимации
+                    Vector2 worldPos2D = grid.GetWorldPosition(piece.currentGridRow, piece.currentGridCol);
+                    Vector3 worldPos = new Vector3(worldPos2D.x, worldPos2D.y, 0f);
                     piece.transform.SetParent(originalParents[piece]);
                     piece.transform.position = worldPos;
                     
@@ -463,7 +466,10 @@ public class ConnectionManager : MonoBehaviour
                 PuzzlePiece piece = validPieces[i];
                 if (piece != null && piece.transform != null)
                 {
-                    Vector3 worldPos = groupContainer.transform.TransformPoint(localPositions[piece]);
+                    // ИСПРАВЛЕНО: Используем актуальные grid координаты вместо сохраненной позиции
+                    // Это гарантирует правильное позиционирование даже если анимация была прервана
+                    Vector2 worldPos2D = grid.GetWorldPosition(piece.currentGridRow, piece.currentGridCol);
+                    Vector3 worldPos = new Vector3(worldPos2D.x, worldPos2D.y, 0f);
                     piece.transform.SetParent(originalParents[piece]);
                     piece.transform.position = worldPos;
                     

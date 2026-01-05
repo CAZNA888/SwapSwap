@@ -93,6 +93,17 @@ public class PuzzlePiece : MonoBehaviour
         }
     }
     
+    // Синхронизирует визуальную позицию с grid координатами
+    // Используется для исправления рассинхронизации после анимаций
+    public void SyncPositionWithGrid()
+    {
+        if (grid != null)
+        {
+            Vector2 worldPos = grid.GetWorldPosition(currentGridRow, currentGridCol);
+            transform.position = new Vector3(worldPos.x, worldPos.y, 0f);
+        }
+    }
+    
     public Vector2Int GetOriginalPosition(int gridCols)
     {
         int row = originalIndex / gridCols;

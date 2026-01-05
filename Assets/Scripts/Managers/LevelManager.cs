@@ -157,16 +157,54 @@ public class LevelManager : MonoBehaviour
     /// </summary>
     public int CalculateGridSize(int level)
     {
-        int baseSize = startGridSize;
-        int increase = level / gridSizeIncreasePeriod;
-        int gridSize = baseSize + increase;
+        int baseSize;
+        int increase;
+        int gridSize;
+        int finalSize;
+        
+        // Специальная логика для startGridSize = 2
+        if (startGridSize == 2)
+        {
+            // Первые 3 уровня (0, 1, 2) имеют размерность 2
+            if (level < 3)
+            {
+                finalSize = 2;
+                Debug.Log($"LevelManager.CalculateGridSize: level={level}, special case for startGridSize=2, finalSize={finalSize}");
+                return finalSize;
+            }
+            
+            // Начиная с уровня 3, размерность становится 3, и дальше применяется обычная логика
+            // Но нужно скорректировать расчет, так как мы уже "потратили" 3 уровня на размерность 2
+            // Уровень 3 должен быть размерностью 3, поэтому считаем как будто startGridSize = 3
+            // и level начинается с 3, но для расчета используем level - 3
+            int adjustedLevel = level - 3;
+            baseSize = 3; // Начинаем с 3 после первых 3 уровней
+            increase = adjustedLevel / gridSizeIncreasePeriod;
+            gridSize = baseSize + increase;
+            
+            if (IsDifficultLevel(level))
+            {
+                gridSize += 1; // Дополнительное увеличение для сложного уровня
+            }
+            
+            finalSize = Mathf.Min(gridSize, maxGridSize);
+            
+            Debug.Log($"LevelManager.CalculateGridSize: level={level}, startGridSize=2 special case, adjustedLevel={adjustedLevel}, baseSize={baseSize}, increase={increase}, gridSize={gridSize}, isDifficult={IsDifficultLevel(level)}, finalSize={finalSize} (max={maxGridSize})");
+            
+            return finalSize;
+        }
+        
+        // Обычная логика для остальных случаев
+        baseSize = startGridSize;
+        increase = level / gridSizeIncreasePeriod;
+        gridSize = baseSize + increase;
         
         if (IsDifficultLevel(level))
         {
             gridSize += 1; // Дополнительное увеличение для сложного уровня
         }
         
-        int finalSize = Mathf.Min(gridSize, maxGridSize);
+        finalSize = Mathf.Min(gridSize, maxGridSize);
         
         // Логирование для диагностики
         Debug.Log($"LevelManager.CalculateGridSize: level={level}, baseSize={baseSize}, increase={increase} (level/{gridSizeIncreasePeriod}), gridSize={gridSize}, isDifficult={IsDifficultLevel(level)}, finalSize={finalSize} (max={maxGridSize})");
