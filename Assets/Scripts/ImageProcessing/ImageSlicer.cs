@@ -108,6 +108,33 @@ public class ImageSlicer : MonoBehaviour
         
         Debug.Log($"Размер каждого кусочка: {sliceWidth}×{sliceHeight} пикселей (все кусочки одинакового размера)");
         
+        // КРИТИЧНО: Вычисляем pixelsPerUnit ОДИН РАЗ для всех кусочков ДО цикла
+        // Это гарантирует одинаковый pixelsPerUnit для всех кусочков, независимо от округлений float в WebGL
+        float pixelsPerUnitToUse;
+        
+        if (targetPixelsPerUnit.HasValue)
+        {
+            // Вычисляем соотношение размеров: размер кусочка / размер обрезанного спрайта
+            float sizeRatioX = (float)sliceWidth / adjustedWidth;
+            float sizeRatioY = (float)sliceHeight / adjustedHeight;
+            
+            // Используем среднее соотношение (обычно они одинаковые для квадратной сетки)
+            // Если кусочек в 2 раза меньше, то PPU должен быть в 2 раза меньше,
+            // чтобы размер в мировых единицах был таким же
+            float sizeRatio = (sizeRatioX + sizeRatioY) / 2f;
+            pixelsPerUnitToUse = targetPixelsPerUnit.Value * sizeRatio;
+        }
+        else
+        {
+            // Если targetPixelsPerUnit не указан, вычисляем на основе исходного спрайта
+            float sizeRatioX = (float)sliceWidth / adjustedWidth;
+            float sizeRatioY = (float)sliceHeight / adjustedHeight;
+            float sizeRatio = (sizeRatioX + sizeRatioY) / 2f;
+            pixelsPerUnitToUse = sourceSprite.pixelsPerUnit * sizeRatio;
+        }
+        
+        Debug.Log($"ImageSlicer: pixelsPerUnit для всех кусочков = {pixelsPerUnitToUse:F6} (sizeRatioX={((float)sliceWidth / adjustedWidth):F6}, sizeRatioY={((float)sliceHeight / adjustedHeight):F6})");
+        
         for (int row = 0; row < rows; row++)
         {
             for (int col = 0; col < cols; col++)
@@ -129,33 +156,7 @@ public class ImageSlicer : MonoBehaviour
                 sliceTexture.wrapMode = TextureWrapMode.Clamp;
                 sliceTexture.Apply();
                 
-                // ВАЖНО: Вычисляем pixelsPerUnit так, чтобы размер нарезанного спрайта в мировых единицах
-                // совпадал с размером исходного спрайта (и back спрайта)
-                // Теперь все кусочки имеют одинаковый размер, поэтому sizeRatio одинаков для всех
-                // Используем размеры обрезанного изображения (adjustedWidth/adjustedHeight)
-                float pixelsPerUnitToUse;
-                
-                if (targetPixelsPerUnit.HasValue)
-                {
-                    // Вычисляем соотношение размеров: размер кусочка / размер обрезанного спрайта
-                    float sizeRatioX = (float)sliceWidth / adjustedWidth;
-                    float sizeRatioY = (float)sliceHeight / adjustedHeight;
-                    
-                    // Используем среднее соотношение (обычно они одинаковые для квадратной сетки)
-                    // Если кусочек в 2 раза меньше, то PPU должен быть в 2 раза меньше,
-                    // чтобы размер в мировых единицах был таким же
-                    float sizeRatio = (sizeRatioX + sizeRatioY) / 2f;
-                    pixelsPerUnitToUse = targetPixelsPerUnit.Value * sizeRatio;
-                }
-                else
-                {
-                    // Если targetPixelsPerUnit не указан, вычисляем на основе исходного спрайта
-                    float sizeRatioX = (float)sliceWidth / adjustedWidth;
-                    float sizeRatioY = (float)sliceHeight / adjustedHeight;
-                    float sizeRatio = (sizeRatioX + sizeRatioY) / 2f;
-                    pixelsPerUnitToUse = sourceSprite.pixelsPerUnit * sizeRatio;
-                }
-                
+                // Используем ОДИНАКОВЫЙ pixelsPerUnit для всех кусочков (вычислен выше)
                 // Создаем спрайт с правильным pixelsPerUnit
                 Sprite sliceSprite = Sprite.Create(
                     sliceTexture,

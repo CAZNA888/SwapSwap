@@ -117,11 +117,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 1f04fac97320af24bb3e32e85c8a25fc
-    m_Address: Assets/Sprites/UI/LevelImages/Group 186.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1fe7ea93ea6a558499ed281a58d5817e
     m_Address: Assets/Sprites/UI/LevelImages/Group 178.png
     m_ReadOnly: 0

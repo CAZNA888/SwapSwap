@@ -2578,7 +2578,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1503882365
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3167,9 +3167,6 @@ MonoBehaviour:
   - name: Group185
     sprite: {fileID: 546925403, guid: fcc143df0b23d054fbbef1fc33f8459e, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 185.png
-  - name: Group186
-    sprite: {fileID: 1464154200, guid: 1f04fac97320af24bb3e32e85c8a25fc, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/Group 186.png
   - name: Group187
     sprite: {fileID: 709588380, guid: 51c2cd23b611bd741bd13282c8f950b9, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 187.png
