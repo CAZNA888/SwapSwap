@@ -69,7 +69,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 512
+    maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -139,10 +139,10 @@ TextureImporter:
       name: Group 289_0
       rect:
         serializedVersion: 2
-        x: 72
+        x: 288
         y: 0
-        width: 368
-        height: 512
+        width: 1472
+        height: 2048
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}

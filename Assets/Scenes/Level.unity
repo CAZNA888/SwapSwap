@@ -3930,6 +3930,9 @@ MonoBehaviour:
   difficultLevelPeriod: 10
   difficultLevelUIObject: {fileID: 1014544676}
   difficultLevelDisplayDuration: 1
+  frontSpriteSizeMultiplier: 0.25
+  backSpriteSizeMultiplier: 1
+  cardPrefabSizeMultiplier: 1
 --- !u!4 &1733133784
 Transform:
   m_ObjectHideFlags: 0
@@ -4579,8 +4582,8 @@ MonoBehaviour:
   cardSpacing: 0
   cardSpan: -0.01
   cardHeight: -0.02
-  spriteBaseWidth: 3.68
-  colliderEffectiveWidth: 3.68
+  spriteBaseWidth: 14.72
+  colliderEffectiveWidth: 14.72
   deckPosition: {x: 5, y: -5}
   moneyTargetPosition: {x: -8, y: 4}
   dealDelay: 0.1

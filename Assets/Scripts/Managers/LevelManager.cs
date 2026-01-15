@@ -31,6 +31,18 @@ public class LevelManager : MonoBehaviour
     [Tooltip("Длительность показа GameObject в сложном уровне (l секунд)")]
     public float difficultLevelDisplayDuration = 3f;
     
+    [Header("Front Sprite Settings")]
+    [Tooltip("Мультипликатор размера front sprite (переднего спрайта карточки). 1.0 = обычный размер, <1.0 = уменьшение, >1.0 = увеличение")]
+    public float frontSpriteSizeMultiplier = 1.0f;
+    
+    [Header("Back Sprite Settings")]
+    [Tooltip("Мультипликатор размера back sprite (обратного спрайта карточки). 1.0 = обычный размер, <1.0 = уменьшение, >1.0 = увеличение")]
+    public float backSpriteSizeMultiplier = 1.0f;
+    
+    [Header("Card Prefab Settings")]
+    [Tooltip("Мультипликатор размера всего префаба карточки. 1.0 = обычный размер, <1.0 = уменьшение, >1.0 = увеличение. Применяется ко всему префабу (включая рамки)")]
+    public float cardPrefabSizeMultiplier = 1.0f;
+    
     private int currentLevel;
     private const string LEVEL_KEY = "CurrentLevel";
     
@@ -362,6 +374,30 @@ public class LevelManager : MonoBehaviour
         int gridSize = CalculateGridSize();
         bool isDifficult = IsDifficultLevel();
         return $"Level: {currentLevel}, Grid Size: {gridSize}x{gridSize}, Difficult: {isDifficult}";
+    }
+    
+    /// <summary>
+    /// Возвращает мультипликатор размера front sprite для текущего уровня
+    /// </summary>
+    public float GetFrontSpriteMultiplier()
+    {
+        return frontSpriteSizeMultiplier;
+    }
+    
+    /// <summary>
+    /// Возвращает мультипликатор размера back sprite для текущего уровня
+    /// </summary>
+    public float GetBackSpriteMultiplier()
+    {
+        return backSpriteSizeMultiplier;
+    }
+    
+    /// <summary>
+    /// Возвращает мультипликатор размера всего префаба карточки для текущего уровня
+    /// </summary>
+    public float GetCardPrefabMultiplier()
+    {
+        return cardPrefabSizeMultiplier;
     }
 }
 

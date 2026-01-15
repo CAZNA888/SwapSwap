@@ -129,11 +129,7 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             // Поднимаем карточки выше (изменяем sortingOrder)
             foreach (PuzzlePiece piece in selectedGroup)
             {
-                SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
-                if (sr != null)
-                {
-                    sr.sortingOrder = 10; // Выше остальных
-                }
+                piece.SetCardSortingOrder(10); // Выше остальных
                 
                 // Поднимаем рамки выше карточки
                 BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
@@ -195,11 +191,7 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             if (collider != null) collider.enabled = true;
             
             // ВАЖНО: Убеждаемся, что перетаскиваемые карточки остаются выше всех остальных
-            SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
-            if (sr != null)
-            {
-                sr.sortingOrder = 10; // Выше остальных
-            }
+            piece.SetCardSortingOrder(10); // Выше остальных
             
             // Поднимаем рамки выше карточки
             BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
@@ -368,10 +360,8 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         // Устанавливаем правильный sortingOrder для обеих карточек во время анимации
         // Карточка А (draggedPiece) остается высокой - уже установлено в OnPointerDown (10)
         // Карточка Б (targetPiece) - понижаем, чтобы была ниже карточки А
-        SpriteRenderer sr1 = piece1.GetComponent<SpriteRenderer>();
-        SpriteRenderer sr2 = piece2.GetComponent<SpriteRenderer>();
-        if (sr1 != null) sr1.sortingOrder = 10; // Карточка А остается высокой
-        if (sr2 != null) sr2.sortingOrder = 5; // Карточка Б ниже карточки А
+        piece1.SetCardSortingOrder(10); // Карточка А остается высокой
+        piece2.SetCardSortingOrder(5); // Карточка Б ниже карточки А
         
         // Рамки карточки А остаются высокими (11) - уже установлено в OnPointerDown
         // Рамки карточки Б - ниже рамок А, но выше самой карточки Б
@@ -436,8 +426,8 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             connectionManager.CheckAllConnections();
             
             // Возвращаем sortingOrder карточек к исходным значениям
-            if (sr1 != null) sr1.sortingOrder = 0;
-            if (sr2 != null) sr2.sortingOrder = 0;
+            piece1.SetCardSortingOrder(0);
+            piece2.SetCardSortingOrder(0);
             
             // Возвращаем sortingOrder рамок к исходным значениям
             if (br1 != null) br1.SetBordersSortingOrder(1);
@@ -496,8 +486,7 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         // Это гарантирует, что все карточки (включая стоящие на месте) будут в piecesOnGrid
         connectionManager.SyncWithOccupiedCells(occupiedCells);
         
-        SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
-        if (sr != null) sr.sortingOrder = 0;
+        piece.SetCardSortingOrder(0);
         
         // Возвращаем sortingOrder рамок
         BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
@@ -686,8 +675,7 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                     if (collider != null) collider.enabled = true;
                     
                     // Устанавливаем низкий sortingOrder для мешающих карточек (ниже группы)
-                    SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
-                    if (sr != null) sr.sortingOrder = 5; // Ниже группы
+                    piece.SetCardSortingOrder(5); // Ниже группы
                     
                     BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
                     if (borderRenderer != null)
@@ -747,8 +735,7 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             tweens.Add(tween);
             
             // Убеждаемся, что карточки группы имеют высокий sortingOrder (уже установлено в OnPointerDown, но для надежности)
-            SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
-            if (sr != null) sr.sortingOrder = 10; // Группа остается высокой
+            piece.SetCardSortingOrder(10); // Группа остается высокой
             
             BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
             if (borderRenderer != null)
@@ -875,8 +862,7 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                     if (collider != null) collider.enabled = true;
                     
                     // Устанавливаем низкий sortingOrder для оставшихся карточек (ниже группы)
-                    SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
-                    if (sr != null) sr.sortingOrder = 5; // Ниже группы
+                    piece.SetCardSortingOrder(5); // Ниже группы
                     
                     BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
                     if (borderRenderer != null)
@@ -972,8 +958,7 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             // Возвращаем sortingOrder для карточек группы
             foreach (PuzzlePiece piece in group)
             {
-                SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
-                if (sr != null) sr.sortingOrder = 0;
+                piece.SetCardSortingOrder(0);
                 
                 BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
                 if (borderRenderer != null)
@@ -985,8 +970,7 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             // Возвращаем sortingOrder для мешающих карточек
             foreach (PuzzlePiece piece in piecesToMove)
             {
-                SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
-                if (sr != null) sr.sortingOrder = 0;
+                piece.SetCardSortingOrder(0);
                 
                 BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
                 if (borderRenderer != null)
@@ -998,8 +982,7 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             // Возвращаем sortingOrder для оставшихся карточек
             foreach (PuzzlePiece piece in remainingPiecesToMove)
             {
-                SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
-                if (sr != null) sr.sortingOrder = 0;
+                piece.SetCardSortingOrder(0);
                 
                 BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
                 if (borderRenderer != null)
@@ -1273,8 +1256,7 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                 PuzzlePiece piece = hit.GetComponent<PuzzlePiece>();
                 if (piece != null && (selectedGroup == null || !selectedGroup.Contains(piece)))
                 {
-                    SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
-                    int sortingOrder = sr != null ? sr.sortingOrder : 0;
+                    int sortingOrder = piece.GetCardSortingOrder();
                     
                     // Выбираем карточку с наименьшим sortingOrder (ниже всех)
                     if (sortingOrder < lowestSortingOrder)
@@ -1376,8 +1358,7 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                 // Возвращаем sortingOrder для всех карточек группы после завершения анимации
                 foreach (PuzzlePiece piece in group)
                 {
-                    SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
-                    if (sr != null) sr.sortingOrder = 0;
+                    piece.SetCardSortingOrder(0);
                     
                     BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
                     if (borderRenderer != null)

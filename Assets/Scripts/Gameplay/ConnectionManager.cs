@@ -364,12 +364,8 @@ public class ConnectionManager : MonoBehaviour
             }
             
             // Store and set card sorting order
-            SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
-            if (sr != null)
-            {
-                originalCardSortingOrders[piece] = sr.sortingOrder;
-                sr.sortingOrder = ANIMATION_CARD_SORTING_ORDER;
-            }
+            originalCardSortingOrders[piece] = piece.GetCardSortingOrder();
+            piece.SetCardSortingOrder(ANIMATION_CARD_SORTING_ORDER);
             
             // Store and set border sorting order
             BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
@@ -434,11 +430,7 @@ public class ConnectionManager : MonoBehaviour
                     // Restore card sorting order
                     if (originalCardSortingOrders.ContainsKey(piece))
                     {
-                        SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
-                        if (sr != null)
-                        {
-                            sr.sortingOrder = originalCardSortingOrders[piece];
-                        }
+                        piece.SetCardSortingOrder(originalCardSortingOrders[piece]);
                     }
                     
                     // Restore border sorting order
@@ -488,11 +480,7 @@ public class ConnectionManager : MonoBehaviour
                     // Restore card sorting order
                     if (originalCardSortingOrders.ContainsKey(piece))
                     {
-                        SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
-                        if (sr != null)
-                        {
-                            sr.sortingOrder = originalCardSortingOrders[piece];
-                        }
+                        piece.SetCardSortingOrder(originalCardSortingOrders[piece]);
                     }
                     
                     // Restore border sorting order

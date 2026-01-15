@@ -17,16 +17,23 @@ public class PuzzlePiece : MonoBehaviour
     public GameObject[] borderParts = new GameObject[4]; // 0=верх, 1=низ, 2=лево, 3=право
     public bool[] isConnected = new bool[4]; // Соединения со всех сторон
     
-    private SpriteRenderer spriteRenderer;
+    [Header("Card Sprite")]
+    [Tooltip("Дочерний объект со SpriteRenderer для отображения карточки. Если не установлен, создается автоматически.")]
+    public GameObject cardSpriteContainer;
+    [Tooltip("SpriteRenderer дочернего объекта. Если не установлен, находится автоматически.")]
+    public SpriteRenderer cardSpriteRenderer;
+    
+    // Мультипликаторы масштабирования для front и back sprite
+    private float frontSpriteScaleMultiplier = 1.0f;
+    private float backSpriteScaleMultiplier = 1.0f;
+    
     private PuzzleGrid grid;
     
     void Awake()
     {
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        if (spriteRenderer == null)
-        {
-            spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
-        }
+        // НЕ создаем SpriteRenderer на главном объекте!
+        // Вместо этого создаем или находим дочерний объект
+     
     }
     
     public void Initialize(int index, Sprite front, Sprite back, PuzzleGrid puzzleGrid)
@@ -61,9 +68,10 @@ public class PuzzlePiece : MonoBehaviour
         #endif
         
         // Устанавливаем обратную сторону по умолчанию
-        if (spriteRenderer != null && backSprite != null)
+        if (cardSpriteRenderer != null && backSprite != null)
         {
-            spriteRenderer.sprite = backSprite;
+            cardSpriteRenderer.sprite = backSprite;
+            cardSpriteRenderer.sortingOrder = 0; // По умолчанию
         }
     }
     
@@ -114,10 +122,17 @@ public class PuzzlePiece : MonoBehaviour
     public void Flip()
     {
         isFlipped = !isFlipped;
-        if (spriteRenderer != null)
+        if (cardSpriteRenderer != null)
         {
             Sprite newSprite = isFlipped ? frontSprite : backSprite;
-            spriteRenderer.sprite = newSprite;
+            cardSpriteRenderer.sprite = newSprite;
+            
+            // Применяем правильный мультипликатор масштабирования в зависимости от стороны
+            float multiplier = isFlipped ? frontSpriteScaleMultiplier : backSpriteScaleMultiplier;
+            if (cardSpriteContainer != null)
+            {
+                cardSpriteContainer.transform.localScale = Vector3.one * multiplier;
+            }
             
             // Проверяем, что размеры спрайтов совпадают после переворота
             // ИСПРАВЛЕНО: Используем rect и pixelsPerUnit вместо bounds.size для стабильности
@@ -134,9 +149,15 @@ public class PuzzlePiece : MonoBehaviour
                     backSprite.rect.height / backSprite.pixelsPerUnit
                 );
                 
-                // Вычисляем размер с учетом текущего масштаба
-                Vector2 newSpriteSizeScaled = newSpriteSize * new Vector2(transform.localScale.x, transform.localScale.y);
-                Vector2 backSpriteSizeScaled = backSpriteSize * new Vector2(transform.localScale.x, transform.localScale.y);
+                // Вычисляем размер с учетом текущего масштаба (главного объекта и дочернего)
+                Vector2 mainScale = new Vector2(transform.localScale.x, transform.localScale.y);
+                Vector2 containerScale = cardSpriteContainer != null ? 
+                    new Vector2(cardSpriteContainer.transform.localScale.x, cardSpriteContainer.transform.localScale.y) : 
+                    Vector2.one;
+                Vector2 totalScale = new Vector2(mainScale.x * containerScale.x, mainScale.y * containerScale.y);
+                
+                Vector2 newSpriteSizeScaled = newSpriteSize * totalScale;
+                Vector2 backSpriteSizeScaled = backSpriteSize * totalScale;
                 
                 float sizeDiffX = Mathf.Abs(newSpriteSizeScaled.x - backSpriteSizeScaled.x) / Mathf.Max(newSpriteSizeScaled.x, backSpriteSizeScaled.x);
                 float sizeDiffY = Mathf.Abs(newSpriteSizeScaled.y - backSpriteSizeScaled.y) / Mathf.Max(newSpriteSizeScaled.y, backSpriteSizeScaled.y);
@@ -170,9 +191,9 @@ public class PuzzlePiece : MonoBehaviour
     
     public void SetSprite(Sprite sprite)
     {
-        if (spriteRenderer != null)
+        if (cardSpriteRenderer != null)
         {
-            spriteRenderer.sprite = sprite;
+            cardSpriteRenderer.sprite = sprite;
         }
     }
     
@@ -185,7 +206,7 @@ public class PuzzlePiece : MonoBehaviour
     // Устанавливает размер карточки через масштабирование префаба
     public void SetCardSize(Vector2 targetSize)
     {
-        if (spriteRenderer != null && backSprite != null)
+        if (cardSpriteRenderer != null && backSprite != null)
         {
             // ВАЖНО: Используем расчет на основе rect и pixelsPerUnit вместо bounds.size
             // Это гарантирует стабильные размеры независимо от pixel ratio устройства
@@ -200,6 +221,84 @@ public class PuzzlePiece : MonoBehaviour
             
             // Применяем масштаб ко всему префабу (включая дочерние элементы - рамки)
             transform.localScale = new Vector3(scaleX, scaleY, 1f);
+        }
+    }
+    
+    // Возвращает SpriteRenderer из дочернего объекта
+    public SpriteRenderer GetCardSpriteRenderer()
+    {
+        // Если ссылка потеряна, пытаемся восстановить
+        if (cardSpriteRenderer == null)
+        {
+            // Сначала проверяем, есть ли дочерний объект
+            if (cardSpriteContainer == null)
+            {
+                cardSpriteContainer = transform.Find("CardSpriteContainer")?.gameObject;
+            }
+            
+            // Если дочерний объект найден, получаем SpriteRenderer
+            if (cardSpriteContainer != null)
+            {
+                cardSpriteRenderer = cardSpriteContainer.GetComponent<SpriteRenderer>();
+                
+                // Если компонента нет, создаем его
+                if (cardSpriteRenderer == null)
+                {
+                    cardSpriteRenderer = cardSpriteContainer.AddComponent<SpriteRenderer>();
+                }
+            }
+        }
+        
+        return cardSpriteRenderer;
+    }
+    
+    // Устанавливает sortingOrder в дочернем SpriteRenderer
+    public void SetCardSortingOrder(int order)
+    {
+        if (cardSpriteRenderer != null)
+        {
+            cardSpriteRenderer.sortingOrder = order;
+        }
+    }
+    
+    // Возвращает sortingOrder из дочернего SpriteRenderer
+    public int GetCardSortingOrder()
+    {
+        return cardSpriteRenderer != null ? cardSpriteRenderer.sortingOrder : 0;
+    }
+    
+    // Устанавливает мультипликатор масштабирования для front sprite
+    public void SetFrontSpriteScale(float multiplier)
+    {
+        frontSpriteScaleMultiplier = multiplier;
+        // Применяем только если карточка сейчас показывает front sprite
+        if (cardSpriteContainer != null && isFlipped)
+        {
+            cardSpriteContainer.transform.localScale = Vector3.one * multiplier;
+        }
+    }
+    
+    // Устанавливает мультипликатор масштабирования для back sprite
+    public void SetBackSpriteScale(float multiplier)
+    {
+        backSpriteScaleMultiplier = multiplier;
+        // Применяем только если карточка сейчас показывает back sprite
+        if (cardSpriteContainer != null && !isFlipped)
+        {
+            cardSpriteContainer.transform.localScale = Vector3.one * multiplier;
+        }
+    }
+    
+    // Устанавливает оба мультипликатора одновременно
+    public void SetSpriteScales(float frontMultiplier, float backMultiplier)
+    {
+        frontSpriteScaleMultiplier = frontMultiplier;
+        backSpriteScaleMultiplier = backMultiplier;
+        // Применяем правильный мультипликатор в зависимости от текущего состояния
+        if (cardSpriteContainer != null)
+        {
+            float multiplier = isFlipped ? frontMultiplier : backMultiplier;
+            cardSpriteContainer.transform.localScale = Vector3.one * multiplier;
         }
     }
 }

@@ -505,6 +505,17 @@ public class GameManager : MonoBehaviour
         
         Debug.Log($"GameManager: Grid {gridRows}x{gridCols} - Cell size: {cellSize.x:F2}x{cellSize.y:F2}, Card size: {cardSize.x:F2}x{cardSize.y:F2}, Aspect ratio: {cardAspectRatio:F2}, Negative spacing: {hasNegativeSpacing} (cardSpan={cardSpan:F2}, cardHeight={cardHeight:F2})");
         
+        // Применяем мультипликатор размера всего префаба (если установлен)
+        if (levelManager != null)
+        {
+            float prefabMultiplier = levelManager.GetCardPrefabMultiplier();
+            if (prefabMultiplier != 1.0f)
+            {
+                cardSize *= prefabMultiplier;
+                Debug.Log($"GameManager: Applied card prefab multiplier: {prefabMultiplier:F2}, New card size: {cardSize.x:F2}x{cardSize.y:F2}");
+            }
+        }
+        
         // Передаем реальный размер карточки в PuzzleGrid для правильного позиционирования
         puzzleGrid.SetActualCardSize(cardSize);
         
@@ -576,7 +587,17 @@ public class GameManager : MonoBehaviour
             // Размер будет применен через SetCardSize к transform префаба (масштабирует весь префаб)
             piece.Initialize(i, frontSprite, cardBackSprite, puzzleGrid);
             
+            // ВАЖНО: Сначала применяем мультипликаторы размера для front и back sprite к контейнеру,
+            // а потом устанавливаем размер всего префаба. Это гарантирует правильный итоговый масштаб.
+            if (levelManager != null)
+            {
+                float frontMultiplier = levelManager.GetFrontSpriteMultiplier();
+                float backMultiplier = levelManager.GetBackSpriteMultiplier();
+                piece.SetSpriteScales(frontMultiplier, backMultiplier);
+            }
+            
             // Устанавливаем размер карточки - это масштабирует весь префаб (включая рамки)
+            // Вызывается ПОСЛЕ SetFrontSpriteScale, чтобы итоговый масштаб контейнера был правильным
             piece.SetCardSize(cardSize);
             
             // Store original scale from first card (all cards have same size on same level)
@@ -586,8 +607,8 @@ public class GameManager : MonoBehaviour
                 Debug.Log($"GameManager: Stored original card scale: {originalCardScale}");
             }
             
-            // Устанавливаем спрайт обратной стороны
-            SpriteRenderer sr = pieceObj.GetComponent<SpriteRenderer>();
+            // Устанавливаем спрайт обратной стороны через новую функцию
+            SpriteRenderer sr = piece.GetCardSpriteRenderer();
             if (sr != null)
             {
                 sr.sprite = cardBackSprite; // Обратная сторона

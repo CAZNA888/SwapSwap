@@ -630,12 +630,8 @@ public class HintManager : MonoBehaviour
         }
         
         // Сохраняем оригинальные sortingOrder для первой карточки
-        SpriteRenderer sr1 = piece1.GetComponent<SpriteRenderer>();
-        if (sr1 != null)
-        {
-            originalCardSortingOrders[piece1] = sr1.sortingOrder;
-            sr1.sortingOrder = HINT_FIRST_CARD_SORTING_ORDER; // Самая высокая
-        }
+        originalCardSortingOrders[piece1] = piece1.GetCardSortingOrder();
+        piece1.SetCardSortingOrder(HINT_FIRST_CARD_SORTING_ORDER); // Самая высокая
         
         BorderRenderer br1 = piece1.GetComponentInChildren<BorderRenderer>();
         if (br1 != null)
@@ -655,12 +651,8 @@ public class HintManager : MonoBehaviour
         }
         
         // Сохраняем оригинальные sortingOrder для второй карточки
-        SpriteRenderer sr2 = piece2.GetComponent<SpriteRenderer>();
-        if (sr2 != null)
-        {
-            originalCardSortingOrders[piece2] = sr2.sortingOrder;
-            sr2.sortingOrder = HINT_SECOND_CARD_SORTING_ORDER; // Ниже первой, но выше остальных
-        }
+        originalCardSortingOrders[piece2] = piece2.GetCardSortingOrder();
+        piece2.SetCardSortingOrder(HINT_SECOND_CARD_SORTING_ORDER); // Ниже первой, но выше остальных
         
         BorderRenderer br2 = piece2.GetComponentInChildren<BorderRenderer>();
         if (br2 != null)
@@ -710,26 +702,22 @@ public class HintManager : MonoBehaviour
         {
             PuzzlePiece piece = group[i];
             
-            SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
-            if (sr != null)
+            originalCardSortingOrders[piece] = piece.GetCardSortingOrder();
+            
+            if (i == 0)
             {
-                originalCardSortingOrders[piece] = sr.sortingOrder;
-                
-                if (i == 0)
-                {
-                    // Первая карточка группы - самая высокая
-                    sr.sortingOrder = HINT_FIRST_CARD_SORTING_ORDER;
-                }
-                else if (i == 1)
-                {
-                    // Вторая карточка группы - ниже первой
-                    sr.sortingOrder = HINT_SECOND_CARD_SORTING_ORDER;
-                }
-                else
-                {
-                    // Остальные карточки - выше обычных, но ниже первых двух
-                    sr.sortingOrder = HINT_OTHER_CARD_SORTING_ORDER;
-                }
+                // Первая карточка группы - самая высокая
+                piece.SetCardSortingOrder(HINT_FIRST_CARD_SORTING_ORDER);
+            }
+            else if (i == 1)
+            {
+                // Вторая карточка группы - ниже первой
+                piece.SetCardSortingOrder(HINT_SECOND_CARD_SORTING_ORDER);
+            }
+            else
+            {
+                // Остальные карточки - выше обычных, но ниже первых двух
+                piece.SetCardSortingOrder(HINT_OTHER_CARD_SORTING_ORDER);
             }
             
             BorderRenderer br = piece.GetComponentInChildren<BorderRenderer>();
@@ -792,11 +780,7 @@ public class HintManager : MonoBehaviour
                 // Восстанавливаем sortingOrder карточки
                 if (originalCardSortingOrders.ContainsKey(piece))
                 {
-                    SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
-                    if (sr != null)
-                    {
-                        sr.sortingOrder = originalCardSortingOrders[piece];
-                    }
+                    piece.SetCardSortingOrder(originalCardSortingOrders[piece]);
                     originalCardSortingOrders.Remove(piece);
                 }
                 
@@ -852,11 +836,7 @@ public class HintManager : MonoBehaviour
                 // Восстанавливаем sortingOrder карточки
                 if (originalCardSortingOrders.ContainsKey(piece))
                 {
-                    SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
-                    if (sr != null)
-                    {
-                        sr.sortingOrder = originalCardSortingOrders[piece];
-                    }
+                    piece.SetCardSortingOrder(originalCardSortingOrders[piece]);
                     originalCardSortingOrders.Remove(piece);
                 }
                 
@@ -907,11 +887,7 @@ public class HintManager : MonoBehaviour
                 // Восстанавливаем sortingOrder карточки
                 if (originalCardSortingOrders.ContainsKey(piece))
                 {
-                    SpriteRenderer sr = piece.GetComponent<SpriteRenderer>();
-                    if (sr != null)
-                    {
-                        sr.sortingOrder = originalCardSortingOrders[piece];
-                    }
+                    piece.SetCardSortingOrder(originalCardSortingOrders[piece]);
                     originalCardSortingOrders.Remove(piece);
                 }
                 
