@@ -3489,9 +3489,6 @@ MonoBehaviour:
   - name: Group155
     sprite: {fileID: -456306766, guid: e2cf7338a26539c4e918354e7cf92d69, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 155.png
-  - name: gora
-    sprite: {fileID: -532509571, guid: 62fa78c3a8c735e4087878736b08c8a3, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/gora.png
   - name: Group156
     sprite: {fileID: -1096969534, guid: 1333a99e992089446b963c7a73504c86, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 156.png
@@ -3522,9 +3519,6 @@ MonoBehaviour:
   - name: Group165
     sprite: {fileID: 799530829, guid: bb3e8c5ad19c4874db50463f22813ad9, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 165.png
-  - name: cat
-    sprite: {fileID: -81096595, guid: 11514cda10da2c14ea34005677549f3c, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/cat.png
   - name: Group166
     sprite: {fileID: -375903243, guid: a689e24c56af37644911727ce8194cb2, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 166.png
@@ -3576,9 +3570,6 @@ MonoBehaviour:
   - name: Group182
     sprite: {fileID: 704999392, guid: dd93e308b7fc42d43b4c92e65bf0b25e, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 182.png
-  - name: tiger
-    sprite: {fileID: 1437040456, guid: b5c1fcdabb4f32146866a356189c725a, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/tiger.png
   - name: Group183
     sprite: {fileID: -464681596, guid: 68b0cb3261afc3b49a061b4cb62be504, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 183.png
@@ -3618,9 +3609,6 @@ MonoBehaviour:
   - name: Group195
     sprite: {fileID: -1653970392, guid: d3cab3a5753f0fd4db4d8fa7a4cc613b, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 195.png
-  - name: cutecat
-    sprite: {fileID: -2023690594, guid: d967c0b58ce587248ba15231fd47eed0, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/cutecat.png
   - name: Group196
     sprite: {fileID: 1669060823, guid: 5742b86b6dd232e4ebe4f7be052cd3ac, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 196.png
@@ -3936,15 +3924,6 @@ MonoBehaviour:
   - name: Group299
     sprite: {fileID: 1361955581, guid: a61a4403113de2f4682047df8d06f72f, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 299.png
-  - name: pes
-    sprite: {fileID: -652139845, guid: c9ac4570172241048b1f39d07da9432c, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/pes.png
-  - name: Group 1 (1)_0
-    sprite: {fileID: -1398352938, guid: fb2ed3d4b6638e249b5615c661cc8f22, type: 3}
-    addressableKey: Group 1 (1)
-  - name: babochka
-    sprite: {fileID: 222651943, guid: b6ad31ef97f32f04693f515cdd533517, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/volk.png
   startGridSize: 2
   gridSizeIncreasePeriod: 25
   maxGridSize: 8
@@ -4591,7 +4570,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sourceImage: {fileID: 0}
-  cardBackSprite: {fileID: 1662436762, guid: 5b427e9ff1fb6e3459778285b195dd6c, type: 3}
+  cardBackSprite: {fileID: -1042478267, guid: 03d1996e8c31d324ea9a17ade7819150, type: 3}
   borderSprite: {fileID: -1932661072, guid: 05549dc17bdcfe34a8b67df5d14dd1cb, type: 3}
   gridRows: 2
   gridCols: 2
@@ -4622,6 +4601,7 @@ MonoBehaviour:
   moneyAmount: 15
   coinSpawnDelay: 0.05
   coinAnimationDuration: 1
+  levelNumberText: {fileID: 1669839231}
 --- !u!4 &1934639047
 Transform:
   m_ObjectHideFlags: 0

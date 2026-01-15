@@ -67,11 +67,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 11514cda10da2c14ea34005677549f3c
-    m_Address: Assets/Sprites/UI/LevelImages/cat.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1333a99e992089446b963c7a73504c86
     m_Address: Assets/Sprites/UI/LevelImages/Group 156.png
     m_ReadOnly: 0
@@ -169,11 +164,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 306631c8af116f2449f3671656dafbb5
     m_Address: Assets/Sprites/UI/LevelImages/Group 194.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 32d24539f9a6289498e020f827d4ec11
-    m_Address: Assets/Sprites/UI/LevelImages/babochka.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -284,11 +274,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6244dda2b94ba3b4b9fa3b9d9ca6cc80
     m_Address: Assets/Sprites/UI/LevelImages/Group 191.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 62fa78c3a8c735e4087878736b08c8a3
-    m_Address: Assets/Sprites/UI/LevelImages/gora.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -522,16 +507,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: b5c1fcdabb4f32146866a356189c725a
-    m_Address: Assets/Sprites/UI/LevelImages/tiger.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: b6ad31ef97f32f04693f515cdd533517
-    m_Address: Assets/Sprites/UI/LevelImages/volk.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b72cf4f8d175bde4b81359b52e8d6551
     m_Address: Assets/Sprites/UI/LevelImages/Group 269.png
     m_ReadOnly: 0
@@ -592,11 +567,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: c9ac4570172241048b1f39d07da9432c
-    m_Address: Assets/Sprites/UI/LevelImages/pes.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c9b3e44a4c75d294b85ebe08d45b1ee6
     m_Address: Assets/Sprites/UI/LevelImages/Group 180.png
     m_ReadOnly: 0
@@ -634,11 +604,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d90f79fb882fd3740a099df796bf9f8b
     m_Address: Assets/Sprites/UI/LevelImages/Group 151.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: d967c0b58ce587248ba15231fd47eed0
-    m_Address: Assets/Sprites/UI/LevelImages/cutecat.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -764,11 +729,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f8a338934dab5064e8ae5167be8ef4a4
     m_Address: Assets/Sprites/UI/LevelImages/Group 295.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: fb2ed3d4b6638e249b5615c661cc8f22
-    m_Address: Group 1 (1)
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

@@ -19,8 +19,24 @@ public class MenuProgressUI : MonoBehaviour
     [Tooltip("Размер сетки (по умолчанию 5x5)")]
     public int gridSize = 5;
     
+    [Tooltip("Толщина рамки в пикселях (для UI отображения)")]
+    public float borderThickness = 8f;
+    
     [Tooltip("Длительность задержки между анимациями карточек")]
     public float cardAnimationDelay = 0.05f;
+    
+    [Header("Border Offsets")]
+    [Tooltip("Смещение верхней рамки (X, Y)")]
+    public Vector2 topBorderOffset = Vector2.zero;
+    
+    [Tooltip("Смещение нижней рамки (X, Y)")]
+    public Vector2 bottomBorderOffset = Vector2.zero;
+    
+    [Tooltip("Смещение левой рамки (X, Y)")]
+    public Vector2 leftBorderOffset = Vector2.zero;
+    
+    [Tooltip("Смещение правой рамки (X, Y)")]
+    public Vector2 rightBorderOffset = Vector2.zero;
     
     private MenuManager menuManager;
     private ImageSlicer imageSlicer;
@@ -179,6 +195,11 @@ public class MenuProgressUI : MonoBehaviour
         
         // Проверяем новую карточку ПЕРЕД обновлением прогресса
         CheckAndAnimateNewCard();
+        
+        // Обновляем рамки после загрузки карточек из сохранений
+        // (CheckAndAnimateNewCard вызывает UpdateProgress, который уже обновляет рамки,
+        // но вызываем еще раз для гарантии после полной загрузки)
+        UpdateAllBorders();
     }
     
     /// <summary>
@@ -304,6 +325,230 @@ public class MenuProgressUI : MonoBehaviour
                 menuCards[i].SetUnlocked(isUnlocked);
             }
         }
+        
+        // Обновляем рамки после изменения состояния карточек
+        UpdateAllBorders();
+    }
+    
+    /// <summary>
+    /// Обновляет рамки для всех карточек в зависимости от их состояния и соседей
+    /// </summary>
+    private void UpdateAllBorders()
+    {
+        for (int i = 0; i < menuCards.Count; i++)
+        {
+            UpdateCardBorders(i);
+        }
+    }
+    
+    /// <summary>
+    /// Обновляет рамки для конкретной карточки
+    /// </summary>
+    private void UpdateCardBorders(int cardIndex)
+    {
+        if (cardIndex < 0 || cardIndex >= menuCards.Count) return;
+        
+        MenuCard menuCard = menuCards[cardIndex];
+        if (menuCard == null) return;
+        
+        // Находим BorderRenderer в префабе (может быть в дочерних объектах)
+        BorderRenderer borderRenderer = menuCard.GetComponentInChildren<BorderRenderer>();
+        if (borderRenderer == null)
+        {
+            // Если нет BorderRenderer, значит это не префаб с рамками - пропускаем
+            return;
+        }
+        
+        // Настраиваем UI рамки для каждого border объекта
+        if (menuCard.cardImage != null && menuCard.cardImage.rectTransform != null)
+        {
+            SetupBorderAsUI(borderRenderer.topBorder, menuCard.cardImage.rectTransform, 0); // Top
+            SetupBorderAsUI(borderRenderer.bottomBorder, menuCard.cardImage.rectTransform, 1); // Bottom
+            SetupBorderAsUI(borderRenderer.leftBorder, menuCard.cardImage.rectTransform, 2); // Left
+            SetupBorderAsUI(borderRenderer.rightBorder, menuCard.cardImage.rectTransform, 3); // Right
+        }
+        
+        // Проверяем, открыта ли карточка
+        bool isUnlocked = menuCard.IsUnlocked();
+        
+        // Если карточка закрыта - скрываем все рамки
+        if (!isUnlocked)
+        {
+            SetBordersActive(borderRenderer, new bool[4] { false, false, false, false });
+            return;
+        }
+        
+        // Вычисляем позицию карточки в сетке
+        int row = cardIndex / gridSize;
+        int col = cardIndex % gridSize;
+        
+        // Проверяем соседей: 0=верх, 1=низ, 2=лево, 3=право
+        bool[] connections = new bool[4];
+        
+        // Верхний сосед
+        int topIndex = cardIndex - gridSize;
+        connections[0] = (row > 0 && topIndex >= 0 && topIndex < menuCards.Count && menuCards[topIndex].IsUnlocked());
+        
+        // Нижний сосед
+        int bottomIndex = cardIndex + gridSize;
+        connections[1] = (row < gridSize - 1 && bottomIndex < menuCards.Count && menuCards[bottomIndex].IsUnlocked());
+        
+        // Левый сосед
+        int leftIndex = cardIndex - 1;
+        connections[2] = (col > 0 && leftIndex >= 0 && leftIndex < menuCards.Count && menuCards[leftIndex].IsUnlocked());
+        
+        // Правый сосед
+        int rightIndex = cardIndex + 1;
+        connections[3] = (col < gridSize - 1 && rightIndex < menuCards.Count && menuCards[rightIndex].IsUnlocked());
+        
+        // Обновляем видимость рамок: показываем там, где нет соединения
+        bool[] shouldShow = new bool[4];
+        for (int i = 0; i < 4; i++)
+        {
+            shouldShow[i] = !connections[i]; // Показываем если НЕ соединена
+        }
+        SetBordersActive(borderRenderer, shouldShow);
+    }
+    
+    /// <summary>
+    /// Настраивает border объект как UI элемент (добавляет Image и настраивает RectTransform)
+    /// Использует спрайт, который уже есть на объекте (из SpriteRenderer)
+    /// </summary>
+    private void SetupBorderAsUI(GameObject borderObj, RectTransform cardRect, int side)
+    {
+        if (borderObj == null || cardRect == null) return;
+        
+        // Получаем спрайт из существующего SpriteRenderer
+        SpriteRenderer spriteRenderer = borderObj.GetComponent<SpriteRenderer>();
+        Sprite borderSprite = null;
+        
+        if (spriteRenderer != null && spriteRenderer.sprite != null)
+        {
+            borderSprite = spriteRenderer.sprite;
+            // Отключаем SpriteRenderer, но не удаляем (для игры)
+            spriteRenderer.enabled = false;
+        }
+        else
+        {
+            // Если нет спрайта, пропускаем
+            return;
+        }
+        
+        // Добавляем RectTransform, если его нет
+        RectTransform borderRect = borderObj.GetComponent<RectTransform>();
+        if (borderRect == null)
+        {
+            borderRect = borderObj.AddComponent<RectTransform>();
+        }
+        
+        // Делаем borderObj дочерним объектом карточки (если еще не является)
+        if (borderObj.transform.parent != cardRect)
+        {
+            borderObj.transform.SetParent(cardRect);
+        }
+        
+        // Рассчитываем правильный размер на основе реального размера спрайта
+        // Конвертируем из Unity units в пиксели UI (обычно 1 unit = 100 pixels для Canvas)
+        Vector2 spriteSizeInPixels = new Vector2(
+            borderSprite.rect.width / borderSprite.pixelsPerUnit * 100f,
+            borderSprite.rect.height / borderSprite.pixelsPerUnit * 100f
+        );
+        
+        // Настраиваем RectTransform в зависимости от стороны
+        borderRect.localRotation = Quaternion.identity;
+        borderRect.localPosition = Vector3.zero;
+        
+        // Коэффициент коррекции для верхних и нижних рамок (примерно 16% больше)
+        const float topBottomScaleCorrection = 1.16f;
+        
+        switch (side)
+        {
+            case 0: // Top
+                borderRect.anchorMin = new Vector2(0, 1);
+                borderRect.anchorMax = new Vector2(1, 1);
+                // НЕ устанавливаем pivot - оставляем как в префабе
+                borderRect.anchoredPosition = topBorderOffset; // Используем смещение
+                borderRect.sizeDelta = new Vector2(0, spriteSizeInPixels.y);
+                borderRect.localScale = new Vector3(topBottomScaleCorrection, topBottomScaleCorrection, topBottomScaleCorrection);
+                break;
+                
+            case 1: // Bottom
+                borderRect.anchorMin = new Vector2(0, 0);
+                borderRect.anchorMax = new Vector2(1, 0);
+                // НЕ устанавливаем pivot - оставляем как в префабе
+                borderRect.anchoredPosition = bottomBorderOffset; // Используем смещение
+                borderRect.sizeDelta = new Vector2(0, spriteSizeInPixels.y);
+                borderRect.localScale = new Vector3(topBottomScaleCorrection, topBottomScaleCorrection, topBottomScaleCorrection);
+                break;
+                
+            case 2: // Left
+                borderRect.anchorMin = new Vector2(0, 0);
+                borderRect.anchorMax = new Vector2(0, 1);
+                // НЕ устанавливаем pivot - оставляем как в префабе
+                borderRect.anchoredPosition = leftBorderOffset; // Используем смещение
+                borderRect.sizeDelta = new Vector2(spriteSizeInPixels.x, 0);
+                borderRect.localScale = Vector3.one;
+                break;
+                
+            case 3: // Right
+                borderRect.anchorMin = new Vector2(1, 0);
+                borderRect.anchorMax = new Vector2(1, 1);
+                // НЕ устанавливаем pivot - оставляем как в префабе
+                borderRect.anchoredPosition = rightBorderOffset; // Используем смещение
+                borderRect.sizeDelta = new Vector2(spriteSizeInPixels.x, 0);
+                borderRect.localScale = Vector3.one;
+                break;
+        }
+        
+        // Добавляем или получаем Image компонент
+        Image borderImage = borderObj.GetComponent<Image>();
+        if (borderImage == null)
+        {
+            borderImage = borderObj.AddComponent<Image>();
+        }
+        
+        // Устанавливаем тот же спрайт, что был в SpriteRenderer
+        borderImage.sprite = borderSprite;
+        borderImage.type = Image.Type.Simple; // ИСПРАВЛЕНО: Simple вместо Sliced для предотвращения искажений
+        borderImage.preserveAspect = true; // ИСПРАВЛЕНО: Сохраняем пропорции спрайта
+        borderImage.raycastTarget = false; // Не блокируем клики
+        
+        // Убеждаемся, что Image включен
+        borderImage.enabled = true;
+    }
+    
+    /// <summary>
+    /// Устанавливает видимость рамок через Image компоненты (изолированно от BorderRenderer)
+    /// </summary>
+    private void SetBordersActive(BorderRenderer borderRenderer, bool[] shouldShow)
+    {
+        if (borderRenderer == null || shouldShow == null || shouldShow.Length < 4) return;
+        
+        // Устанавливаем видимость для каждой рамки через Image
+        SetBorderImageActive(borderRenderer.topBorder, shouldShow[0]);
+        SetBorderImageActive(borderRenderer.bottomBorder, shouldShow[1]);
+        SetBorderImageActive(borderRenderer.leftBorder, shouldShow[2]);
+        SetBorderImageActive(borderRenderer.rightBorder, shouldShow[3]);
+    }
+    
+    /// <summary>
+    /// Устанавливает видимость рамки через Image компонент
+    /// </summary>
+    private void SetBorderImageActive(GameObject borderObj, bool active)
+    {
+        if (borderObj == null) return;
+        
+        // Используем Image для UI
+        Image borderImage = borderObj.GetComponent<Image>();
+        if (borderImage != null)
+        {
+            borderImage.enabled = active;
+        }
+        // Если Image нет, используем SetActive как fallback
+        else
+        {
+            borderObj.SetActive(active);
+        }
     }
     
     /// <summary>
@@ -336,6 +581,8 @@ public class MenuProgressUI : MonoBehaviour
     {
         card.FlipCard(() => {
             Debug.Log("MenuProgressUI: Card flip animation completed");
+            // Обновляем рамки после переворота
+            UpdateAllBorders();
         });
         
         yield return new WaitForSeconds(cardAnimationDelay);
@@ -477,6 +724,8 @@ public class MenuProgressUI : MonoBehaviour
             // Анимируем переворот (используется та же анимация, что и в GameManager)
             newCard.FlipCard(() => {
                 Debug.Log("MenuProgressUI: New card flip animation completed after level completion");
+                // Обновляем рамки после переворота
+                UpdateAllBorders();
             });
         }
         

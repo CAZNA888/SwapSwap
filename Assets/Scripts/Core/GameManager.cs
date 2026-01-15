@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
@@ -58,6 +59,10 @@ public class GameManager : MonoBehaviour
     public int moneyAmount = 15; // Количество денег для добавления (j)
     public float coinSpawnDelay = 0.05f; // Задержка между созданием монеток
     public float coinAnimationDuration = 1f; // Длительность анимации монеток
+    
+    [Header("Level Display")]
+    [Tooltip("TextMeshProUGUI для отображения номера уровня (только число)")]
+    public TextMeshProUGUI levelNumberText;
     
     // Components
     private PuzzleGrid puzzleGrid;
@@ -335,7 +340,17 @@ public class GameManager : MonoBehaviour
     private void StartGame()
     {
         Debug.Log("=== GameManager: Starting game ===");
+        UpdateLevelNumberDisplay(); // Обновляем номер уровня
         StartCoroutine(GameSequence());
+    }
+    
+    private void UpdateLevelNumberDisplay()
+    {
+        if (levelNumberText != null && levelManager != null)
+        {
+            levelNumberText.text = levelManager.GetCurrentLevel().ToString();
+            Debug.Log($"GameManager: Level number text updated to {levelManager.GetCurrentLevel()}");
+        }
     }
     
     private IEnumerator GameSequence()

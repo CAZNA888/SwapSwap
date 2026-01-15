@@ -731,8 +731,8 @@ MonoBehaviour:
   useAddressables: 1
   menuImages:
   - name: cutecat
-    sprite: {fileID: -2023690594, guid: d967c0b58ce587248ba15231fd47eed0, type: 3}
-    addressableKey: Assets/Sprites/UI/LevelImages/cutecat.png
+    sprite: {fileID: 2060686218, guid: f7ce2a9608058c54a99b348bafb69fed, type: 3}
+    addressableKey: Assets/Sprites/UI/LevelImages/Group 154.png
   - name: group156
     sprite: {fileID: -1096969534, guid: 1333a99e992089446b963c7a73504c86, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 156.png
@@ -896,9 +896,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardsGridParent: {fileID: 1339478222}
   menuCardPrefab: {fileID: 2148845125236129567, guid: c3f5838e115901b48b3894bc56f74747, type: 3}
-  cardBackSprite: {fileID: 1662436762, guid: 5b427e9ff1fb6e3459778285b195dd6c, type: 3}
+  cardBackSprite: {fileID: -1042478267, guid: 03d1996e8c31d324ea9a17ade7819150, type: 3}
   gridSize: 5
+  borderThickness: 8
   cardAnimationDelay: 0.05
+  topBorderOffset: {x: 0, y: -27}
+  bottomBorderOffset: {x: 0, y: 27}
+  leftBorderOffset: {x: 47, y: 0}
+  rightBorderOffset: {x: -47, y: 0}
 --- !u!114 &378086178
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3413,7 +3418,8 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1812643424}
   m_Father: {fileID: 378086176}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -3585,6 +3591,63 @@ RectTransform:
   m_AnchoredPosition: {x: -5, y: 0}
   m_SizeDelta: {x: -20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1001 &1520705017
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1339478222}
+    m_Modifications:
+    - target: {fileID: 783496943710619614, guid: c3f5838e115901b48b3894bc56f74747, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 783496943710619614, guid: c3f5838e115901b48b3894bc56f74747, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 783496943710619614, guid: c3f5838e115901b48b3894bc56f74747, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 783496943710619614, guid: c3f5838e115901b48b3894bc56f74747, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 783496943710619614, guid: c3f5838e115901b48b3894bc56f74747, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 783496943710619614, guid: c3f5838e115901b48b3894bc56f74747, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 783496943710619614, guid: c3f5838e115901b48b3894bc56f74747, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 783496943710619614, guid: c3f5838e115901b48b3894bc56f74747, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 783496943710619614, guid: c3f5838e115901b48b3894bc56f74747, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 783496943710619614, guid: c3f5838e115901b48b3894bc56f74747, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2148845125236129567, guid: c3f5838e115901b48b3894bc56f74747, type: 3}
+      propertyPath: m_Name
+      value: PuzzlePiece
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: c3f5838e115901b48b3894bc56f74747, type: 3}
 --- !u!1 &1550027379
 GameObject:
   m_ObjectHideFlags: 0
@@ -4127,6 +4190,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1745994216}
   m_CullTransparentMesh: 1
+--- !u!4 &1812643424 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 783496943710619614, guid: c3f5838e115901b48b3894bc56f74747, type: 3}
+  m_PrefabInstance: {fileID: 1520705017}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1920802235
 GameObject:
   m_ObjectHideFlags: 0

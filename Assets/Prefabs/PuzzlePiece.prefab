@@ -269,7 +269,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c379f9eedb918074db73a6241e5618c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardBackSprite: {fileID: 1662436762, guid: 5b427e9ff1fb6e3459778285b195dd6c, type: 3}
+  cardBackSprite: {fileID: -1042478267, guid: 03d1996e8c31d324ea9a17ade7819150, type: 3}
   borderSprite: {fileID: -1932661072, guid: 05549dc17bdcfe34a8b67df5d14dd1cb, type: 3}
   cardSize: {x: 3.6, y: 5.12}
 --- !u!212 &7664292464083100865
