@@ -3930,7 +3930,7 @@ MonoBehaviour:
   difficultLevelPeriod: 10
   difficultLevelUIObject: {fileID: 1014544676}
   difficultLevelDisplayDuration: 1
-  frontSpriteSizeMultiplier: 0.25
+  frontSpriteSizeMultiplier: 0.5
   backSpriteSizeMultiplier: 1
   cardPrefabSizeMultiplier: 1
 --- !u!4 &1733133784

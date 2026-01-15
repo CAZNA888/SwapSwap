@@ -7,10 +7,7 @@ using System.Collections.Generic;
 public class MenuManager : MonoBehaviour
 {
     [Header("Image Loading")]
-    [Tooltip("Использовать Addressables для загрузки картинок. Если false - использовать спрайты напрямую из Unity")]
-    public bool useAddressables = false;
-    
-    [Tooltip("Список картинок для меню. Заполняется один раз в инспекторе")]
+    [Tooltip("Список картинок для меню. Заполняется один раз в инспекторе. Загрузка выполняется только через Addressables")]
     public List<MenuImageData> menuImages = new List<MenuImageData>();
     
     [Header("Settings")]
@@ -223,23 +220,10 @@ public class MenuManager : MonoBehaviour
         
         MenuImageData imageData = menuImages[imageIndex];
         
-        if (!useAddressables)
-        {
-            // Unity режим - возвращаем спрайт сразу
-            if (imageData.sprite == null)
-            {
-                Debug.LogError($"MenuManager: Sprite is null for image index {imageIndex}");
-                onComplete?.Invoke(null);
-                yield break;
-            }
-            onComplete?.Invoke(imageData.sprite);
-            yield break;
-        }
-        
-        // Addressables режим - проверяем наличие во время выполнения
+        // Всегда используем Addressables - проверяем наличие во время выполнения
         if (!IsAddressablesAvailable())
         {
-            Debug.LogError("MenuManager: Addressables are not installed! Please install Addressables package (Window > Package Manager > Addressables) or set useAddressables to false.");
+            Debug.LogError("MenuManager: Addressables are not installed! Please install Addressables package (Window > Package Manager > Addressables).");
             onComplete?.Invoke(null);
             yield break;
         }
@@ -256,13 +240,13 @@ public class MenuManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"MenuManager: Failed to load image from Addressables with key '{addressableKey}'");
+            Debug.LogError($"MenuManager: Failed to load image from Addressables with key '{addressableKey}'. Загрузка не выполнена.");
             onComplete?.Invoke(null);
         }
         
         // Не освобождаем handle здесь, так как спрайт может использоваться
 #else
-        Debug.LogError("MenuManager: Addressables code is not compiled. Please add 'UNITY_ADDRESSABLES' to Scripting Define Symbols in Player Settings (Edit > Project Settings > Player > Other Settings > Scripting Define Symbols) or set useAddressables to false.");
+        Debug.LogError("MenuManager: Addressables code is not compiled. Please add 'UNITY_ADDRESSABLES' to Scripting Define Symbols in Player Settings (Edit > Project Settings > Player > Other Settings > Scripting Define Symbols).");
         onComplete?.Invoke(null);
         yield break;
 #endif

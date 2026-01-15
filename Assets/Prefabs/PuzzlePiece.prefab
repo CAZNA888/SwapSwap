@@ -270,7 +270,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardBackSprite: {fileID: -1042478267, guid: 03d1996e8c31d324ea9a17ade7819150, type: 3}
-  borderSprite: {fileID: -1932661072, guid: 05549dc17bdcfe34a8b67df5d14dd1cb, type: 3}
+  borderSprite: {fileID: 0}
   cardSize: {x: 3.6, y: 5.12}
 --- !u!61 &5123873843290087022
 BoxCollider2D:
@@ -611,7 +611,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 1361955581, guid: a61a4403113de2f4682047df8d06f72f, type: 3}
+  m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -619,6 +619,6 @@ SpriteRenderer:
   m_Size: {x: 14.72, y: 20.48}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0

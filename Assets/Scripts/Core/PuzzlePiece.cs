@@ -31,9 +31,46 @@ public class PuzzlePiece : MonoBehaviour
     
     void Awake()
     {
-        // НЕ создаем SpriteRenderer на главном объекте!
-        // Вместо этого создаем или находим дочерний объект
-     
+        // КРИТИЧНО для WebGL: Инициализируем ссылки на дочерние объекты сразу в Awake
+        // В WebGL билде ссылки могут быть null при первом обращении, даже если они указаны в префабе
+        EnsureContainerInitialized();
+    }
+    
+    // КРИТИЧНО для WebGL: Гарантированная инициализация контейнера
+    // Вызывается в Awake и перед каждым использованием контейнера
+    private void EnsureContainerInitialized()
+    {
+        if (cardSpriteContainer == null)
+        {
+            // Сначала пытаемся найти по имени (если GameObject переименован)
+            cardSpriteContainer = transform.Find("CardSpriteContainer")?.gameObject;
+            
+            // Если не найдено по имени, ищем первый дочерний объект со SpriteRenderer
+            if (cardSpriteContainer == null)
+            {
+                foreach (Transform child in transform)
+                {
+                    if (child.GetComponent<SpriteRenderer>() != null && child.name != "BorderContainer")
+                    {
+                        cardSpriteContainer = child.gameObject;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // Инициализируем cardSpriteRenderer
+        if (cardSpriteRenderer == null && cardSpriteContainer != null)
+        {
+            cardSpriteRenderer = cardSpriteContainer.GetComponent<SpriteRenderer>();
+            
+            // КРИТИЧНО для WebGL: Если SpriteRenderer не найден, создаем его
+            if (cardSpriteRenderer == null)
+            {
+                cardSpriteRenderer = cardSpriteContainer.AddComponent<SpriteRenderer>();
+                Debug.LogWarning($"PuzzlePiece {originalIndex}: SpriteRenderer was missing on {cardSpriteContainer.name}, created automatically");
+            }
+        }
     }
     
     public void Initialize(int index, Sprite front, Sprite back, PuzzleGrid puzzleGrid)
@@ -43,35 +80,53 @@ public class PuzzlePiece : MonoBehaviour
         backSprite = back;
         grid = puzzleGrid;
         
+        // КРИТИЧНО для WebGL: Гарантируем инициализацию контейнера ПЕРЕД установкой спрайта
+        // В WebGL билде дочерние объекты могут быть не готовы в Awake
+        EnsureContainerInitialized();
+        
         #if UNITY_EDITOR
         // ДИАГНОСТИКА: Проверяем размеры
-        // ИСПРАВЛЕНО: Используем rect и pixelsPerUnit для консистентности
+        // КРИТИЧНО для WebGL: Используем GetSpriteSize() с fallback для надежности
         if (frontSprite != null && backSprite != null)
         {
-            Vector2 frontSize = new Vector2(
-                frontSprite.rect.width / frontSprite.pixelsPerUnit,
-                frontSprite.rect.height / frontSprite.pixelsPerUnit
-            );
-            Vector2 backSize = new Vector2(
-                backSprite.rect.width / backSprite.pixelsPerUnit,
-                backSprite.rect.height / backSprite.pixelsPerUnit
-            );
+            Vector2 frontSize = GetSpriteSize(frontSprite);
+            Vector2 backSize = GetSpriteSize(backSprite);
             
             // Для диагностики также показываем bounds.size (может отличаться на разных устройствах)
             Vector2 frontBounds = frontSprite.bounds.size;
             Vector2 backBounds = backSprite.bounds.size;
             
+            // Показываем источник размера для диагностики
+            string frontSource = frontSprite.rect.width > 0 ? "rect/PPU" : 
+                                (frontSprite.texture != null ? "texture/PPU" : "bounds");
+            string backSource = backSprite.rect.width > 0 ? "rect/PPU" : 
+                               (backSprite.texture != null ? "texture/PPU" : "bounds");
+            
             Debug.Log($"PuzzlePiece {index}: " +
-                     $"Front size (rect/PPU)={frontSize}, bounds={frontBounds}, " +
-                     $"Back size (rect/PPU)={backSize}, bounds={backBounds}");
+                     $"Front size ({frontSource})={frontSize}, bounds={frontBounds}, " +
+                     $"Back size ({backSource})={backSize}, bounds={backBounds}");
         }
         #endif
         
         // Устанавливаем обратную сторону по умолчанию
+        // КРИТИЧНО: После EnsureContainerInitialized() cardSpriteRenderer должен быть найден
+        if (cardSpriteRenderer == null)
+        {
+            EnsureContainerInitialized(); // Пробуем еще раз
+        }
+        
         if (cardSpriteRenderer != null && backSprite != null)
         {
             cardSpriteRenderer.sprite = backSprite;
             cardSpriteRenderer.sortingOrder = 0; // По умолчанию
+            
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.Log($"PuzzlePiece {index}: Sprite set on container '{cardSpriteContainer?.name}' (renderer: {cardSpriteRenderer != null})");
+            #endif
+        }
+        else
+        {
+            Debug.LogError($"PuzzlePiece {index}: FAILED to set sprite! cardSpriteRenderer={cardSpriteRenderer != null}, backSprite={backSprite != null}, cardSpriteContainer={cardSpriteContainer != null}, children={transform.childCount}");
         }
     }
     
@@ -119,12 +174,58 @@ public class PuzzlePiece : MonoBehaviour
         return new Vector2Int(row, col);
     }
     
+    // КРИТИЧНО для WebGL: Безопасное получение размера спрайта с fallback
+    // В WebGL билде rect.width может быть 0 для динамически созданных спрайтов
+    // Использует texture.width/height как fallback
+    private Vector2 GetSpriteSize(Sprite sprite)
+    {
+        if (sprite == null)
+        {
+            return Vector2.zero;
+        }
+        
+        // Приоритет 1: Используем rect и pixelsPerUnit (работает в редакторе)
+        if (sprite.rect.width > 0 && sprite.rect.height > 0 && sprite.pixelsPerUnit > 0)
+        {
+            return new Vector2(
+                sprite.rect.width / sprite.pixelsPerUnit,
+                sprite.rect.height / sprite.pixelsPerUnit
+            );
+        }
+        
+        // Приоритет 2 (WebGL fallback): Используем texture.width/height
+        // Это надежно работает в WebGL, так как текстура всегда имеет правильные размеры
+        if (sprite.texture != null && sprite.texture.width > 0 && sprite.texture.height > 0 && sprite.pixelsPerUnit > 0)
+        {
+            return new Vector2(
+                sprite.texture.width / sprite.pixelsPerUnit,
+                sprite.texture.height / sprite.pixelsPerUnit
+            );
+        }
+        
+        // Приоритет 3: Используем bounds.size (последний fallback)
+        // Может быть менее точным из-за pixel ratio, но всегда доступен
+        return sprite.bounds.size;
+    }
+    
     public void Flip()
     {
         isFlipped = !isFlipped;
+        
+        // КРИТИЧНО для WebGL: Гарантируем инициализацию контейнера перед переворотом
+        EnsureContainerInitialized();
+        
         if (cardSpriteRenderer != null)
         {
             Sprite newSprite = isFlipped ? frontSprite : backSprite;
+            
+            // КРИТИЧНО для WebGL: Проверяем, что спрайт не null перед установкой
+            if (newSprite == null)
+            {
+                Debug.LogError($"PuzzlePiece {originalIndex}: Cannot flip! newSprite is null (isFlipped: {isFlipped}, frontSprite: {frontSprite != null}, backSprite: {backSprite != null})");
+                return;
+            }
+            
             cardSpriteRenderer.sprite = newSprite;
             
             // Применяем правильный мультипликатор масштабирования в зависимости от стороны
@@ -135,19 +236,12 @@ public class PuzzlePiece : MonoBehaviour
             }
             
             // Проверяем, что размеры спрайтов совпадают после переворота
-            // ИСПРАВЛЕНО: Используем rect и pixelsPerUnit вместо bounds.size для стабильности
-            // Это гарантирует одинаковые размеры на всех устройствах независимо от pixel ratio
+            // КРИТИЧНО для WebGL: Используем GetSpriteSize() с fallback на texture.width/height
             if (newSprite != null && backSprite != null)
             {
-                // Используем расчет на основе rect и pixelsPerUnit вместо bounds.size
-                Vector2 newSpriteSize = new Vector2(
-                    newSprite.rect.width / newSprite.pixelsPerUnit,
-                    newSprite.rect.height / newSprite.pixelsPerUnit
-                );
-                Vector2 backSpriteSize = new Vector2(
-                    backSprite.rect.width / backSprite.pixelsPerUnit,
-                    backSprite.rect.height / backSprite.pixelsPerUnit
-                );
+                // Используем безопасный метод получения размеров с fallback для WebGL
+                Vector2 newSpriteSize = GetSpriteSize(newSprite);
+                Vector2 backSpriteSize = GetSpriteSize(backSprite);
                 
                 // Вычисляем размер с учетом текущего масштаба (главного объекта и дочернего)
                 Vector2 mainScale = new Vector2(transform.localScale.x, transform.localScale.y);
@@ -159,8 +253,14 @@ public class PuzzlePiece : MonoBehaviour
                 Vector2 newSpriteSizeScaled = newSpriteSize * totalScale;
                 Vector2 backSpriteSizeScaled = backSpriteSize * totalScale;
                 
-                float sizeDiffX = Mathf.Abs(newSpriteSizeScaled.x - backSpriteSizeScaled.x) / Mathf.Max(newSpriteSizeScaled.x, backSpriteSizeScaled.x);
-                float sizeDiffY = Mathf.Abs(newSpriteSizeScaled.y - backSpriteSizeScaled.y) / Mathf.Max(newSpriteSizeScaled.y, backSpriteSizeScaled.y);
+                // КРИТИЧНО: Проверяем на ноль перед делением, чтобы избежать NaN
+                float maxX = Mathf.Max(Mathf.Abs(newSpriteSizeScaled.x), Mathf.Abs(backSpriteSizeScaled.x));
+                float maxY = Mathf.Max(Mathf.Abs(newSpriteSizeScaled.y), Mathf.Abs(backSpriteSizeScaled.y));
+                
+                float sizeDiffX = maxX > 0.0001f ? 
+                    Mathf.Abs(newSpriteSizeScaled.x - backSpriteSizeScaled.x) / maxX : 0f;
+                float sizeDiffY = maxY > 0.0001f ? 
+                    Mathf.Abs(newSpriteSizeScaled.y - backSpriteSizeScaled.y) / maxY : 0f;
                 
                 // Если разница значительная, это указывает на проблему с pixelsPerUnit
                 if (sizeDiffX > 0.01f || sizeDiffY > 0.01f)
@@ -171,18 +271,30 @@ public class PuzzlePiece : MonoBehaviour
                                    $"Difference: {sizeDiffX*100:F2}%/{sizeDiffY*100:F2}%. " +
                                    $"This indicates a pixelsPerUnit calculation issue in ImageSlicer.");
                     
-                    // Корректируем масштаб только если разница критическая (>5%)
-                    if (sizeDiffX > 0.05f || sizeDiffY > 0.05f)
+                    // Корректируем масштаб только если разница критическая (>5%) И размеры валидны
+                    if ((sizeDiffX > 0.05f || sizeDiffY > 0.05f) && maxX > 0.0001f && maxY > 0.0001f)
                     {
-                        float scaleCorrectionX = backSpriteSizeScaled.x / newSpriteSizeScaled.x;
-                        float scaleCorrectionY = backSpriteSizeScaled.y / newSpriteSizeScaled.y;
-                        Vector3 currentScale = transform.localScale;
-                        transform.localScale = new Vector3(
-                            currentScale.x * scaleCorrectionX,
-                            currentScale.y * scaleCorrectionY,
-                            currentScale.z
-                        );
-                        Debug.LogWarning($"PuzzlePiece {originalIndex}: Applied scale correction: {scaleCorrectionX:F4}x{scaleCorrectionY:F4}");
+                        float scaleCorrectionX = maxX > 0.0001f ? backSpriteSizeScaled.x / newSpriteSizeScaled.x : 1f;
+                        float scaleCorrectionY = maxY > 0.0001f ? backSpriteSizeScaled.y / newSpriteSizeScaled.y : 1f;
+                        
+                        // Проверяем на валидность перед применением
+                        if (!float.IsNaN(scaleCorrectionX) && !float.IsInfinity(scaleCorrectionX) &&
+                            !float.IsNaN(scaleCorrectionY) && !float.IsInfinity(scaleCorrectionY) &&
+                            scaleCorrectionX > 0.01f && scaleCorrectionX < 100f &&
+                            scaleCorrectionY > 0.01f && scaleCorrectionY < 100f)
+                        {
+                            Vector3 currentScale = transform.localScale;
+                            transform.localScale = new Vector3(
+                                currentScale.x * scaleCorrectionX,
+                                currentScale.y * scaleCorrectionY,
+                                currentScale.z
+                            );
+                            Debug.LogWarning($"PuzzlePiece {originalIndex}: Applied scale correction: {scaleCorrectionX:F4}x{scaleCorrectionY:F4}");
+                        }
+                        else
+                        {
+                            Debug.LogError($"PuzzlePiece {originalIndex}: Invalid scale correction values: {scaleCorrectionX:F4}x{scaleCorrectionY:F4}. Skipping correction.");
+                        }
                     }
                 }
             }
@@ -208,46 +320,43 @@ public class PuzzlePiece : MonoBehaviour
     {
         if (cardSpriteRenderer != null && backSprite != null)
         {
-            // ВАЖНО: Используем расчет на основе rect и pixelsPerUnit вместо bounds.size
-            // Это гарантирует стабильные размеры независимо от pixel ratio устройства
-            Vector2 baseSize = new Vector2(
-                backSprite.rect.width / backSprite.pixelsPerUnit,
-                backSprite.rect.height / backSprite.pixelsPerUnit
-            );
+            // КРИТИЧНО для WebGL: Используем GetSpriteSize() с fallback для надежности
+            // Это гарантирует стабильные размеры независимо от pixel ratio устройства и платформы
+            Vector2 baseSize = GetSpriteSize(backSprite);
             
-            // Вычисляем масштаб для всего префаба
-            float scaleX = targetSize.x / baseSize.x;
-            float scaleY = targetSize.y / baseSize.y;
-            
-            // Применяем масштаб ко всему префабу (включая дочерние элементы - рамки)
-            transform.localScale = new Vector3(scaleX, scaleY, 1f);
+            // Проверяем валидность размера перед вычислением масштаба
+            if (baseSize.x > 0.0001f && baseSize.y > 0.0001f)
+            {
+                // Вычисляем масштаб для всего префаба
+                float scaleX = targetSize.x / baseSize.x;
+                float scaleY = targetSize.y / baseSize.y;
+                
+                // Проверяем валидность масштаба
+                if (!float.IsNaN(scaleX) && !float.IsInfinity(scaleX) &&
+                    !float.IsNaN(scaleY) && !float.IsInfinity(scaleY) &&
+                    scaleX > 0.01f && scaleX < 100f &&
+                    scaleY > 0.01f && scaleY < 100f)
+                {
+                    // Применяем масштаб ко всему префабу (включая дочерние элементы - рамки)
+                    transform.localScale = new Vector3(scaleX, scaleY, 1f);
+                }
+                else
+                {
+                    Debug.LogError($"PuzzlePiece {originalIndex}: Invalid scale calculated: {scaleX:F4}x{scaleY:F4} for targetSize: {targetSize}, baseSize: {baseSize}");
+                }
+            }
+            else
+            {
+                Debug.LogError($"PuzzlePiece {originalIndex}: Invalid baseSize: {baseSize} for backSprite. Cannot set card size.");
+            }
         }
     }
     
     // Возвращает SpriteRenderer из дочернего объекта
     public SpriteRenderer GetCardSpriteRenderer()
     {
-        // Если ссылка потеряна, пытаемся восстановить
-        if (cardSpriteRenderer == null)
-        {
-            // Сначала проверяем, есть ли дочерний объект
-            if (cardSpriteContainer == null)
-            {
-                cardSpriteContainer = transform.Find("CardSpriteContainer")?.gameObject;
-            }
-            
-            // Если дочерний объект найден, получаем SpriteRenderer
-            if (cardSpriteContainer != null)
-            {
-                cardSpriteRenderer = cardSpriteContainer.GetComponent<SpriteRenderer>();
-                
-                // Если компонента нет, создаем его
-                if (cardSpriteRenderer == null)
-                {
-                    cardSpriteRenderer = cardSpriteContainer.AddComponent<SpriteRenderer>();
-                }
-            }
-        }
+        // КРИТИЧНО для WebGL: Гарантируем инициализацию перед возвратом
+        EnsureContainerInitialized();
         
         return cardSpriteRenderer;
     }
@@ -294,11 +403,23 @@ public class PuzzlePiece : MonoBehaviour
     {
         frontSpriteScaleMultiplier = frontMultiplier;
         backSpriteScaleMultiplier = backMultiplier;
+        
+        // КРИТИЧНО для WebGL: Гарантируем инициализацию контейнера
+        EnsureContainerInitialized();
+        
         // Применяем правильный мультипликатор в зависимости от текущего состояния
         if (cardSpriteContainer != null)
         {
             float multiplier = isFlipped ? frontMultiplier : backMultiplier;
             cardSpriteContainer.transform.localScale = Vector3.one * multiplier;
+            
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.Log($"PuzzlePiece {originalIndex}: Applied sprite scale multiplier: {multiplier} (isFlipped: {isFlipped}, container: {cardSpriteContainer.name})");
+            #endif
+        }
+        else
+        {
+            Debug.LogError($"PuzzlePiece {originalIndex}: cardSpriteContainer is null! Cannot apply sprite scale multiplier. GameObject: {gameObject.name}, Children count: {transform.childCount}");
         }
     }
 }

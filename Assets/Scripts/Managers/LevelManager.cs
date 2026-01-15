@@ -5,10 +5,7 @@ using System.Collections.Generic;
 public class LevelManager : MonoBehaviour
 {
     [Header("Image Loading")]
-    [Tooltip("Использовать Addressables для загрузки картинок. Если false - использовать спрайты напрямую из Unity")]
-    public bool useAddressables = false;
-    
-    [Tooltip("Список картинок для уровней. Заполняется один раз в инспекторе")]
+    [Tooltip("Список картинок для уровней. Заполняется один раз в инспекторе. Загрузка выполняется только через Addressables")]
     public List<LevelImageData> levelImages = new List<LevelImageData>();
     
     [Header("Grid Size Settings")]
@@ -260,39 +257,10 @@ public class LevelManager : MonoBehaviour
     /// </summary>
     public Sprite GetLevelImage()
     {
-        if (levelImages == null || levelImages.Count == 0)
-        {
-            Debug.LogError("LevelManager: levelImages list is empty!");
-            return null;
-        }
-        
-        int imageIndex = currentLevel % levelImages.Count;
-        LevelImageData imageData = levelImages[imageIndex];
-        
-        if (!useAddressables)
-        {
-            // Unity режим - используем спрайт напрямую
-            if (imageData.sprite == null)
-            {
-                Debug.LogError($"LevelManager: Sprite is null for level {currentLevel}, image index {imageIndex}");
-                return null;
-            }
-            return imageData.sprite;
-        }
-        else
-        {
-            // Addressables режим - проверяем доступность
-            if (!IsAddressablesAvailable())
-            {
-                Debug.LogError("LevelManager: Addressables are not available! Set useAddressables to false or install Addressables package.");
-                return null;
-            }
-            
-            // Addressables режим - нужно загрузить асинхронно
-            // Для синхронного доступа возвращаем null и предупреждение
-            Debug.LogWarning("LevelManager: Addressables mode requires async loading. Use LoadLevelImageAsync() instead.");
-            return null;
-        }
+        // Addressables режим - нужно загрузить асинхронно
+        // Для синхронного доступа возвращаем null и предупреждение
+        Debug.LogWarning("LevelManager: Addressables mode requires async loading. Use LoadLevelImageAsync() instead.");
+        return null;
     }
     
     /// <summary>
@@ -310,17 +278,10 @@ public class LevelManager : MonoBehaviour
         int imageIndex = currentLevel % levelImages.Count;
         LevelImageData imageData = levelImages[imageIndex];
         
-        if (!useAddressables)
-        {
-            // Unity режим - возвращаем спрайт сразу
-            onComplete?.Invoke(imageData.sprite);
-            yield break;
-        }
-        
-        // Addressables режим - проверяем наличие во время выполнения
+        // Всегда используем Addressables - проверяем наличие во время выполнения
         if (!IsAddressablesAvailable())
         {
-            Debug.LogError("LevelManager: Addressables are not installed! Please install Addressables package (Window > Package Manager > Addressables) or set useAddressables to false.");
+            Debug.LogError("LevelManager: Addressables are not installed! Please install Addressables package (Window > Package Manager > Addressables).");
             onComplete?.Invoke(null);
             yield break;
         }
@@ -337,17 +298,14 @@ public class LevelManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"LevelManager: Failed to load image from Addressables with key '{addressableKey}'");
+            Debug.LogError($"LevelManager: Failed to load image from Addressables with key '{addressableKey}'. Загрузка не выполнена.");
             onComplete?.Invoke(null);
         }
         
         // Не освобождаем handle здесь, так как спрайт может использоваться
         // Можно добавить систему управления ресурсами при необходимости
 #else
-        // Fallback для случая, когда символ не определен
-        // Проверка IsAddressablesAvailable() уже выполнилась выше, но если мы здесь,
-        // значит Addressables недоступны или символ не определен
-        Debug.LogError("LevelManager: Addressables code is not compiled. Please add 'UNITY_ADDRESSABLES' to Scripting Define Symbols in Player Settings (Edit > Project Settings > Player > Other Settings > Scripting Define Symbols) or set useAddressables to false.");
+        Debug.LogError("LevelManager: Addressables code is not compiled. Please add 'UNITY_ADDRESSABLES' to Scripting Define Symbols in Player Settings (Edit > Project Settings > Player > Other Settings > Scripting Define Symbols).");
         onComplete?.Invoke(null);
         yield break;
 #endif

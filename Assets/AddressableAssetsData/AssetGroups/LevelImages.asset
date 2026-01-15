@@ -112,6 +112,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1f04fac97320af24bb3e32e85c8a25fc
+    m_Address: Assets/Sprites/UI/LevelImages/Group 186.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1fe7ea93ea6a558499ed281a58d5817e
     m_Address: Assets/Sprites/UI/LevelImages/Group 178.png
     m_ReadOnly: 0
@@ -254,6 +259,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5742b86b6dd232e4ebe4f7be052cd3ac
     m_Address: Assets/Sprites/UI/LevelImages/Group 196.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5752eece5e165ef46a1f0812d8bdf1b5
+    m_Address: Assets/Sprites/UI/LevelImages/cactus.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

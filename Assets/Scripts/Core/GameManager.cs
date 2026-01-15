@@ -369,24 +369,14 @@ public class GameManager : MonoBehaviour
         
         if (sourceImage == null && levelManager != null)
         {
-            if (levelManager.useAddressables)
-            {
-                Debug.Log("GameManager: Loading image via Addressables");
-                // Асинхронная загрузка через Addressables
-                Sprite loadedSprite = null;
-                yield return StartCoroutine(levelManager.LoadLevelImageAsync((sprite) => {
-                    loadedSprite = sprite;
-                }));
-                sourceImage = loadedSprite;
-                Debug.Log($"GameManager: Image loaded via Addressables: {sourceImage != null}");
-            }
-            else
-            {
-                Debug.Log("GameManager: Loading image directly from LevelManager");
-                // Синхронная загрузка из Unity
-                sourceImage = levelManager.GetLevelImage();
-                Debug.Log($"GameManager: Image loaded directly: {sourceImage != null}");
-            }
+            Debug.Log("GameManager: Loading image via Addressables");
+            // Всегда используем асинхронную загрузку через Addressables
+            Sprite loadedSprite = null;
+            yield return StartCoroutine(levelManager.LoadLevelImageAsync((sprite) => {
+                loadedSprite = sprite;
+            }));
+            sourceImage = loadedSprite;
+            Debug.Log($"GameManager: Image loaded via Addressables: {sourceImage != null}");
         }
         else if (sourceImage != null)
         {
@@ -396,7 +386,7 @@ public class GameManager : MonoBehaviour
         // Проверяем наличие картинки
         if (sourceImage == null)
         {
-            Debug.LogError("GameManager: Source image is not set and LevelManager failed to load it!");
+            Debug.LogError("GameManager: Source image is not set and LevelManager failed to load it via Addressables!");
             yield break;
         }
         
@@ -587,12 +577,20 @@ public class GameManager : MonoBehaviour
             // Размер будет применен через SetCardSize к transform префаба (масштабирует весь префаб)
             piece.Initialize(i, frontSprite, cardBackSprite, puzzleGrid);
             
+            // КРИТИЧНО для WebGL: Инициализируем cardSpriteContainer ПЕРЕД применением масштаба
+            // В WebGL билде ссылки на дочерние объекты могут не инициализироваться автоматически
+            SpriteRenderer sr = piece.GetCardSpriteRenderer();
+            
             // ВАЖНО: Сначала применяем мультипликаторы размера для front и back sprite к контейнеру,
             // а потом устанавливаем размер всего префаба. Это гарантирует правильный итоговый масштаб.
             if (levelManager != null)
             {
                 float frontMultiplier = levelManager.GetFrontSpriteMultiplier();
                 float backMultiplier = levelManager.GetBackSpriteMultiplier();
+                
+                // Добавляем логирование для диагностики
+                Debug.Log($"GameManager: Applying sprite scales - frontMultiplier: {frontMultiplier}, backMultiplier: {backMultiplier}, cardSpriteContainer: {(piece.cardSpriteContainer != null ? "found" : "null")}");
+                
                 piece.SetSpriteScales(frontMultiplier, backMultiplier);
             }
             
@@ -607,8 +605,7 @@ public class GameManager : MonoBehaviour
                 Debug.Log($"GameManager: Stored original card scale: {originalCardScale}");
             }
             
-            // Устанавливаем спрайт обратной стороны через новую функцию
-            SpriteRenderer sr = piece.GetCardSpriteRenderer();
+            // Устанавливаем спрайт обратной стороны (cardSpriteContainer уже инициализирован выше)
             if (sr != null)
             {
                 sr.sprite = cardBackSprite; // Обратная сторона
