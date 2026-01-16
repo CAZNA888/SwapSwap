@@ -242,6 +242,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4f88154e88111e14cbff9672438c1db1
+    m_Address: Assets/Audio/background.ogg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 51c2cd23b611bd741bd13282c8f950b9
     m_Address: Assets/Sprites/UI/LevelImages/Group 187.png
     m_ReadOnly: 0
@@ -274,6 +279,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5d64d0a338332ae4797f451bbb203620
     m_Address: Assets/Sprites/UI/LevelImages/Group 218.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5ebd81486d06b8e4197bb5c5e808694e
+    m_Address: Assets/Audio/CardDeal.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -517,6 +527,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b659b95fc0e566b4bb84ba8e6e754cf1
+    m_Address: Assets/Audio/Swipe.mp3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b72cf4f8d175bde4b81359b52e8d6551
     m_Address: Assets/Sprites/UI/LevelImages/Group 269.png
     m_ReadOnly: 0
@@ -612,6 +627,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d8af856c68c7211419d952aa547853d4
+    m_Address: Assets/Audio/LevelComplete.mp3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d90f79fb882fd3740a099df796bf9f8b
     m_Address: Assets/Sprites/UI/LevelImages/Group 151.png
     m_ReadOnly: 0
@@ -702,8 +722,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eb1f17ffebf766f47ba0952d764178b5
+    m_Address: Assets/Audio/CardFlip.mp3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ecc09807413a8654b8f96cfefffc1e30
     m_Address: Assets/Sprites/UI/LevelImages/Group 212.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ee3854df011df9c4aadc99df36a4b511
+    m_Address: Assets/Audio/coin.mp3
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

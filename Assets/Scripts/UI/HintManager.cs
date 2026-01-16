@@ -435,6 +435,13 @@ public class HintManager : MonoBehaviour
             return;
         }
         
+        // ПРОВЕРКА: блокируем подсказки во время раздачи и переворота карт
+        if (gameManager.IsDealingOrFlipping())
+        {
+            Debug.Log("[HintManager] ShowHint: раздача или переворот карт в процессе, подсказки недоступны");
+            return;
+        }
+        
         if (gameManager.IsGameComplete())
         {
             Debug.Log("[HintManager] ShowHint: игра завершена, подсказки не показываем");

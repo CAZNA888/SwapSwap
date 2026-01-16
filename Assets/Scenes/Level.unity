@@ -3472,457 +3472,306 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63ee6ab661b70594695fcd68f0699bdd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useAddressables: 1
   levelImages:
   - name: Group151
-    sprite: {fileID: -562062384, guid: d90f79fb882fd3740a099df796bf9f8b, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 151.png
   - name: Group152
-    sprite: {fileID: -1289922387, guid: 2e45149d7d8effa439bf9f7a890760b0, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 152.png
   - name: Group153
-    sprite: {fileID: 1433788573, guid: 3ee3e13a8c9d2424383457364b3cd28d, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 153.png
   - name: Group154
-    sprite: {fileID: 2060686218, guid: f7ce2a9608058c54a99b348bafb69fed, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 154.png
   - name: Group155
-    sprite: {fileID: -456306766, guid: e2cf7338a26539c4e918354e7cf92d69, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 155.png
   - name: Group156
-    sprite: {fileID: -1096969534, guid: 1333a99e992089446b963c7a73504c86, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 156.png
   - name: Group157
-    sprite: {fileID: 341513454, guid: 00a0dfdba1c830a409ad8e285a0df873, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 157.png
   - name: Group158
-    sprite: {fileID: -1796511635, guid: 8cb5545f6a8c1464aabb9753df73932e, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 158.png
   - name: Group159
-    sprite: {fileID: 52002246, guid: 1cb7ed87f45216c459a298889c998214, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 159.png
   - name: Group160
-    sprite: {fileID: 1741248135, guid: 74b032ddc3bb3d64db278453aca2a9b9, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 160.png
   - name: Group161
-    sprite: {fileID: 952084388, guid: c1d98802ef000ac49b985fc5f7c25b50, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 161.png
   - name: Group162
-    sprite: {fileID: -1175858839, guid: c7de24fd01897cb43bec673e3c87109d, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 162.png
   - name: Group163
-    sprite: {fileID: -1740741270, guid: fb5caa079d857b246b84a1b529628641, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 163.png
   - name: Group164
-    sprite: {fileID: 578553598, guid: fbb634f02a26d9d4297c30d3b7a7016c, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 164.png
   - name: Group165
-    sprite: {fileID: 799530829, guid: bb3e8c5ad19c4874db50463f22813ad9, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 165.png
   - name: Group166
-    sprite: {fileID: -375903243, guid: a689e24c56af37644911727ce8194cb2, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 166.png
   - name: Group167
-    sprite: {fileID: 1363158706, guid: 4de29f23f31a2b64dbfee08180e922c0, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 167.png
   - name: Group168
-    sprite: {fileID: 2065195923, guid: 378b7b538dbb8224e8958f848910b5eb, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 168.png
   - name: Group169
-    sprite: {fileID: 457020238, guid: 2a58a8cafad7dff459d4ebb951512ebf, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 169.png
   - name: Group170
-    sprite: {fileID: 1245807406, guid: 15b66ab3d0a4c9445b824f1d0f202928, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 170.png
   - name: Group171
-    sprite: {fileID: -546016662, guid: 875b0b445c452374da71485fb77f0d5d, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 171.png
   - name: Group172
-    sprite: {fileID: -1532121933, guid: 26fa5250946d247499d7572ec19ec1d1, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 172.png
   - name: Group173
-    sprite: {fileID: -540067786, guid: d1a46c40b632cce448cb6bd395eab119, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 173.png
   - name: Group174
-    sprite: {fileID: -1262989240, guid: 4a85b9fbd490a7748a49752cc147172b, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 174.png
   - name: Group175
-    sprite: {fileID: -532643059, guid: c2b98218da891684782d39a4c2954878, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 175.png
   - name: Group176
-    sprite: {fileID: -413096403, guid: 99431fa2d18efe247a4f50789a34656d, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 176.png
   - name: Group177
-    sprite: {fileID: -792544933, guid: dd6531c65a59dd4479d380a3f40a9d7e, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 177.png
   - name: Group178
-    sprite: {fileID: 1853947786, guid: 1fe7ea93ea6a558499ed281a58d5817e, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 178.png
   - name: Group179
-    sprite: {fileID: 1497195887, guid: e246af0f41ea00144b6dc093008f8be8, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 179.png
   - name: Group180
-    sprite: {fileID: 719838616, guid: c9b3e44a4c75d294b85ebe08d45b1ee6, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 180.png
   - name: Group181
-    sprite: {fileID: -1309333883, guid: 68eddfa2628fa6b408870a4975f64239, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 181.png
   - name: Group182
-    sprite: {fileID: 704999392, guid: dd93e308b7fc42d43b4c92e65bf0b25e, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 182.png
   - name: Group183
-    sprite: {fileID: -464681596, guid: 68b0cb3261afc3b49a061b4cb62be504, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 183.png
   - name: Group184
-    sprite: {fileID: 1978645567, guid: b5857bf7afdccfd49b15ffba8fbd5e79, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 184.png
   - name: Group185
-    sprite: {fileID: 546925403, guid: fcc143df0b23d054fbbef1fc33f8459e, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 185.png
   - name: Group187
-    sprite: {fileID: 709588380, guid: 51c2cd23b611bd741bd13282c8f950b9, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 187.png
   - name: Group188
-    sprite: {fileID: -1466529874, guid: dcb151ef729650043b4b10f9cc3ea195, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 188.png
   - name: Group189
-    sprite: {fileID: -1787252571, guid: 62fc086fdad2d94428ad77606df00bc3, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 189.png
   - name: Group190
-    sprite: {fileID: -1901927307, guid: f4d618a1225d8be48af34605e5d1bb5b, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 190.png
   - name: Group191
-    sprite: {fileID: 110219618, guid: 6244dda2b94ba3b4b9fa3b9d9ca6cc80, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 191.png
   - name: Group192
-    sprite: {fileID: 1671368530, guid: 2125f46ab401b0946aadb58bf470a202, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 192.png
   - name: babochka
-    sprite: {fileID: 1400816909, guid: 32d24539f9a6289498e020f827d4ec11, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/babochka.png
   - name: Group193
-    sprite: {fileID: -198421622, guid: 0ca63c2941842094ea7485ef50f4378f, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 193.png
   - name: Group194
-    sprite: {fileID: -186261676, guid: 306631c8af116f2449f3671656dafbb5, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 194.png
   - name: Group195
-    sprite: {fileID: -1653970392, guid: d3cab3a5753f0fd4db4d8fa7a4cc613b, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 195.png
   - name: Group196
-    sprite: {fileID: 1669060823, guid: 5742b86b6dd232e4ebe4f7be052cd3ac, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 196.png
   - name: Group197
-    sprite: {fileID: 923183210, guid: bab0121c2a108eb479575ddb6f91ec54, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 197.png
   - name: Group198
-    sprite: {fileID: -893376140, guid: 80955ece3b3c3d045badb7025f7a9805, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 198.png
   - name: Group199
-    sprite: {fileID: -837593079, guid: bcfed518b28dcd94c8dce6540a31f6c6, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 199.png
   - name: Group200
-    sprite: {fileID: 1469670122, guid: 5ec0076945d9e6d458ed7a79b139a5d4, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 200.png
   - name: Group201
-    sprite: {fileID: 2014911597, guid: 80b49e27a727b8e4cb8aea8b653eef5a, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 201.png
   - name: Group202
-    sprite: {fileID: -431144093, guid: 15579fa698f3d1345afc6c2fcc0c2a3f, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 202.png
   - name: Group203
-    sprite: {fileID: 1691517294, guid: dc9956faab3208841aca271c5ca3adb5, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 203.png
   - name: Group204
-    sprite: {fileID: 1129312342, guid: 235457076c2ec8e41be369d25d408b90, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 204.png
   - name: Group205
-    sprite: {fileID: -1386377600, guid: 7f43daf9beff2e84ab7ae574da8b07e6, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 205.png
   - name: Group206
-    sprite: {fileID: -474994871, guid: ae4a6a1300a449644a589f5d606105ff, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 206.png
   - name: Group207
-    sprite: {fileID: -186571514, guid: a1e0b8b3522ab28499af8f0624e024a3, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 207.png
   - name: Group208
-    sprite: {fileID: -551673914, guid: 9a66173a5fbac0049823c20736214642, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 208.png
   - name: Group209
-    sprite: {fileID: 1782347871, guid: 167568cd87c15234690d498f26a42e85, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 209.png
   - name: Group210
-    sprite: {fileID: 716214503, guid: 8a1775423bc708b42a0394e2903ec877, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 210.png
   - name: Group211
-    sprite: {fileID: -352064423, guid: aa77f972b0303a54ab582fb36799f7f4, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 211.png
   - name: Group212
-    sprite: {fileID: -1074079039, guid: ecc09807413a8654b8f96cfefffc1e30, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 212.png
   - name: Group213
-    sprite: {fileID: 1343436902, guid: 6b78ca8d76b5e2f4d871f23bee5ef006, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 213.png
   - name: Group214
-    sprite: {fileID: 513407285, guid: ea23908051d381c4f9ed962fdf45ace3, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 214.png
   - name: Group215
-    sprite: {fileID: -1781356758, guid: 20b0b60b76ed82f46b06c259ac850fac, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 215.png
   - name: Group216
-    sprite: {fileID: 691533587, guid: 790872a70dc5e7046addd21ed939bf24, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 216.png
   - name: Group217
-    sprite: {fileID: -35675680, guid: 9ae92c87bc801344c809b8012096118d, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 217.png
   - name: Group218
-    sprite: {fileID: -1923520885, guid: 5d64d0a338332ae4797f451bbb203620, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 218.png
   - name: Group219
-    sprite: {fileID: -1734419989, guid: dc795359b85074b4aa09dbddd841de33, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 219.png
   - name: Group220
-    sprite: {fileID: 230448629, guid: 0145f663ba210844a99e68563c4b4a2a, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 220.png
   - name: Group221
-    sprite: {fileID: -211363750, guid: 072133e3ace9f064e8507c57de13266d, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 221.png
   - name: Group222
-    sprite: {fileID: 1827980109, guid: 9067434a54659e44fa1aeb2fe8c5bc75, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 222.png
   - name: Group223
-    sprite: {fileID: 362075587, guid: 0c8b30e98f44978498a9c715d4428306, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 223.png
   - name: Group224
-    sprite: {fileID: -981079968, guid: 150eaf19d7867374b89fc5fdd667beb0, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 224.png
   - name: Group225
-    sprite: {fileID: 1630895288, guid: e9839d045b5447d488a6694c59341248, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 225.png
   - name: Group226
-    sprite: {fileID: 1715084357, guid: 9e8fdc3428c59e64884426da01894a44, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 226.png
   - name: Group227
-    sprite: {fileID: 1016139118, guid: db1d5c2cd531c34498f67c9fef3be323, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 227.png
   - name: Group228
-    sprite: {fileID: -1062648640, guid: ded9b6cc9a19a8e4e9d32364c9b6ea85, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 228.png
   - name: Group229
-    sprite: {fileID: -41604471, guid: 29ac2cf245bb53741904a7fa843682e0, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 229.png
   - name: Group230
-    sprite: {fileID: -96335871, guid: 53c8a56e75011e34085703e502adc2a0, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 230.png
   - name: Group231
-    sprite: {fileID: -506427235, guid: c409a3af5b6db374d9b68f6f23b8c5b2, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 231.png
   - name: Group232
-    sprite: {fileID: 395426435, guid: f13dd225c94c83b46bb5d04ebd3f253d, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 232.png
   - name: Group233
-    sprite: {fileID: -2043205150, guid: 9dc1877fae835294c8803b020b344bff, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 233.png
   - name: Group234
-    sprite: {fileID: 1508842801, guid: d7207ad5a1c505e4bbf1bdfd5c1e7a80, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 234.png
   - name: Group235
-    sprite: {fileID: -1582599169, guid: 1c2fab97d26fcec4582b8a2a05d91c83, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 235.png
   - name: Group236
-    sprite: {fileID: 656259657, guid: a2f891aff14fd504d871a190cabddf43, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 236.png
   - name: Group237
-    sprite: {fileID: -1918913687, guid: 57ffd9cd87758564ab265444c02360ab, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 237.png
   - name: Group238
-    sprite: {fileID: -1065882593, guid: c32eadf7b81f64b46be96e3d64f3526f, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 238.png
   - name: Group239
-    sprite: {fileID: -606682040, guid: 523aefaaabfb4bd49b40227e938d4735, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 239.png
   - name: Group240
-    sprite: {fileID: 1043026470, guid: 6315b427b0cea9e469c59f0e173f5afd, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 240.png
   - name: Group241
-    sprite: {fileID: 185787639, guid: 399a024c8ea6f124f8809f26bb8c198e, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 241.png
   - name: Group242
-    sprite: {fileID: -1598410005, guid: 10a74b8a47337804baf82bc134029e4d, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 242.png
   - name: Group243
-    sprite: {fileID: -1967659740, guid: 7a670bda7e9e0354c94e04d63981cb61, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 243.png
   - name: Group244
-    sprite: {fileID: 747355901, guid: c0d35a4c9d629c24c849c587bfa7c0e2, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 244.png
   - name: Group245
-    sprite: {fileID: -1293471163, guid: 654f572b4fe379a45b71184af98573eb, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 245.png
   - name: Group246
-    sprite: {fileID: -33101814, guid: 3636c11b3644efb4eb9e47850e8ce6e8, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 246.png
   - name: Group247
-    sprite: {fileID: -911185271, guid: 8f35383f5db41784aa0f044e32a3d6d2, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 247.png
   - name: Group248
-    sprite: {fileID: -717277759, guid: abbf0ca44e04bd34aa07556c83b4cfac, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 248.png
   - name: Group249
-    sprite: {fileID: -33329347, guid: a0e2a2a85d6f1a547882e2112b57d2a1, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 249.png
   - name: Group250
-    sprite: {fileID: 374394715, guid: 68fa69000e03a4c4e80e47f92f86ed2a, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 250.png
   - name: Group251
-    sprite: {fileID: -161133310, guid: 240e72270f3fee949af5b2b25090faf5, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 251.png
   - name: Group252
-    sprite: {fileID: 1275350542, guid: f4297f9643f33e24996cac992f157948, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 252.png
   - name: Group253
-    sprite: {fileID: -869745159, guid: 2c17429641876a647add5301550e75ea, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 253.png
   - name: Group254
-    sprite: {fileID: -836965301, guid: 1147c1645564c5c48849146278aeb10a, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 254.png
   - name: Group255
-    sprite: {fileID: -1799452948, guid: 7fbe2c189c724714185a96a9be901806, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 255.png
   - name: Group255
-    sprite: {fileID: -1799452948, guid: 7fbe2c189c724714185a96a9be901806, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 255.png
   - name: Group256
-    sprite: {fileID: 1723041526, guid: feca21e0042680246a4fb68c6fab1931, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 256.png
   - name: Group257
-    sprite: {fileID: -429426251, guid: b0743f53b83dabc46804db86e1d3676a, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 257.png
   - name: Group258
-    sprite: {fileID: -1153343268, guid: 69a94deff559a9c4c9fdcb22883084ed, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 258.png
   - name: Group259
-    sprite: {fileID: -1542353396, guid: 7a92fa296fa0b0d48a738668572c8809, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 259.png
   - name: Group260
-    sprite: {fileID: -2052596846, guid: 06fe0f59a3bdcae4f8b034570cf3c88e, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 260.png
   - name: Group261
-    sprite: {fileID: 1689660206, guid: 0f38fa87687bf9b438d204337f8e8496, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 261.png
   - name: Group262
-    sprite: {fileID: 2128327827, guid: 49c93ad2d804b3a4085dc81857bf9e68, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 262.png
   - name: Group263
-    sprite: {fileID: 2085990241, guid: f6eaa60eea576084da3d1a12d80d6912, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 263.png
   - name: Group264
-    sprite: {fileID: -1294439196, guid: d3c88afe08101b74c80aa299535bec35, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 264.png
   - name: Group265
-    sprite: {fileID: 920379509, guid: 73ec52e2ba581614e8ab3ccbca8b2e03, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 265.png
   - name: Group266
-    sprite: {fileID: 1419163895, guid: 7f3d47aba9124f54b86fe8143e7b1586, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 266.png
   - name: Group267
-    sprite: {fileID: -1557203739, guid: 6f7abf45cf723384384302817035d9d8, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 267.png
   - name: Group268
-    sprite: {fileID: -1342890958, guid: 3e015f3bdbbe52340a9addbb2a68cd6c, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 268.png
   - name: Group269
-    sprite: {fileID: -2065224016, guid: b72cf4f8d175bde4b81359b52e8d6551, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 269.png
   - name: Group270
-    sprite: {fileID: 6046427, guid: e28142df243418e4ba0222f590c397eb, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 270.png
   - name: Group271
-    sprite: {fileID: -1494867596, guid: c74fe38b418de194ab8ce114ca468c92, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 271.png
   - name: Group272
-    sprite: {fileID: -991734079, guid: 15f4847e4336b9341b58e8e3416b0c1f, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 272.png
   - name: Group273
-    sprite: {fileID: -1871125727, guid: e21b16db777f11547808a963056b89b9, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 273.png
   - name: Group274
-    sprite: {fileID: 996333217, guid: deded5d343803e2499130d4ae860ff13, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 274.png
   - name: Group275
-    sprite: {fileID: 1181298345, guid: b9aee6dee101f5841b40717c59aa1e07, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 275.png
   - name: Group276
-    sprite: {fileID: 1043550328, guid: 478d46ce4ddaf3342ae7d0d9b1a713c1, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 276.png
   - name: Group277
-    sprite: {fileID: 1049537741, guid: 8bfa5cf1823736749bf343a8858b340c, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 277.png
   - name: Group278
-    sprite: {fileID: 1143405490, guid: 4467551e934b91140883302c7617d32d, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 278.png
   - name: Group279
-    sprite: {fileID: -343200470, guid: 3957dbca139e50548a2af767e2098a7e, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 279.png
   - name: Group280
-    sprite: {fileID: 833586228, guid: a9ac44f85b1dacc4cba6a08e4e5164b5, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 280.png
   - name: Group281
-    sprite: {fileID: 994732655, guid: e1e991a3bf593dc499de4b3b11e1be3a, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 281.png
   - name: Group282
-    sprite: {fileID: 1716981699, guid: 1db9699dc7997f54990038236a07e74f, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 282.png
   - name: Group283
-    sprite: {fileID: 1553608240, guid: fdd97c4d3a6ea5e4cb0993673477d5ef, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 283.png
   - name: Group284
-    sprite: {fileID: -1836981392, guid: eb01575d7072b8146b89725e1723faff, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 284.png
   - name: Group285
-    sprite: {fileID: -263624292, guid: 40577597a61210e4fbeadae2378d5d90, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 285.png
   - name: Group286
-    sprite: {fileID: -980015188, guid: 4a470a648d63fbc47bdd56a4578eaed8, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 286.png
   - name: Group287
-    sprite: {fileID: 670511396, guid: cd1b4a2966225824d8262fe3cacac997, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 287.png
   - name: Group288
-    sprite: {fileID: 719193302, guid: 4dec1b52f232b6540af5315571401f9c, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 288.png
   - name: Group289
-    sprite: {fileID: -1034253979, guid: f74859eb92e64e747ad39c7c3b7dce8f, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 289.png
   - name: Group290
-    sprite: {fileID: -560461322, guid: 0af2f0cd38503c64f91347c80b5a788a, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 290.png
   - name: Group291
-    sprite: {fileID: -32513, guid: ca0cf9a868818ab4ea8e22677cd014d2, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 291.png
   - name: Group292
-    sprite: {fileID: -361367278, guid: 8baf19b44a5263749b249467baa126ec, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 292.png
   - name: Group293
-    sprite: {fileID: 532481608, guid: 7568e1117342b294195e56c68aba8c51, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 293.png
   - name: Group294
-    sprite: {fileID: -1545008497, guid: ea62e452c4f5636459cadad228b4906c, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 294.png
   - name: Group295
-    sprite: {fileID: 1465239323, guid: f8a338934dab5064e8ae5167be8ef4a4, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 295.png
   - name: Group296
-    sprite: {fileID: 352014705, guid: 9e71e91fdad30f94d8638b8d2a618fe4, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 296.png
   - name: Group297
-    sprite: {fileID: 2067078567, guid: 8214c833c3aa20e46ba945c07f2e69e3, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 297.png
   - name: Group298
-    sprite: {fileID: -1089874127, guid: 84e37dec7b6d49c4c95bf7af9c4ae813, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 298.png
   - name: Group299
-    sprite: {fileID: 1361955581, guid: a61a4403113de2f4682047df8d06f72f, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 299.png
   startGridSize: 2
   gridSizeIncreasePeriod: 25
@@ -4318,16 +4167,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68a029a75a003ba40bc64254f9b0da02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardDealClip: {fileID: 8300000, guid: 5ebd81486d06b8e4197bb5c5e808694e, type: 3}
-  cardFlipClip: {fileID: 8300000, guid: eb1f17ffebf766f47ba0952d764178b5, type: 3}
-  swipeClip: {fileID: 8300000, guid: b659b95fc0e566b4bb84ba8e6e754cf1, type: 3}
-  levelCompleteClip: {fileID: 8300000, guid: d8af856c68c7211419d952aa547853d4, type: 3}
-  connectionClip: {fileID: 8300000, guid: 5ebd81486d06b8e4197bb5c5e808694e, type: 3}
-  coinClip: {fileID: 8300000, guid: ee3854df011df9c4aadc99df36a4b511, type: 3}
-  backgroundMusicClip: {fileID: 8300000, guid: 0a45a14e0298cef47b36dca010c38dc7, type: 3}
+  cardDealKey: Assets/Audio/CardDeal.wav
+  cardFlipKey: Assets/Audio/CardFlip.mp3
+  swipeKey: Assets/Audio/Swipe.mp3
+  levelCompleteKey: Assets/Audio/LevelComplete.mp3
+  connectionKey: Assets/Audio/CardDeal.wav
+  coinKey: Assets/Audio/coin.mp3
+  backgroundMusicKey: Assets/Audio/background.ogg
+  cardDealClip: {fileID: 0}
+  cardFlipClip: {fileID: 0}
+  swipeClip: {fileID: 0}
+  levelCompleteClip: {fileID: 0}
+  connectionClip: {fileID: 0}
+  coinClip: {fileID: 0}
+  backgroundMusicClip: {fileID: 0}
   sfxVolume: 1
   musicVolume: 1
-  musicVolumeDuringSFX: 0.3
+  audioLoadDelay: 1
 --- !u!4 &1745270780
 Transform:
   m_ObjectHideFlags: 0

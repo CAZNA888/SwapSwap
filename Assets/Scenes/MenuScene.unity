@@ -445,8 +445,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   addressableKey: Assets/Sprites/UI/LevelImages/Group 249.png
-  fallbackSprite: {fileID: -33329347, guid: a0e2a2a85d6f1a547882e2112b57d2a1, type: 3}
-  useAddressables: 1
   loadOnStart: 1
   autoFindImage: 1
   autoFindSpriteRenderer: 1
@@ -747,28 +745,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1914fd8292c28fd498db4d28fd99fb5a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useAddressables: 1
   menuImages:
   - name: cutecat
-    sprite: {fileID: 2060686218, guid: f7ce2a9608058c54a99b348bafb69fed, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 154.png
   - name: group156
-    sprite: {fileID: -1096969534, guid: 1333a99e992089446b963c7a73504c86, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 156.png
   - name: group156
-    sprite: {fileID: 1363158706, guid: 4de29f23f31a2b64dbfee08180e922c0, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 156.png
   - name: group183
-    sprite: {fileID: -464681596, guid: 68b0cb3261afc3b49a061b4cb62be504, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 183.png
   - name: group177
-    sprite: {fileID: -792544933, guid: dd6531c65a59dd4479d380a3f40a9d7e, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 177.png
   - name: group192
-    sprite: {fileID: 1671368530, guid: 2125f46ab401b0946aadb58bf470a202, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 192.png
   - name: Group196
-    sprite: {fileID: 1669060823, guid: 5742b86b6dd232e4ebe4f7be052cd3ac, type: 3}
     addressableKey: Assets/Sprites/UI/LevelImages/Group 196.png
   cardsPerImage: 25
   levelText: {fileID: 907223154}
@@ -4657,9 +4647,17 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1175725356}
     - target: {fileID: 2198986896434700951, guid: 06e553e84f369644cafe309de9872043, type: 3}
+      propertyPath: defaultSFXVolume
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2198986896434700951, guid: 06e553e84f369644cafe309de9872043, type: 3}
       propertyPath: musicVolumeSlider
       value: 
       objectReference: {fileID: 758304061}
+    - target: {fileID: 2198986896434700951, guid: 06e553e84f369644cafe309de9872043, type: 3}
+      propertyPath: defaultMusicVolume
+      value: 0.5
+      objectReference: {fileID: 0}
     - target: {fileID: 2202882331369266333, guid: 06e553e84f369644cafe309de9872043, type: 3}
       propertyPath: m_Name
       value: Settings

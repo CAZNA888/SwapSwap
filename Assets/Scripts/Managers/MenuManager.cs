@@ -137,7 +137,8 @@ public class MenuManager : MonoBehaviour
         if (levelText != null)
         {
             int currentLevel = PlayerPrefs.GetInt("CurrentLevel", 0);
-            levelText.text = currentLevel.ToString();
+            // Показываем следующий уровень (текущий + 1), отсчет с 1
+            levelText.text = (currentLevel + 1).ToString();
         }
     }
     
@@ -150,13 +151,18 @@ public class MenuManager : MonoBehaviour
         int imageIndex = GetCurrentMenuImageIndex();
         int cardIndex = GetCurrentCardIndex();
         
-        // Количество открытых карточек = cardIndex + 1 (так как карточки нумеруются с 0)
-        int unlockedCount = cardIndex + 1;
+        // Получаем текущий уровень
+        int currentLevel = PlayerPrefs.GetInt("CurrentLevel", 0);
         
-        // Если это первая карточка новой картинки, начинаем с 1
-        if (cardIndex == 0 && unlockedCount > GetUnlockedCardsCount(imageIndex))
+        // Количество открытых карточек = количество пройденных уровней в текущей картинке
+        // Если currentLevel = 0, то ничего не пройдено, unlockedCount = 0
+        // Если currentLevel = 1, то пройден 1 уровень, unlockedCount = 1
+        int unlockedCount = 0;
+        if (currentLevel > 0)
         {
-            unlockedCount = 1;
+            // Вычисляем количество пройденных уровней в текущей картинке
+            int levelsInCurrentImage = currentLevel - (imageIndex * cardsPerImage);
+            unlockedCount = Mathf.Max(0, levelsInCurrentImage);
         }
         
         int currentUnlocked = GetUnlockedCardsCount(imageIndex);
@@ -179,7 +185,20 @@ public class MenuManager : MonoBehaviour
     {
         int imageIndex = GetCurrentMenuImageIndex();
         int cardIndex = GetCurrentCardIndex();
-        int expectedUnlocked = cardIndex + 1;
+        
+        // Получаем текущий уровень
+        int currentLevel = PlayerPrefs.GetInt("CurrentLevel", 0);
+        
+        // Вычисляем ожидаемое количество открытых карточек
+        // Если currentLevel = 0, то ничего не пройдено, expectedUnlocked = 0
+        int expectedUnlocked = 0;
+        if (currentLevel > 0)
+        {
+            // Вычисляем количество пройденных уровней в текущей картинке
+            int levelsInCurrentImage = currentLevel - (imageIndex * cardsPerImage);
+            expectedUnlocked = Mathf.Max(0, levelsInCurrentImage);
+        }
+        
         int currentUnlocked = GetUnlockedCardsCount(imageIndex);
         
         return expectedUnlocked > currentUnlocked;

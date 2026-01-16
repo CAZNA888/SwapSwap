@@ -83,6 +83,7 @@ public class GameManager : MonoBehaviour
     private List<Sprite> slicedSprites;
     private bool isGameComplete = false;
     private bool isLoadingScene = false; // Флаг для предотвращения повторных вызовов
+    private bool isDealingOrFlipping = false; // Флаг для блокировки подсказок во время раздачи и переворота карт
     private Vector3 originalCardScale = Vector3.one; // Store original card scale (all cards have same size on same level)
     
     void Awake()
@@ -348,8 +349,9 @@ public class GameManager : MonoBehaviour
     {
         if (levelNumberText != null && levelManager != null)
         {
-            levelNumberText.text = levelManager.GetCurrentLevel().ToString();
-            Debug.Log($"GameManager: Level number text updated to {levelManager.GetCurrentLevel()}");
+            // Показываем следующий уровень (текущий + 1), отсчет с 1
+            levelNumberText.text = (levelManager.GetCurrentLevel() + 1).ToString();
+            Debug.Log($"GameManager: Level number text updated to {levelManager.GetCurrentLevel() + 1}");
         }
     }
     
@@ -421,12 +423,14 @@ public class GameManager : MonoBehaviour
         
         // 4. Раздаем карточки
         Debug.Log("GameManager: Dealing cards...");
+        isDealingOrFlipping = true; // Блокируем подсказки
         yield return StartCoroutine(cardDealer.DealCards(puzzlePieces, puzzleGrid));
         Debug.Log("GameManager: Cards dealt");
         
         // 5. Переворачиваем карточки
         Debug.Log("GameManager: Flipping cards...");
         yield return StartCoroutine(cardFlipAnimator.FlipAllCards(puzzlePieces));
+        isDealingOrFlipping = false; // Разблокируем подсказки
         Debug.Log("GameManager: Cards flipped");
         
         // 6. Инициализируем свайп-хендлер
@@ -878,6 +882,12 @@ public class GameManager : MonoBehaviour
     public bool IsGameComplete()
     {
         return isGameComplete;
+    }
+    
+    // Public method to check if cards are being dealt or flipped
+    public bool IsDealingOrFlipping()
+    {
+        return isDealingOrFlipping;
     }
     
     // Public method to get all puzzle pieces (for hint system)

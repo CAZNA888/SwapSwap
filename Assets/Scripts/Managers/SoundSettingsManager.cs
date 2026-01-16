@@ -13,11 +13,11 @@ public class SoundSettingsManager : MonoBehaviour
     [Header("Settings")]
     [Tooltip("Значение громкости звуков по умолчанию")]
     [Range(0f, 1f)]
-    public float defaultSFXVolume = 1f;
+    public float defaultSFXVolume = 0.5f;
     
     [Tooltip("Значение громкости музыки по умолчанию")]
     [Range(0f, 1f)]
-    public float defaultMusicVolume = 1f;
+    public float defaultMusicVolume = 0.5f;
     
     private const string SFX_VOLUME_KEY = "SFXVolume";
     private const string MUSIC_VOLUME_KEY = "MusicVolume";
@@ -132,6 +132,7 @@ public class SoundSettingsManager : MonoBehaviour
         LoadSettings();
     }
 }
+
 
 
 
