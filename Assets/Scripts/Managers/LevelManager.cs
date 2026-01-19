@@ -1,48 +1,48 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-
+using PlayerPrefs = RedefineYG.PlayerPrefs;
 public class LevelManager : MonoBehaviour
 {
     [Header("Image Loading")]
     [Tooltip("Список картинок для уровней. Заполняется один раз в инспекторе. Загрузка выполняется только через Addressables")]
     public List<LevelImageData> levelImages = new List<LevelImageData>();
-    
+
     [Header("Grid Size Settings")]
     [Tooltip("Стартовая размерность сетки")]
     public int startGridSize = 3;
-    
+
     [Tooltip("Периодичность увеличения размерности (k). Каждые k уровней размерность увеличивается на 1")]
     public int gridSizeIncreasePeriod = 5;
-    
+
     [Tooltip("Максимальная размерность сетки (k_max)")]
     public int maxGridSize = 8;
-    
+
     [Header("Difficult Level Settings")]
     [Tooltip("Периодичность сложных уровней (k_d). Каждые k_d уровней выпадает сложный уровень")]
     public int difficultLevelPeriod = 3;
-    
+
     [Tooltip("GameObject для показа в начале сложного уровня")]
     public GameObject difficultLevelUIObject;
-    
+
     [Tooltip("Длительность показа GameObject в сложном уровне (l секунд)")]
     public float difficultLevelDisplayDuration = 3f;
-    
+
     [Header("Front Sprite Settings")]
     [Tooltip("Мультипликатор размера front sprite (переднего спрайта карточки). 1.0 = обычный размер, <1.0 = уменьшение, >1.0 = увеличение")]
     public float frontSpriteSizeMultiplier = 1.0f;
-    
+
     [Header("Back Sprite Settings")]
     [Tooltip("Мультипликатор размера back sprite (обратного спрайта карточки). 1.0 = обычный размер, <1.0 = уменьшение, >1.0 = увеличение")]
     public float backSpriteSizeMultiplier = 1.0f;
-    
+
     [Header("Card Prefab Settings")]
     [Tooltip("Мультипликатор размера всего префаба карточки. 1.0 = обычный размер, <1.0 = уменьшение, >1.0 = увеличение. Применяется ко всему префабу (включая рамки)")]
     public float cardPrefabSizeMultiplier = 1.0f;
-    
+
     private int currentLevel;
     private const string LEVEL_KEY = "CurrentLevel";
-    
+
     // Singleton pattern для легкого доступа
     private static LevelManager instance;
     public static LevelManager Instance
@@ -61,19 +61,19 @@ public class LevelManager : MonoBehaviour
             return instance;
         }
     }
-    
+
     void Awake()
     {
         Debug.Log($"=== LevelManager Awake ===");
         Debug.Log($"Scene: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
         Debug.Log($"levelImages count: {(levelImages != null ? levelImages.Count : 0)}");
-        
+
         if (instance == null)
         {
             instance = this;
             // НЕ используем DontDestroyOnLoad - LevelManager должен уничтожаться при переходе в другую сцену
             // Прогресс уровня сохраняется через PlayerPrefs, поэтому данные не потеряются
-            
+
             // Проверяем, что список levelImages заполнен
             if (levelImages == null || levelImages.Count == 0)
             {
@@ -83,7 +83,7 @@ public class LevelManager : MonoBehaviour
             {
                 Debug.Log($"LevelManager: Instance created with {levelImages.Count} level images");
             }
-            
+
             LoadLevel();
         }
         else if (instance != this)
@@ -96,7 +96,7 @@ public class LevelManager : MonoBehaviour
             Debug.Log($"LevelManager: Already instance exists. levelImages count: {instance.levelImages.Count}");
         }
     }
-    
+
     void OnDestroy()
     {
         // Сохраняем прогресс уровня перед уничтожением
@@ -106,7 +106,7 @@ public class LevelManager : MonoBehaviour
             Debug.Log("LevelManager: Saving level progress before destruction");
         }
     }
-    
+
     /// <summary>
     /// Загружает текущий уровень из PlayerPrefs
     /// </summary>
@@ -114,7 +114,7 @@ public class LevelManager : MonoBehaviour
     {
         currentLevel = PlayerPrefs.GetInt(LEVEL_KEY, 0);
     }
-    
+
     /// <summary>
     /// Сохраняет текущий уровень в PlayerPrefs
     /// </summary>
@@ -123,7 +123,7 @@ public class LevelManager : MonoBehaviour
         PlayerPrefs.SetInt(LEVEL_KEY, currentLevel);
         PlayerPrefs.Save();
     }
-    
+
     /// <summary>
     /// Возвращает текущий номер уровня
     /// </summary>
@@ -131,7 +131,7 @@ public class LevelManager : MonoBehaviour
     {
         return currentLevel;
     }
-    
+
     /// <summary>
     /// Увеличивает уровень после прохождения и сохраняет в PlayerPrefs
     /// </summary>
@@ -142,7 +142,7 @@ public class LevelManager : MonoBehaviour
         PlayerPrefs.Save();
         Debug.Log($"Level incremented to {currentLevel}");
     }
-    
+
     /// <summary>
     /// Устанавливает уровень напрямую (для тестирования)
     /// </summary>
@@ -152,7 +152,7 @@ public class LevelManager : MonoBehaviour
         PlayerPrefs.SetInt(LEVEL_KEY, currentLevel);
         PlayerPrefs.Save();
     }
-    
+
     /// <summary>
     /// Рассчитывает размерность сетки для текущего уровня
     /// </summary>
@@ -160,7 +160,7 @@ public class LevelManager : MonoBehaviour
     {
         return CalculateGridSize(currentLevel);
     }
-    
+
     /// <summary>
     /// Рассчитывает размерность сетки для указанного уровня
     /// </summary>
@@ -170,7 +170,7 @@ public class LevelManager : MonoBehaviour
         int increase;
         int gridSize;
         int finalSize;
-        
+
         // Специальная логика для startGridSize = 2
         if (startGridSize == 2)
         {
@@ -181,7 +181,7 @@ public class LevelManager : MonoBehaviour
                 Debug.Log($"LevelManager.CalculateGridSize: level={level}, special case for startGridSize=2, finalSize={finalSize}");
                 return finalSize;
             }
-            
+
             // Начиная с уровня 3, размерность становится 3, и дальше применяется обычная логика
             // Но нужно скорректировать расчет, так как мы уже "потратили" 3 уровня на размерность 2
             // Уровень 3 должен быть размерностью 3, поэтому считаем как будто startGridSize = 3
@@ -190,37 +190,37 @@ public class LevelManager : MonoBehaviour
             baseSize = 3; // Начинаем с 3 после первых 3 уровней
             increase = adjustedLevel / gridSizeIncreasePeriod;
             gridSize = baseSize + increase;
-            
+
             if (IsDifficultLevel(level))
             {
                 gridSize += 1; // Дополнительное увеличение для сложного уровня
             }
-            
+
             finalSize = Mathf.Min(gridSize, maxGridSize);
-            
+
             Debug.Log($"LevelManager.CalculateGridSize: level={level}, startGridSize=2 special case, adjustedLevel={adjustedLevel}, baseSize={baseSize}, increase={increase}, gridSize={gridSize}, isDifficult={IsDifficultLevel(level)}, finalSize={finalSize} (max={maxGridSize})");
-            
+
             return finalSize;
         }
-        
+
         // Обычная логика для остальных случаев
         baseSize = startGridSize;
         increase = level / gridSizeIncreasePeriod;
         gridSize = baseSize + increase;
-        
+
         if (IsDifficultLevel(level))
         {
             gridSize += 1; // Дополнительное увеличение для сложного уровня
         }
-        
+
         finalSize = Mathf.Min(gridSize, maxGridSize);
-        
+
         // Логирование для диагностики
         Debug.Log($"LevelManager.CalculateGridSize: level={level}, baseSize={baseSize}, increase={increase} (level/{gridSizeIncreasePeriod}), gridSize={gridSize}, isDifficult={IsDifficultLevel(level)}, finalSize={finalSize} (max={maxGridSize})");
-        
+
         return finalSize;
     }
-    
+
     /// <summary>
     /// Проверяет, является ли текущий уровень сложным
     /// </summary>
@@ -228,7 +228,7 @@ public class LevelManager : MonoBehaviour
     {
         return IsDifficultLevel(currentLevel);
     }
-    
+
     /// <summary>
     /// Проверяет, является ли указанный уровень сложным
     /// </summary>
@@ -237,7 +237,7 @@ public class LevelManager : MonoBehaviour
         if (difficultLevelPeriod <= 0) return false;
         return level > 0 && level % difficultLevelPeriod == 0;
     }
-    
+
     /// <summary>
     /// Проверяет доступность Addressables во время выполнения
     /// </summary>
@@ -251,7 +251,7 @@ public class LevelManager : MonoBehaviour
         return addressablesType != null;
 #endif
     }
-    
+
     /// <summary>
     /// Загружает картинку для текущего уровня
     /// </summary>
@@ -262,7 +262,7 @@ public class LevelManager : MonoBehaviour
         Debug.LogWarning("LevelManager: Addressables mode requires async loading. Use LoadLevelImageAsync() instead.");
         return null;
     }
-    
+
     /// <summary>
     /// Асинхронно загружает картинку для текущего уровня через Addressables
     /// </summary>
@@ -274,10 +274,10 @@ public class LevelManager : MonoBehaviour
             onComplete?.Invoke(null);
             yield break;
         }
-        
+
         int imageIndex = currentLevel % levelImages.Count;
         LevelImageData imageData = levelImages[imageIndex];
-        
+
         // Всегда используем Addressables - проверяем наличие во время выполнения
         if (!IsAddressablesAvailable())
         {
@@ -285,13 +285,13 @@ public class LevelManager : MonoBehaviour
             onComplete?.Invoke(null);
             yield break;
         }
-        
+
 #if UNITY_ADDRESSABLES
         string addressableKey = imageData.GetAddressableKey();
         var handle = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<Sprite>(addressableKey);
-        
+
         yield return handle;
-        
+
         if (handle.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
         {
             onComplete?.Invoke(handle.Result);
@@ -301,7 +301,7 @@ public class LevelManager : MonoBehaviour
             Debug.LogError($"LevelManager: Failed to load image from Addressables with key '{addressableKey}'. Загрузка не выполнена.");
             onComplete?.Invoke(null);
         }
-        
+
         // Не освобождаем handle здесь, так как спрайт может использоваться
         // Можно добавить систему управления ресурсами при необходимости
 #else
@@ -310,7 +310,7 @@ public class LevelManager : MonoBehaviour
         yield break;
 #endif
     }
-    
+
     /// <summary>
     /// Показывает UI для сложного уровня на заданное время
     /// </summary>
@@ -323,7 +323,7 @@ public class LevelManager : MonoBehaviour
             difficultLevelUIObject.SetActive(false);
         }
     }
-    
+
     /// <summary>
     /// Получает информацию о текущем уровне (для отладки)
     /// </summary>
@@ -333,7 +333,7 @@ public class LevelManager : MonoBehaviour
         bool isDifficult = IsDifficultLevel();
         return $"Level: {currentLevel}, Grid Size: {gridSize}x{gridSize}, Difficult: {isDifficult}";
     }
-    
+
     /// <summary>
     /// Возвращает мультипликатор размера front sprite для текущего уровня
     /// </summary>
@@ -341,7 +341,7 @@ public class LevelManager : MonoBehaviour
     {
         return frontSpriteSizeMultiplier;
     }
-    
+
     /// <summary>
     /// Возвращает мультипликатор размера back sprite для текущего уровня
     /// </summary>
@@ -349,7 +349,7 @@ public class LevelManager : MonoBehaviour
     {
         return backSpriteSizeMultiplier;
     }
-    
+
     /// <summary>
     /// Возвращает мультипликатор размера всего префаба карточки для текущего уровня
     /// </summary>
