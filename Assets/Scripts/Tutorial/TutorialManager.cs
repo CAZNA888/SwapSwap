@@ -96,7 +96,7 @@ public class TutorialManager : MonoBehaviour
             }
             glowEffect.StartGlow();
         }
-
+        glowEffect.StartGlow();
         tutorialActive = true;
 
         // Добавляем слушатель для завершения обучения при клике

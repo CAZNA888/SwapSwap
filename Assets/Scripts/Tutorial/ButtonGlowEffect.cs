@@ -89,7 +89,7 @@ public class ButtonGlowEffect : MonoBehaviour
         }
 
         // Автоматический запуск для тестирования
-        StartGlow(); // Раскомментируйте для теста
+        //StartGlow(); // Раскомментируйте для теста
     }
 
     /// <summary>

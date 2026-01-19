@@ -2087,15 +2087,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0778b89253e0ea54cb004d0457c51aab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  glowColor: {r: 1, g: 0.92, b: 0.016, a: 0.8}
+  glowColor: {r: 1, g: 0.92, b: 0.016, a: 0.9098039}
   intensity: 1.05
   glowSprite: {fileID: 21300000, guid: c43b3cadd09cc4cfb831f398553411b9, type: 3}
   glowImageType: 0
   widthIncreasePercent: 7
   heightIncreasePercent: 10
   additionalSize: {x: 0, y: 0}
-  useAbsoluteSize: 0
-  absoluteGlowSize: {x: 80, y: 100}
+  useAbsoluteSize: 1
+  absoluteGlowSize: {x: 500, y: 270}
   softness: 0.7
   glowThickness: 20
   enablePulse: 1
