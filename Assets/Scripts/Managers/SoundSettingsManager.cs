@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
-
+using PlayerPrefs = RedefineYG.PlayerPrefs;
 public class SoundSettingsManager : MonoBehaviour
 {
     [Header("UI References")]

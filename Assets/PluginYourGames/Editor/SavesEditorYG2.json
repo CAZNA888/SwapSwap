@@ -1,0 +1,25 @@
+{
+    "stringKeys": [],
+    "stringValues": [],
+    "floatKeys": [],
+    "floatValues": [],
+    "intKeys": [
+        "LastImageIndex",
+        "LastUnlockedCardCount",
+        "PlayerMoney"
+    ],
+    "intValues": [
+        0,
+        0,
+        30
+    ],
+    "intExample": 5,
+    "strExample": "Hello!",
+    "boolExample": [
+        false,
+        false,
+        false,
+        false
+    ],
+    "idSave": 27
+}

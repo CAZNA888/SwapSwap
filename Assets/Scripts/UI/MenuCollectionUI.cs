@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
-
+using PlayerPrefs = RedefineYG.PlayerPrefs;
 public class MenuCollectionUI : MonoBehaviour
 {
     [Header("UI References")]

@@ -477,7 +477,10 @@ PlayerSettings:
       m_Height: 36
       m_Kind: 0
       m_SubKind: 
-  m_BuildTargetBatching: []
+  m_BuildTargetBatching:
+  - m_BuildTarget: WebGL
+    m_StaticBatching: 1
+    m_DynamicBatching: 1
   m_BuildTargetShaderSettings: []
   m_BuildTargetGraphicsJobs: []
   m_BuildTargetGraphicsJobMode: []
@@ -493,7 +496,9 @@ PlayerSettings:
     Android: 1
     iPhone: 1
     tvOS: 1
-  m_BuildTargetGroupLightmapEncodingQuality: []
+  m_BuildTargetGroupLightmapEncodingQuality:
+  - m_BuildTarget: WebGL
+    m_EncodingQuality: 1
   m_BuildTargetGroupHDRCubemapEncodingQuality: []
   m_BuildTargetGroupLightmapSettings: []
   m_BuildTargetGroupLoadStoreDebugModeSettings: []
@@ -735,14 +740,14 @@ PlayerSettings:
   blurSplashScreenBackground: 1
   spritePackerPolicy: 
   webGLMemorySize: 32
-  webGLExceptionSupport: 1
+  webGLExceptionSupport: 2
   webGLNameFilesAsHashes: 0
   webGLShowDiagnostics: 0
   webGLDataCaching: 1
   webGLDebugSymbols: 0
   webGLEmscriptenArgs: 
   webGLModulesDirectory: 
-  webGLTemplate: APPLICATION:Default
+  webGLTemplate: PROJECT:YandexGames
   webGLAnalyzeBuildSize: 0
   webGLUseEmbeddedResources: 0
   webGLCompressionFormat: 0
@@ -758,23 +763,23 @@ PlayerSettings:
   webGLMemoryGeometricGrowthCap: 96
   webGLPowerPreference: 2
   scriptingDefineSymbols:
-    Android: DOTWEEN
+    Android: DOTWEEN;YandexGamesPlatform_yg;PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;EnvirData_yg;Authorization_yg;Storage_yg;PlayerStats_yg;RedefinePlayerPrefs_yg;Leaderboards_yg;Localization_yg;AutoTranslateLangs_yg;Payments_yg;Review_yg;StickyAdv_yg;ServerTime_yg;Fullscreen_yg;NJSON_YG2
     EmbeddedLinux: DOTWEEN
     GameCoreScarlett: DOTWEEN
     GameCoreXboxOne: DOTWEEN
-    LinuxHeadlessSimulation: DOTWEEN
-    Nintendo Switch: DOTWEEN
-    PS4: DOTWEEN
-    PS5: DOTWEEN
+    LinuxHeadlessSimulation: DOTWEEN;YandexGamesPlatform_yg;PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;EnvirData_yg;Authorization_yg;Storage_yg;PlayerStats_yg;RedefinePlayerPrefs_yg;Leaderboards_yg;Localization_yg;AutoTranslateLangs_yg;Payments_yg;Review_yg;StickyAdv_yg;ServerTime_yg;Fullscreen_yg;NJSON_YG2
+    Nintendo Switch: DOTWEEN;YandexGamesPlatform_yg;PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;EnvirData_yg;Authorization_yg;Storage_yg;PlayerStats_yg;RedefinePlayerPrefs_yg;Leaderboards_yg;Localization_yg;AutoTranslateLangs_yg;Payments_yg;Review_yg;StickyAdv_yg;ServerTime_yg;Fullscreen_yg;NJSON_YG2
+    PS4: DOTWEEN;YandexGamesPlatform_yg;PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;EnvirData_yg;Authorization_yg;Storage_yg;PlayerStats_yg;RedefinePlayerPrefs_yg;Leaderboards_yg;Localization_yg;AutoTranslateLangs_yg;Payments_yg;Review_yg;StickyAdv_yg;ServerTime_yg;Fullscreen_yg;NJSON_YG2
+    PS5: DOTWEEN;YandexGamesPlatform_yg;PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;EnvirData_yg;Authorization_yg;Storage_yg;PlayerStats_yg;RedefinePlayerPrefs_yg;Leaderboards_yg;Localization_yg;AutoTranslateLangs_yg;Payments_yg;Review_yg;StickyAdv_yg;ServerTime_yg;Fullscreen_yg;NJSON_YG2
     QNX: DOTWEEN
     Stadia: DOTWEEN
-    Standalone: DOTWEEN
+    Standalone: DOTWEEN;YandexGamesPlatform_yg;PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;EnvirData_yg;Authorization_yg;Storage_yg;PlayerStats_yg;RedefinePlayerPrefs_yg;Leaderboards_yg;Localization_yg;AutoTranslateLangs_yg;Payments_yg;Review_yg;StickyAdv_yg;ServerTime_yg;Fullscreen_yg;NJSON_YG2
     VisionOS: DOTWEEN
-    WebGL: DOTWEEN;UNITY_ADDRESSABLES
-    Windows Store Apps: DOTWEEN
-    XboxOne: DOTWEEN
-    iPhone: DOTWEEN
-    tvOS: DOTWEEN
+    WebGL: DOTWEEN;UNITY_ADDRESSABLES;YG_PLUGIN_YANDEX_GAME;YG_TEXT_MESH_PRO;YG_NEWTONSOFT_FOR_AUTOLOCALIZATION;YandexGamesPlatform_yg;PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;EnvirData_yg;Authorization_yg;Storage_yg;PlayerStats_yg;RedefinePlayerPrefs_yg;Leaderboards_yg;Localization_yg;AutoTranslateLangs_yg;Payments_yg;Review_yg;StickyAdv_yg;ServerTime_yg;Fullscreen_yg;NJSON_YG2
+    Windows Store Apps: DOTWEEN;YandexGamesPlatform_yg;PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;EnvirData_yg;Authorization_yg;Storage_yg;PlayerStats_yg;RedefinePlayerPrefs_yg;Leaderboards_yg;Localization_yg;AutoTranslateLangs_yg;Payments_yg;Review_yg;StickyAdv_yg;ServerTime_yg;Fullscreen_yg;NJSON_YG2
+    XboxOne: DOTWEEN;YandexGamesPlatform_yg;PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;EnvirData_yg;Authorization_yg;Storage_yg;PlayerStats_yg;RedefinePlayerPrefs_yg;Leaderboards_yg;Localization_yg;AutoTranslateLangs_yg;Payments_yg;Review_yg;StickyAdv_yg;ServerTime_yg;Fullscreen_yg;NJSON_YG2
+    iPhone: DOTWEEN;YandexGamesPlatform_yg;PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;EnvirData_yg;Authorization_yg;Storage_yg;PlayerStats_yg;RedefinePlayerPrefs_yg;Leaderboards_yg;Localization_yg;AutoTranslateLangs_yg;Payments_yg;Review_yg;StickyAdv_yg;ServerTime_yg;Fullscreen_yg;NJSON_YG2
+    tvOS: DOTWEEN;YandexGamesPlatform_yg;PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;EnvirData_yg;Authorization_yg;Storage_yg;PlayerStats_yg;RedefinePlayerPrefs_yg;Leaderboards_yg;Localization_yg;AutoTranslateLangs_yg;Payments_yg;Review_yg;StickyAdv_yg;ServerTime_yg;Fullscreen_yg;NJSON_YG2
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend: {}
@@ -790,7 +795,7 @@ PlayerSettings:
     QNX: 1
     Stadia: 1
     VisionOS: 1
-    WebGL: 1
+    WebGL: 4
     Windows Store Apps: 1
     XboxOne: 1
     iPhone: 1

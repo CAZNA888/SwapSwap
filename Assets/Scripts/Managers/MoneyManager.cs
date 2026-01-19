@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using PlayerPrefs = RedefineYG.PlayerPrefs;
 public class MoneyManager : MonoBehaviour
 {
     private const string MONEY_KEY = "PlayerMoney";

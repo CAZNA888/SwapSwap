@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
-
+using PlayerPrefs = RedefineYG.PlayerPrefs;
 public class PuzzlePiece : MonoBehaviour
 {
     [Header("Piece Data")]

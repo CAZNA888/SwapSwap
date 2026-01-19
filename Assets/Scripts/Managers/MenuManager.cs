@@ -3,7 +3,7 @@ using UnityEngine.SceneManagement;
 using TMPro;
 using System.Collections;
 using System.Collections.Generic;
-
+using PlayerPrefs = RedefineYG.PlayerPrefs;
 public class MenuManager : MonoBehaviour
 {
     [Header("Image Loading")]

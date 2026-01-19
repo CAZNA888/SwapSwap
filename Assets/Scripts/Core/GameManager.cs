@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
 using TMPro;
-
+using PlayerPrefs = RedefineYG.PlayerPrefs;
 public class GameManager : MonoBehaviour
 {
     [Header("Puzzle Settings")]
@@ -812,7 +812,7 @@ public class GameManager : MonoBehaviour
             OnLevelComplete();
         }
     }
-    
+    [SerializeField] GameObject hint, noads, exit;
     private void OnLevelComplete()
     {
         isGameComplete = true;
@@ -837,6 +837,9 @@ public class GameManager : MonoBehaviour
         if (levelCompleteUIObject != null)
         {
             levelCompleteUIObject.SetActive(true);
+            hint.SetActive(false);
+            noads.SetActive(false); 
+            exit.SetActive(false);
         }
         
         // Показываем UI завершения (через LevelCompleteUI компонент, если используется)

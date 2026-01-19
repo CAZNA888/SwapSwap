@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
-
+using PlayerPrefs = RedefineYG.PlayerPrefs;
 public class MenuCard : MonoBehaviour
 {
     [Header("References")]

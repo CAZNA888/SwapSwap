@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
-
+using PlayerPrefs = RedefineYG.PlayerPrefs;
 public class HintManager : MonoBehaviour
 {
     [Header("References")]
