@@ -6,16 +6,20 @@
     "intKeys": [
         "LastImageIndex",
         "LastUnlockedCardCount",
-        "PlayerMoney",
+        "Tutorial_FirstLaunchCompleted",
+        "Tutorial_LevelCompleted",
         "CurrentLevel",
+        "PlayerMoney",
         "MenuProgress_0"
     ],
     "intValues": [
-        1,
         0,
-        75,
-        25,
-        25
+        1,
+        1,
+        1,
+        1,
+        15,
+        1
     ],
     "intExample": 5,
     "strExample": "Hello!",
@@ -25,5 +29,5 @@
         false,
         false
     ],
-    "idSave": 55
+    "idSave": 12
 }

@@ -2051,11 +2051,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d781cbf7c57548b4ca297131359d5b68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  glowColor: {r: 1, g: 0.92, b: 0.016, a: 1}
+  glowColor: {r: 0, g: 1, b: 0.09687185, a: 1}
   minAlpha: 0.3
   maxAlpha: 1
   pulseSpeed: 5
-  sizeOffset: {x: 100, y: 100}
+  sizeOffset: {x: 200, y: 200}
   glowImage: {fileID: 0}
   glowSprite: {fileID: 21300000, guid: c43b3cadd09cc4cfb831f398553411b9, type: 3}
 --- !u!114 &646230153

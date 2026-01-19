@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
@@ -12,6 +13,20 @@ public class HintManager : MonoBehaviour
     public float hintScale = 1.05f; // 5% increase (1.05 = 105% of original)
     public float hintDuration = 0.5f; // Duration of one pulse
     public int pulseCount = 3; // Number of pulses
+    
+    [Header("Tutorial Settings")]
+    [Tooltip("Автоматически показывать подсказки на первом уровне")]
+    public bool autoHintOnFirstLevel = true;
+    
+    [Tooltip("Задержка между автоматическими подсказками (секунды)")]
+    public float autoHintDelay = 3f;
+    
+    [Tooltip("Задержка перед первой подсказкой после раздачи карт")]
+    public float initialHintDelay = 1.5f;
+    
+    private const string TUTORIAL_LEVEL_COMPLETED_KEY = "Tutorial_LevelCompleted";
+    private Coroutine autoHintCoroutine;
+    private bool isTutorialLevel = false;
     
     private Dictionary<PuzzlePiece, Tween> activeHintAnimations = new Dictionary<PuzzlePiece, Tween>();
     private Dictionary<PuzzlePiece, int> originalCardSortingOrders = new Dictionary<PuzzlePiece, int>();
@@ -34,6 +49,118 @@ public class HintManager : MonoBehaviour
         {
             gameManager = FindObjectOfType<GameManager>();
         }
+        
+        // Проверяем, нужно ли включить tutorial режим
+        if (autoHintOnFirstLevel && IsFirstLevel())
+        {
+            isTutorialLevel = true;
+            Debug.Log("[HintManager] Tutorial mode enabled - first level detected");
+        }
+    }
+    
+    /// <summary>
+    /// Проверяет, является ли текущий уровень первым (tutorial)
+    /// </summary>
+    private bool IsFirstLevel()
+    {
+        // Проверяем, был ли пройден хотя бы один уровень
+        return PlayerPrefs.GetInt(TUTORIAL_LEVEL_COMPLETED_KEY, 0) == 0;
+    }
+    
+    /// <summary>
+    /// Запускает автоматические подсказки для tutorial уровня
+    /// Вызывается из GameManager после раздачи карт
+    /// </summary>
+    public void StartAutoHints()
+    {
+        if (!isTutorialLevel)
+        {
+            Debug.Log("[HintManager] StartAutoHints: not a tutorial level, skipping");
+            return;
+        }
+        
+        Debug.Log("[HintManager] StartAutoHints: starting auto hint routine");
+        
+        if (autoHintCoroutine != null)
+        {
+            StopCoroutine(autoHintCoroutine);
+        }
+        autoHintCoroutine = StartCoroutine(AutoHintRoutine());
+    }
+    
+    private IEnumerator AutoHintRoutine()
+    {
+        // Ждем начальную задержку
+        yield return new WaitForSeconds(initialHintDelay);
+        
+        while (isTutorialLevel && gameManager != null && !gameManager.IsGameComplete())
+        {
+            // Проверяем, что раздача и переворот завершены
+            if (!gameManager.IsDealingOrFlipping())
+            {
+                // Показываем подсказку
+                ShowHint();
+            }
+            
+            // Ждем перед следующей подсказкой
+            yield return new WaitForSeconds(autoHintDelay);
+        }
+        
+        Debug.Log("[HintManager] AutoHintRoutine: ended");
+    }
+    
+    /// <summary>
+    /// Завершает tutorial и отключает автоподсказки
+    /// </summary>
+    public void CompleteTutorial()
+    {
+        if (isTutorialLevel)
+        {
+            PlayerPrefs.SetInt(TUTORIAL_LEVEL_COMPLETED_KEY, 1);
+            PlayerPrefs.Save();
+            isTutorialLevel = false;
+            
+            if (autoHintCoroutine != null)
+            {
+                StopCoroutine(autoHintCoroutine);
+                autoHintCoroutine = null;
+            }
+            
+            StopAllHints();
+            
+            Debug.Log("[HintManager] Tutorial completed - auto hints disabled permanently");
+        }
+    }
+    
+    /// <summary>
+    /// Проверяет, активен ли tutorial режим
+    /// </summary>
+    public bool IsTutorialActive()
+    {
+        return isTutorialLevel;
+    }
+    
+    /// <summary>
+    /// Сбросить состояние tutorial (для тестирования)
+    /// </summary>
+    [ContextMenu("Reset Tutorial")]
+    public void ResetTutorial()
+    {
+        PlayerPrefs.DeleteKey(TUTORIAL_LEVEL_COMPLETED_KEY);
+        PlayerPrefs.Save();
+        Debug.Log("[HintManager] Tutorial reset - will show auto hints on next level");
+    }
+    
+    /// <summary>
+    /// Пометить tutorial как пройденный (для тестирования)
+    /// </summary>
+    [ContextMenu("Mark Tutorial Completed")]
+    public void MarkTutorialCompleted()
+    {
+        PlayerPrefs.SetInt(TUTORIAL_LEVEL_COMPLETED_KEY, 1);
+        PlayerPrefs.Save();
+        isTutorialLevel = false;
+        Debug.Log("[HintManager] Tutorial marked as completed");
     }
     
     // Проверяет, находится ли карточка в группе (имеет ли соединения)

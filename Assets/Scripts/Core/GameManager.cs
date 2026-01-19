@@ -443,6 +443,13 @@ public class GameManager : MonoBehaviour
         connectionManager.CheckAllConnections();
         Debug.Log("GameManager: Connections checked");
         
+        // 8. Запускаем автоподсказки для tutorial (первый уровень)
+        HintManager hintManager = FindObjectOfType<HintManager>();
+        if (hintManager != null)
+        {
+            hintManager.StartAutoHints();
+        }
+        
         Debug.Log("=== GameManager: GameSequence completed successfully! ===");
     }
     
@@ -816,6 +823,13 @@ public class GameManager : MonoBehaviour
     private void OnLevelComplete()
     {
         isGameComplete = true;
+        
+        // Завершаем tutorial если это был первый уровень
+        HintManager hintManager = FindObjectOfType<HintManager>();
+        if (hintManager != null)
+        {
+            hintManager.CompleteTutorial();
+        }
         
         // Disable all piece interactions by disabling colliders
         foreach (PuzzlePiece piece in puzzlePieces)
