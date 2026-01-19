@@ -2022,8 +2022,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 9f1de124832454aaa89e2816cf5bd1e9, type: 3}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: 673fe075f74e64bad8a995ea497d47c1, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -2087,9 +2087,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0778b89253e0ea54cb004d0457c51aab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  glowColor: {r: 1, g: 0.92, b: 0.016, a: 0.9098039}
+  glowColor: {r: 1, g: 0.92, b: 0.016, a: 1}
   intensity: 1.05
-  glowSprite: {fileID: 21300000, guid: c43b3cadd09cc4cfb831f398553411b9, type: 3}
+  glowSprite: {fileID: 21300000, guid: f66f8d453972f4b46ab16ddc30214efa, type: 3}
   glowImageType: 0
   widthIncreasePercent: 7
   heightIncreasePercent: 10
