@@ -15,8 +15,14 @@ public class TutorialManager : MonoBehaviour
     [Tooltip("Компонент анимации пульсации (добавится автоматически если не указан)")]
     public ButtonPulseAnimation pulseAnimation;
 
-    [Tooltip("Компонент свечения (добавится автоматически если не указан)")]
-    public GlowEffect glowEffect;
+
+
+    [Header("Effect Toggles")]
+    [Tooltip("Включить эффект пульсации кнопки")]
+    public bool enablePulseEffect = true;
+
+    [Tooltip("Включить эффект свечения кнопки")]
+    public bool enableGlowEffect = true;
 
     [Header("Tutorial Settings")]
     [Tooltip("Включить обучение только при первом запуске")]
@@ -30,7 +36,8 @@ public class TutorialManager : MonoBehaviour
     public bool forceShowTutorial = false;
 
     private bool tutorialActive = false;
-
+    [Tooltip("Компонент свечения по форме кнопки (добавится автоматически если не указан)")]
+    public ButtonGlowEffect glowEffect;
     void Start()
     {
         if (ShouldShowTutorial())
@@ -62,29 +69,33 @@ public class TutorialManager : MonoBehaviour
             return;
         }
 
-        // Получаем или добавляем компонент анимации пульсации
-        if (pulseAnimation == null)
+        // Запускаем эффект пульсации если включен
+        if (enablePulseEffect)
         {
-            pulseAnimation = playButton.GetComponent<ButtonPulseAnimation>();
             if (pulseAnimation == null)
             {
-                pulseAnimation = playButton.gameObject.AddComponent<ButtonPulseAnimation>();
+                pulseAnimation = playButton.GetComponent<ButtonPulseAnimation>();
+                if (pulseAnimation == null)
+                {
+                    pulseAnimation = playButton.gameObject.AddComponent<ButtonPulseAnimation>();
+                }
             }
+            pulseAnimation.StartPulseAnimation();
         }
 
-        // Получаем или добавляем компонент свечения
-        if (glowEffect == null)
+        // Запускаем эффект свечения если включен
+        if (enableGlowEffect)
         {
-            glowEffect = playButton.GetComponent<GlowEffect>();
             if (glowEffect == null)
             {
-                glowEffect = playButton.gameObject.AddComponent<GlowEffect>();
+                glowEffect = playButton.GetComponent<ButtonGlowEffect>();
+                if (glowEffect == null)
+                {
+                    glowEffect = playButton.gameObject.AddComponent<ButtonGlowEffect>();
+                }
             }
+            glowEffect.StartGlow();
         }
-
-        // Запускаем эффекты
-        pulseAnimation.StartPulseAnimation();
-        glowEffect.StartGlow();
 
         tutorialActive = true;
 
@@ -104,13 +115,13 @@ public class TutorialManager : MonoBehaviour
     {
         if (!tutorialActive) return;
 
-        // Останавливаем эффекты
-        if (pulseAnimation != null)
+        // Останавливаем эффекты только если они были включены
+        if (enablePulseEffect && pulseAnimation != null)
         {
             pulseAnimation.StopPulseAnimation();
         }
 
-        if (glowEffect != null)
+        if (enableGlowEffect && glowEffect != null)
         {
             glowEffect.StopGlow();
         }

@@ -1904,6 +1904,7 @@ GameObject:
   - component: {fileID: 646230149}
   - component: {fileID: 646230153}
   - component: {fileID: 646230152}
+  - component: {fileID: 646230154}
   m_Layer: 5
   m_Name: Play Button
   m_TagString: Untagged
@@ -2046,7 +2047,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 646230147}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d781cbf7c57548b4ca297131359d5b68, type: 3}
   m_Name: 
@@ -2074,6 +2075,35 @@ MonoBehaviour:
   animationDuration: 1
   loop: 1
   loopDelay: 0.1
+--- !u!114 &646230154
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 646230147}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0778b89253e0ea54cb004d0457c51aab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  glowColor: {r: 1, g: 0.92, b: 0.016, a: 0.8}
+  intensity: 1.05
+  glowSprite: {fileID: 21300000, guid: c43b3cadd09cc4cfb831f398553411b9, type: 3}
+  glowImageType: 0
+  widthIncreasePercent: 7
+  heightIncreasePercent: 10
+  additionalSize: {x: 0, y: 0}
+  useAbsoluteSize: 0
+  absoluteGlowSize: {x: 80, y: 100}
+  softness: 0.7
+  glowThickness: 20
+  enablePulse: 1
+  minPulseIntensity: 0.4
+  maxPulseIntensity: 1
+  pulseSpeed: 2
+  quality: 1
+  autoUpdateSize: 1
 --- !u!1 &647121801
 GameObject:
   m_ObjectHideFlags: 0
@@ -3712,10 +3742,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playButton: {fileID: 646230149}
   pulseAnimation: {fileID: 646230153}
-  glowEffect: {fileID: 646230152}
+  enablePulseEffect: 1
+  enableGlowEffect: 0
   onlyFirstLaunch: 1
   completeOnClick: 1
   forceShowTutorial: 0
+  glowEffect: {fileID: 646230154}
 --- !u!4 &846134680
 Transform:
   m_ObjectHideFlags: 0
