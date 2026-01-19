@@ -1902,6 +1902,8 @@ GameObject:
   - component: {fileID: 646230151}
   - component: {fileID: 646230150}
   - component: {fileID: 646230149}
+  - component: {fileID: 646230153}
+  - component: {fileID: 646230152}
   m_Layer: 5
   m_Name: Play Button
   m_TagString: Untagged
@@ -2037,6 +2039,41 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 646230147}
   m_CullTransparentMesh: 1
+--- !u!114 &646230152
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 646230147}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d781cbf7c57548b4ca297131359d5b68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  glowColor: {r: 1, g: 0.92, b: 0.016, a: 1}
+  minAlpha: 0.3
+  maxAlpha: 1
+  pulseSpeed: 5
+  sizeOffset: {x: 100, y: 100}
+  glowImage: {fileID: 0}
+  glowSprite: {fileID: 21300000, guid: c43b3cadd09cc4cfb831f398553411b9, type: 3}
+--- !u!114 &646230153
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 646230147}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 452c9d01b31aa3e42bbbf1276375f47f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  scalePercentage: 10
+  animationDuration: 1
+  loop: 1
+  loopDelay: 0.1
 --- !u!1 &647121801
 GameObject:
   m_ObjectHideFlags: 0
@@ -3644,6 +3681,56 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 840236170}
   m_CullTransparentMesh: 1
+--- !u!1 &846134678
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 846134680}
+  - component: {fileID: 846134679}
+  m_Layer: 0
+  m_Name: 'TutorialManager '
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &846134679
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 846134678}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 711e384a85754314195d5a3b249db747, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playButton: {fileID: 646230149}
+  pulseAnimation: {fileID: 646230153}
+  glowEffect: {fileID: 646230152}
+  onlyFirstLaunch: 1
+  completeOnClick: 1
+  forceShowTutorial: 0
+--- !u!4 &846134680
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 846134678}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 925.99194, y: 920.43115, z: -4.2388997}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &907223152
 GameObject:
   m_ObjectHideFlags: 0
@@ -6482,3 +6569,4 @@ SceneRoots:
   - {fileID: 318400738}
   - {fileID: 7089167967494485524}
   - {fileID: 6778611028647180718}
+  - {fileID: 846134680}

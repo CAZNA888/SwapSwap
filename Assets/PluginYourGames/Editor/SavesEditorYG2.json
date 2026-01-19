@@ -11,10 +11,10 @@
         "MenuProgress_0"
     ],
     "intValues": [
+        1,
         0,
-        2,
         75,
-        2,
+        25,
         25
     ],
     "intExample": 5,
@@ -25,5 +25,5 @@
         false,
         false
     ],
-    "idSave": 47
+    "idSave": 55
 }
