@@ -28,6 +28,8 @@ namespace YG
 
         private void Awake()
         {
+            urlImage = YG2.purchases[0].currencyImageURL;
+
             if (rawImage)
                 rawImage.enabled = false;
             if (spriteImage)

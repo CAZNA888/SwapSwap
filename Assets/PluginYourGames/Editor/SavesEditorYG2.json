@@ -14,12 +14,12 @@
     ],
     "intValues": [
         0,
-        5,
+        4,
         1,
         1,
         5,
-        75,
-        5
+        60,
+        4
     ],
     "intExample": 5,
     "strExample": "Hello!",
@@ -29,5 +29,5 @@
         false,
         false
     ],
-    "idSave": 52
+    "idSave": 31
 }
