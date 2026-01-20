@@ -5,11 +5,21 @@
     "floatValues": [],
     "intKeys": [
         "LastImageIndex",
-        "LastUnlockedCardCount"
+        "LastUnlockedCardCount",
+        "Tutorial_FirstLaunchCompleted",
+        "Tutorial_LevelCompleted",
+        "CurrentLevel",
+        "PlayerMoney",
+        "MenuProgress_0"
     ],
     "intValues": [
         0,
-        0
+        3,
+        1,
+        1,
+        3,
+        45,
+        3
     ],
     "intExample": 5,
     "strExample": "Hello!",
@@ -19,5 +29,5 @@
         false,
         false
     ],
-    "idSave": 16
+    "idSave": 38
 }
