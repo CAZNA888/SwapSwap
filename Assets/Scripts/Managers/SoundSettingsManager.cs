@@ -1,6 +1,11 @@
 using UnityEngine;
 using UnityEngine.UI;
 using PlayerPrefs = RedefineYG.PlayerPrefs;
+
+/// <summary>
+/// Менеджер настроек звука - управляет слайдерами громкости.
+/// Работает с AudioManager (SFX) и MusicManager (фоновая музыка).
+/// </summary>
 public class SoundSettingsManager : MonoBehaviour
 {
     [Header("UI References")]
@@ -23,6 +28,7 @@ public class SoundSettingsManager : MonoBehaviour
     private const string MUSIC_VOLUME_KEY = "MusicVolume";
     
     private AudioManager audioManager;
+    private MusicManager musicManager;
     
     void Start()
     {
@@ -31,6 +37,13 @@ public class SoundSettingsManager : MonoBehaviour
         if (audioManager == null)
         {
             Debug.LogWarning("SoundSettingsManager: AudioManager not found!");
+        }
+        
+        // Получаем MusicManager (синглтон)
+        musicManager = MusicManager.Instance;
+        if (musicManager == null)
+        {
+            Debug.LogWarning("SoundSettingsManager: MusicManager not found!");
         }
         
         // Загружаем сохраненные значения
@@ -97,17 +110,17 @@ public class SoundSettingsManager : MonoBehaviour
         PlayerPrefs.SetFloat(MUSIC_VOLUME_KEY, value);
         PlayerPrefs.Save();
         
-        // Применяем к AudioManager
-        if (audioManager != null)
+        // Применяем к MusicManager
+        if (musicManager != null)
         {
-            audioManager.SetMusicVolume(value);
+            musicManager.SetMusicVolume(value);
         }
         
         Debug.Log($"SoundSettingsManager: Music Volume changed to {value}");
     }
     
     /// <summary>
-    /// Загружает сохраненные настройки и применяет их к AudioManager
+    /// Загружает сохраненные настройки и применяет их к менеджерам
     /// </summary>
     private void LoadSettings()
     {
@@ -118,7 +131,12 @@ public class SoundSettingsManager : MonoBehaviour
         if (audioManager != null)
         {
             audioManager.SetSFXVolume(sfxVolume);
-            audioManager.SetMusicVolume(musicVolume);
+        }
+        
+        // Применяем к MusicManager, если он уже существует
+        if (musicManager != null)
+        {
+            musicManager.SetMusicVolume(musicVolume);
         }
     }
     
@@ -129,13 +147,24 @@ public class SoundSettingsManager : MonoBehaviour
     {
         audioManager = manager;
         // Применяем текущие настройки к новому AudioManager
-        LoadSettings();
+        float sfxVolume = PlayerPrefs.GetFloat(SFX_VOLUME_KEY, defaultSFXVolume);
+        if (audioManager != null)
+        {
+            audioManager.SetSFXVolume(sfxVolume);
+        }
+    }
+    
+    /// <summary>
+    /// Устанавливает ссылку на MusicManager (вызывается при необходимости)
+    /// </summary>
+    public void SetMusicManager(MusicManager manager)
+    {
+        musicManager = manager;
+        // Применяем текущие настройки к MusicManager
+        float musicVolume = PlayerPrefs.GetFloat(MUSIC_VOLUME_KEY, defaultMusicVolume);
+        if (musicManager != null)
+        {
+            musicManager.SetMusicVolume(musicVolume);
+        }
     }
 }
-
-
-
-
-
-
-

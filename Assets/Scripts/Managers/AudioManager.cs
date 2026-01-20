@@ -2,6 +2,11 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using PlayerPrefs = RedefineYG.PlayerPrefs;
+
+/// <summary>
+/// Менеджер звуковых эффектов (SFX).
+/// Фоновая музыка управляется отдельным MusicManager.
+/// </summary>
 public class AudioManager : MonoBehaviour
 {
     [Header("Audio Clips - Addressables Keys")]
@@ -23,10 +28,6 @@ public class AudioManager : MonoBehaviour
     [Tooltip("Ключ Addressable для звука монетки")]
     public string coinKey = "";
 
-    [Header("Background Music")]
-    [Tooltip("Ключ Addressable для фоновой музыки")]
-    public string backgroundMusicKey = "";
-
     [Header("Legacy Audio Clips (для обратной совместимости)")]
     [Tooltip("Старые AudioClip поля - используются только если ключи Addressables пусты")]
     public AudioClip cardDealClip;
@@ -35,26 +36,19 @@ public class AudioManager : MonoBehaviour
     public AudioClip levelCompleteClip;
     public AudioClip connectionClip;
     public AudioClip coinClip;
-    public AudioClip backgroundMusicClip;
 
     [Header("Settings")]
     [Tooltip("Громкость звуков (SFX) - будет перезаписана из PlayerPrefs")]
     [Range(0f, 1f)]
     public float sfxVolume = 0.5f;
 
-    [Tooltip("Громкость фоновой музыки - будет перезаписана из PlayerPrefs")]
-    [Range(0f, 1f)]
-    public float musicVolume = 0.5f;
-
     [Tooltip("Задержка перед началом загрузки звуков (в секундах) - для lazy loading")]
     [Range(0f, 5f)]
     public float audioLoadDelay = 1f;
 
     private const string SFX_VOLUME_KEY = "SFXVolume";
-    private const string MUSIC_VOLUME_KEY = "MusicVolume";
 
-    private AudioSource sfxAudioSource; // Для звуков
-    private AudioSource musicAudioSource; // Для фоновой музыки
+    private AudioSource sfxAudioSource;
 
     // Кэш для загруженных AudioClip из Addressables
     private Dictionary<string, AudioClip> loadedClips = new Dictionary<string, AudioClip>();
@@ -73,11 +67,6 @@ public class AudioManager : MonoBehaviour
         }
         sfxAudioSource.playOnAwake = false;
 
-        // Создаем отдельный AudioSource для фоновой музыки
-        musicAudioSource = gameObject.AddComponent<AudioSource>();
-        musicAudioSource.playOnAwake = false;
-        musicAudioSource.loop = true; // Фоновая музыка зациклена
-
         // Загружаем сохраненные настройки
         LoadSettings();
 
@@ -94,9 +83,6 @@ public class AudioManager : MonoBehaviour
 
     void Start()
     {
-        // Запускаем фоновую музыку, если она есть (из legacy или загружаем сразу)
-        PlayBackgroundMusic();
-
         // Запускаем lazy loading звуков после задержки
         StartCoroutine(LazyLoadAudioClips());
     }
@@ -130,7 +116,6 @@ public class AudioManager : MonoBehaviour
         if (!string.IsNullOrEmpty(levelCompleteKey)) keysToLoad.Add(levelCompleteKey);
         if (!string.IsNullOrEmpty(connectionKey)) keysToLoad.Add(connectionKey);
         if (!string.IsNullOrEmpty(coinKey)) keysToLoad.Add(coinKey);
-        if (!string.IsNullOrEmpty(backgroundMusicKey)) keysToLoad.Add(backgroundMusicKey);
 
         // Загружаем все звуки асинхронно
         foreach (string key in keysToLoad)
@@ -139,16 +124,6 @@ public class AudioManager : MonoBehaviour
         }
 
         Debug.Log($"AudioManager: Загружено {loadedClips.Count} звуков из Addressables.");
-
-        // После загрузки запускаем фоновую музыку, если она еще не играет
-        // Это важно для WebGL, где загрузка может занять время
-        if (!string.IsNullOrEmpty(backgroundMusicKey) && loadedClips.ContainsKey(backgroundMusicKey))
-        {
-            if (musicAudioSource == null || !musicAudioSource.isPlaying)
-            {
-                PlayBackgroundMusic();
-            }
-        }
 #else
         Debug.LogWarning("AudioManager: Addressables код не скомпилирован. Используются legacy AudioClip.");
 #endif
@@ -223,7 +198,6 @@ public class AudioManager : MonoBehaviour
     private void LoadSettings()
     {
         sfxVolume = PlayerPrefs.GetFloat(SFX_VOLUME_KEY, 0.5f);
-        musicVolume = PlayerPrefs.GetFloat(MUSIC_VOLUME_KEY, 0.5f);
     }
 
     /// <summary>
@@ -234,11 +208,6 @@ public class AudioManager : MonoBehaviour
         if (sfxAudioSource != null)
         {
             sfxAudioSource.volume = sfxVolume;
-        }
-
-        if (musicAudioSource != null)
-        {
-            musicAudioSource.volume = musicVolume;
         }
     }
 
@@ -255,68 +224,11 @@ public class AudioManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Устанавливает громкость фоновой музыки
+    /// Получает текущую громкость SFX
     /// </summary>
-    public void SetMusicVolume(float volume)
+    public float GetSFXVolume()
     {
-        musicVolume = Mathf.Clamp01(volume);
-
-        if (musicAudioSource != null)
-        {
-            musicAudioSource.volume = musicVolume;
-        }
-    }
-
-    /// <summary>
-    /// Воспроизводит фоновую музыку
-    /// </summary>
-    public void PlayBackgroundMusic()
-    {
-        AudioClip clipToPlay = GetAudioClip(backgroundMusicKey, backgroundMusicClip);
-
-        if (clipToPlay != null && musicAudioSource != null)
-        {
-            musicAudioSource.clip = clipToPlay;
-            musicAudioSource.volume = musicVolume;
-            musicAudioSource.Play();
-        }
-    }
-
-    /// <summary>
-    /// Останавливает фоновую музыку
-    /// </summary>
-    public void StopBackgroundMusic()
-    {
-        if (musicAudioSource != null && musicAudioSource.isPlaying)
-        {
-            musicAudioSource.Stop();
-        }
-    }
-
-    /// <summary>
-    /// Приостанавливает фоновую музыку
-    /// </summary>
-    public void PauseBackgroundMusic()
-    {
-        if (musicAudioSource != null && musicAudioSource.isPlaying)
-        {
-            musicAudioSource.Pause();
-        }
-    }
-
-    /// <summary>
-    /// Возобновляет фоновую музыку
-    /// </summary>
-    public void ResumeBackgroundMusic()
-    {
-        if (musicAudioSource != null && !musicAudioSource.isPlaying)
-        {
-            AudioClip clipToPlay = GetAudioClip(backgroundMusicKey, backgroundMusicClip);
-            if (clipToPlay != null)
-            {
-                musicAudioSource.UnPause();
-            }
-        }
+        return sfxVolume;
     }
 
     public void PlayCardDeal()
@@ -353,10 +265,15 @@ public class AudioManager : MonoBehaviour
     {
         if (clip != null && sfxAudioSource != null)
         {
-            // Воспроизводим звук - музыка продолжает играть на полной громкости
             sfxAudioSource.PlayOneShot(clip, sfxVolume);
         }
     }
+
+    /// <summary>
+    /// Проверяет, загружены ли звуки из Addressables
+    /// </summary>
+    public bool IsAudioLoaded()
+    {
+        return isAudioLoaded;
+    }
 }
-
-
