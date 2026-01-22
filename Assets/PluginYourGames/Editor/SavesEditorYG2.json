@@ -13,13 +13,13 @@
         "MenuProgress_0"
     ],
     "intValues": [
+        1,
         0,
-        4,
         1,
         1,
-        5,
+        25,
         60,
-        4
+        25
     ],
     "intExample": 5,
     "strExample": "Hello!",
@@ -29,5 +29,5 @@
         false,
         false
     ],
-    "idSave": 31
+    "idSave": 48
 }

@@ -18,6 +18,9 @@ public class MenuCollectionUI : MonoBehaviour
     [Tooltip("Кнопка закрытия панели коллекции")]
     public Button closeButton;
     
+    [Tooltip("GameObject, который показывается когда в коллекции есть хотя бы одна карта")]
+    public GameObject collectionIndicator;
+    
     [Header("Settings")]
     [Tooltip("Количество колонок в сетке коллекции")]
     public int gridColumns = 3;
@@ -25,6 +28,21 @@ public class MenuCollectionUI : MonoBehaviour
     private MenuManager menuManager;
     private List<GameObject> collectionItems = new List<GameObject>();
     private bool isInitialized = false;
+    
+    void OnEnable()
+    {
+        // Инициализируем menuManager, если еще не инициализирован
+        if (menuManager == null)
+        {
+            menuManager = MenuManager.Instance;
+        }
+        
+        // Проверяем коллекцию и обновляем состояние индикатора
+        if (menuManager != null)
+        {
+            UpdateCollectionIndicator();
+        }
+    }
     
     void Start()
     {
@@ -58,6 +76,9 @@ public class MenuCollectionUI : MonoBehaviour
             collectionPanel.SetActive(false);
         }
         
+        // Проверяем коллекцию и устанавливаем начальное состояние индикатора
+        UpdateCollectionIndicator();
+        
         isInitialized = true;
     }
     
@@ -85,6 +106,19 @@ public class MenuCollectionUI : MonoBehaviour
     }
     
     /// <summary>
+    /// Обновляет состояние индикатора коллекции на основе наличия карт
+    /// </summary>
+    private void UpdateCollectionIndicator()
+    {
+        if (collectionIndicator == null || menuManager == null) return;
+        
+        List<int> completedIndices = menuManager.GetCompletedImageIndices();
+        bool hasCards = completedIndices.Count >= 1;
+        
+        collectionIndicator.SetActive(hasCards);
+    }
+    
+    /// <summary>
     /// Обновляет список пройденных картинок
     /// </summary>
     public void UpdateCollection()
@@ -96,6 +130,9 @@ public class MenuCollectionUI : MonoBehaviour
         
         // Получаем список пройденных картинок
         List<int> completedIndices = menuManager.GetCompletedImageIndices();
+        
+        // Обновляем состояние индикатора коллекции
+        UpdateCollectionIndicator();
         
         if (completedIndices.Count == 0)
         {

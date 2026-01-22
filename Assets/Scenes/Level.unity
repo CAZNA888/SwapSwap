@@ -5640,8 +5640,6 @@ MonoBehaviour:
     addressableKey: Assets/Sprites/UI/LevelImages/Group 191.png
   - name: Group192
     addressableKey: Assets/Sprites/UI/LevelImages/Group 192.png
-  - name: babochka
-    addressableKey: Assets/Sprites/UI/LevelImages/babochka.png
   - name: Group193
     addressableKey: Assets/Sprites/UI/LevelImages/Group 193.png
   - name: Group194
