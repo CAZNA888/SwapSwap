@@ -4218,6 +4218,7 @@ MonoBehaviour:
   collectionGridParent: {fileID: 114759839}
   completedImagePrefab: {fileID: 3077072613269863091, guid: 4f9cec32751bb77468ffec5258a36505, type: 3}
   closeButton: {fileID: 1550027381}
+  collectionIndicator: {fileID: 1554283057}
   gridColumns: 5
 --- !u!1 &978963266
 GameObject:

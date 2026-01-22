@@ -379,10 +379,22 @@ public class GameManager : MonoBehaviour
             }));
             sourceImage = loadedSprite;
             Debug.Log($"GameManager: Image loaded via Addressables: {sourceImage != null}");
+            
+            // Предзагружаем картинки на следующие уровни после успешной загрузки текущего
+            if (sourceImage != null && levelManager != null)
+            {
+                levelManager.PreloadNextLevelImages();
+            }
         }
         else if (sourceImage != null)
         {
             Debug.Log("GameManager: Using sourceImage from Inspector");
+            
+            // Даже если картинка была установлена вручную, предзагружаем следующие уровни
+            if (levelManager != null)
+            {
+                levelManager.PreloadNextLevelImages();
+            }
         }
         
         // Проверяем наличие картинки

@@ -43,6 +43,12 @@ public class LevelManager : MonoBehaviour
     private int currentLevel;
     private const string LEVEL_KEY = "CurrentLevel";
 
+#if UNITY_ADDRESSABLES
+    // Система управления ресурсами Addressables
+    private Dictionary<string, UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<Sprite>> loadedHandles = new Dictionary<string, UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<Sprite>>();
+    private Dictionary<string, int> referenceCounts = new Dictionary<string, int>();
+#endif
+
     // Singleton pattern для легкого доступа
     private static LevelManager instance;
     public static LevelManager Instance
@@ -104,6 +110,20 @@ public class LevelManager : MonoBehaviour
         {
             SaveLevel();
             Debug.Log("LevelManager: Saving level progress before destruction");
+            
+            // Выгружаем все загруженные ресурсы при уничтожении
+#if UNITY_ADDRESSABLES
+            foreach (var kvp in loadedHandles)
+            {
+                if (kvp.Value.IsValid())
+                {
+                    UnityEngine.AddressableAssets.Addressables.Release(kvp.Value);
+                }
+            }
+            loadedHandles.Clear();
+            referenceCounts.Clear();
+            Debug.Log("LevelManager: Released all loaded Addressables resources");
+#endif
         }
     }
 
@@ -141,6 +161,12 @@ public class LevelManager : MonoBehaviour
         PlayerPrefs.SetInt(LEVEL_KEY, currentLevel);
         PlayerPrefs.Save();
         Debug.Log($"Level incremented to {currentLevel}");
+        
+        // Выгружаем неиспользуемые картинки пройденных уровней
+        UnloadUnusedImages();
+        
+        // Предзагружаем картинки на следующие уровни
+        PreloadNextLevelImages();
     }
 
     /// <summary>
@@ -268,47 +294,7 @@ public class LevelManager : MonoBehaviour
     /// </summary>
     public IEnumerator LoadLevelImageAsync(System.Action<Sprite> onComplete)
     {
-        if (levelImages == null || levelImages.Count == 0)
-        {
-            Debug.LogError("LevelManager: levelImages list is empty!");
-            onComplete?.Invoke(null);
-            yield break;
-        }
-
-        int imageIndex = currentLevel % levelImages.Count;
-        LevelImageData imageData = levelImages[imageIndex];
-
-        // Всегда используем Addressables - проверяем наличие во время выполнения
-        if (!IsAddressablesAvailable())
-        {
-            Debug.LogError("LevelManager: Addressables are not installed! Please install Addressables package (Window > Package Manager > Addressables).");
-            onComplete?.Invoke(null);
-            yield break;
-        }
-
-#if UNITY_ADDRESSABLES
-        string addressableKey = imageData.GetAddressableKey();
-        var handle = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<Sprite>(addressableKey);
-
-        yield return handle;
-
-        if (handle.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
-        {
-            onComplete?.Invoke(handle.Result);
-        }
-        else
-        {
-            Debug.LogError($"LevelManager: Failed to load image from Addressables with key '{addressableKey}'. Загрузка не выполнена.");
-            onComplete?.Invoke(null);
-        }
-
-        // Не освобождаем handle здесь, так как спрайт может использоваться
-        // Можно добавить систему управления ресурсами при необходимости
-#else
-        Debug.LogError("LevelManager: Addressables code is not compiled. Please add 'UNITY_ADDRESSABLES' to Scripting Define Symbols in Player Settings (Edit > Project Settings > Player > Other Settings > Scripting Define Symbols).");
-        onComplete?.Invoke(null);
-        yield break;
-#endif
+        yield return StartCoroutine(LoadLevelImageAsync(currentLevel, onComplete));
     }
 
     /// <summary>
@@ -356,6 +342,326 @@ public class LevelManager : MonoBehaviour
     public float GetCardPrefabMultiplier()
     {
         return cardPrefabSizeMultiplier;
+    }
+
+    /// <summary>
+    /// Вычисляет индекс картинки для указанного уровня
+    /// </summary>
+    public int GetImageIndexForLevel(int level)
+    {
+        if (levelImages == null || levelImages.Count == 0)
+        {
+            return -1;
+        }
+        return level % levelImages.Count;
+    }
+
+    /// <summary>
+    /// Получает addressable key для указанного уровня
+    /// </summary>
+    private string GetAddressableKeyForLevel(int level)
+    {
+        int imageIndex = GetImageIndexForLevel(level);
+        if (imageIndex < 0 || imageIndex >= levelImages.Count)
+        {
+            return null;
+        }
+        return levelImages[imageIndex].GetAddressableKey();
+    }
+
+    /// <summary>
+    /// Вычисляет следующий уровень, где будет использоваться картинка с указанным индексом
+    /// </summary>
+    private int GetNextUsageLevel(int imageIndex)
+    {
+        if (levelImages == null || levelImages.Count == 0)
+        {
+            return int.MaxValue;
+        }
+
+        // Картинка используется циклически: imageIndex, imageIndex + levelImages.Count, imageIndex + 2*levelImages.Count, ...
+        // Находим следующий уровень после currentLevel, где будет использоваться эта картинка
+        int cycleSize = levelImages.Count;
+        int remainder = currentLevel % cycleSize;
+        
+        // Если текущий уровень уже использует эту картинку, следующий будет через cycleSize уровней
+        if (remainder == imageIndex)
+        {
+            return currentLevel + cycleSize;
+        }
+        
+        // Вычисляем уровень в текущем цикле для этой картинки
+        int currentCycle = currentLevel / cycleSize;
+        int levelInCurrentCycle = (currentCycle * cycleSize) + imageIndex;
+        
+        // Если уровень в текущем цикле больше currentLevel, то это следующий уровень использования
+        if (levelInCurrentCycle > currentLevel)
+        {
+            return levelInCurrentCycle;
+        }
+        
+        // Иначе картинка будет использоваться в следующем цикле
+        return ((currentCycle + 1) * cycleSize) + imageIndex;
+    }
+
+    /// <summary>
+    /// Проверяет, используется ли картинка в MenuManager
+    /// </summary>
+    private bool IsImageUsedInMenuManager(string addressableKey)
+    {
+        MenuManager menuManager = MenuManager.Instance;
+        if (menuManager == null)
+        {
+            return false;
+        }
+
+        // Проверяем все картинки в MenuManager
+        if (menuManager.menuImages == null)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < menuManager.menuImages.Count; i++)
+        {
+            string menuKey = menuManager.menuImages[i].GetAddressableKey();
+            if (menuKey == addressableKey)
+            {
+                // Проверяем, используется ли эта картинка в текущем прогрессе
+                if (menuManager.IsImageIndexInUse(i))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Асинхронно загружает картинку для указанного уровня через Addressables
+    /// </summary>
+    public IEnumerator LoadLevelImageAsync(int level, System.Action<Sprite> onComplete)
+    {
+        if (levelImages == null || levelImages.Count == 0)
+        {
+            Debug.LogError("LevelManager: levelImages list is empty!");
+            onComplete?.Invoke(null);
+            yield break;
+        }
+
+        int imageIndex = GetImageIndexForLevel(level);
+        if (imageIndex < 0 || imageIndex >= levelImages.Count)
+        {
+            Debug.LogError($"LevelManager: Invalid image index {imageIndex} for level {level}");
+            onComplete?.Invoke(null);
+            yield break;
+        }
+
+        LevelImageData imageData = levelImages[imageIndex];
+        string addressableKey = imageData.GetAddressableKey();
+
+        // Проверяем, не загружена ли уже картинка
+#if UNITY_ADDRESSABLES
+        if (loadedHandles.ContainsKey(addressableKey))
+        {
+            var existingHandle = loadedHandles[addressableKey];
+            if (existingHandle.IsValid() && existingHandle.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
+            {
+                // Увеличиваем счетчик ссылок
+                if (referenceCounts.ContainsKey(addressableKey))
+                {
+                    referenceCounts[addressableKey]++;
+                }
+                else
+                {
+                    referenceCounts[addressableKey] = 1;
+                }
+                onComplete?.Invoke(existingHandle.Result);
+                Debug.Log($"LevelManager: Image '{addressableKey}' already loaded, using cached version");
+                yield break;
+            }
+        }
+#endif
+
+        // Всегда используем Addressables - проверяем наличие во время выполнения
+        if (!IsAddressablesAvailable())
+        {
+            Debug.LogError("LevelManager: Addressables are not installed! Please install Addressables package (Window > Package Manager > Addressables).");
+            onComplete?.Invoke(null);
+            yield break;
+        }
+
+#if UNITY_ADDRESSABLES
+        var handle = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<Sprite>(addressableKey);
+
+        yield return handle;
+
+        if (handle.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
+        {
+            // Сохраняем handle и увеличиваем счетчик ссылок
+            loadedHandles[addressableKey] = handle;
+            if (referenceCounts.ContainsKey(addressableKey))
+            {
+                referenceCounts[addressableKey]++;
+            }
+            else
+            {
+                referenceCounts[addressableKey] = 1;
+            }
+            onComplete?.Invoke(handle.Result);
+            Debug.Log($"LevelManager: Image '{addressableKey}' loaded successfully for level {level}");
+        }
+        else
+        {
+            Debug.LogError($"LevelManager: Failed to load image from Addressables with key '{addressableKey}' for level {level}.");
+            onComplete?.Invoke(null);
+        }
+#else
+        Debug.LogError("LevelManager: Addressables code is not compiled. Please add 'UNITY_ADDRESSABLES' to Scripting Define Symbols in Player Settings (Edit > Project Settings > Player > Other Settings > Scripting Define Symbols).");
+        onComplete?.Invoke(null);
+        yield break;
+#endif
+    }
+
+    /// <summary>
+    /// Предзагружает картинки на 1-2 уровня вперед
+    /// </summary>
+    public void PreloadNextLevelImages()
+    {
+        StartCoroutine(PreloadNextLevelImagesCoroutine());
+    }
+
+    private IEnumerator PreloadNextLevelImagesCoroutine()
+    {
+        if (levelImages == null || levelImages.Count == 0)
+        {
+            yield break;
+        }
+
+        // Загружаем картинку для следующего уровня (обязательно)
+        int nextLevel = currentLevel + 1;
+        string nextLevelKey = GetAddressableKeyForLevel(nextLevel);
+        
+        if (!string.IsNullOrEmpty(nextLevelKey))
+        {
+#if UNITY_ADDRESSABLES
+            // Проверяем, не загружена ли уже
+            if (!loadedHandles.ContainsKey(nextLevelKey))
+            {
+                Debug.Log($"LevelManager: Preloading image for level {nextLevel}");
+                yield return StartCoroutine(LoadLevelImageAsync(nextLevel, (sprite) => {
+                    if (sprite != null)
+                    {
+                        Debug.Log($"LevelManager: Successfully preloaded image for level {nextLevel}");
+                    }
+                }));
+            }
+            else
+            {
+                Debug.Log($"LevelManager: Image for level {nextLevel} already loaded");
+            }
+#endif
+        }
+
+        // Если успеваем, загружаем картинку для уровня +2 (опционально)
+        int nextNextLevel = currentLevel + 2;
+        string nextNextLevelKey = GetAddressableKeyForLevel(nextNextLevel);
+        
+        if (!string.IsNullOrEmpty(nextNextLevelKey) && nextNextLevelKey != nextLevelKey)
+        {
+#if UNITY_ADDRESSABLES
+            // Проверяем, не загружена ли уже
+            if (!loadedHandles.ContainsKey(nextNextLevelKey))
+            {
+                Debug.Log($"LevelManager: Preloading image for level {nextNextLevel}");
+                yield return StartCoroutine(LoadLevelImageAsync(nextNextLevel, (sprite) => {
+                    if (sprite != null)
+                    {
+                        Debug.Log($"LevelManager: Successfully preloaded image for level {nextNextLevel}");
+                    }
+                }));
+            }
+            else
+            {
+                Debug.Log($"LevelManager: Image for level {nextNextLevel} already loaded");
+            }
+#endif
+        }
+    }
+
+    /// <summary>
+    /// Выгружает картинки пройденных уровней, если они больше не будут использоваться
+    /// </summary>
+    public void UnloadUnusedImages()
+    {
+        StartCoroutine(UnloadUnusedImagesCoroutine());
+    }
+
+    private IEnumerator UnloadUnusedImagesCoroutine()
+    {
+#if UNITY_ADDRESSABLES
+        if (levelImages == null || levelImages.Count == 0)
+        {
+            yield break;
+        }
+
+        List<string> keysToUnload = new List<string>();
+
+        // Проверяем все пройденные уровни (от 0 до currentLevel - 1)
+        for (int level = 0; level < currentLevel; level++)
+        {
+            int imageIndex = GetImageIndexForLevel(level);
+            if (imageIndex < 0 || imageIndex >= levelImages.Count)
+            {
+                continue;
+            }
+
+            string addressableKey = levelImages[imageIndex].GetAddressableKey();
+            if (string.IsNullOrEmpty(addressableKey))
+            {
+                continue;
+            }
+
+            // Проверяем, будет ли картинка использоваться в следующих уровнях
+            int nextUsageLevel = GetNextUsageLevel(imageIndex);
+            bool willBeUsedInLevelManager = nextUsageLevel <= currentLevel + 2; // Оставляем запас на предзагруженные уровни
+
+            // Проверяем использование в MenuManager
+            bool isUsedInMenuManager = IsImageUsedInMenuManager(addressableKey);
+
+            // Если картинка не будет использоваться ни в LevelManager, ни в MenuManager
+            if (!willBeUsedInLevelManager && !isUsedInMenuManager)
+            {
+                if (loadedHandles.ContainsKey(addressableKey))
+                {
+                    keysToUnload.Add(addressableKey);
+                }
+            }
+        }
+
+        // Выгружаем найденные картинки
+        foreach (string key in keysToUnload)
+        {
+            if (loadedHandles.ContainsKey(key))
+            {
+                var handle = loadedHandles[key];
+                if (handle.IsValid())
+                {
+                    UnityEngine.AddressableAssets.Addressables.Release(handle);
+                    Debug.Log($"LevelManager: Unloaded unused image '{key}'");
+                }
+                loadedHandles.Remove(key);
+                referenceCounts.Remove(key);
+            }
+        }
+
+        if (keysToUnload.Count > 0)
+        {
+            Debug.Log($"LevelManager: Unloaded {keysToUnload.Count} unused images");
+        }
+#else
+        yield break;
+#endif
     }
 }
 

@@ -387,5 +387,47 @@ public class MenuManager : MonoBehaviour
         int imageIndex = GetCurrentMenuImageIndex();
         UnlockAllCardsForImage(imageIndex);
     }
+    
+    /// <summary>
+    /// Получает addressable key для указанного индекса картинки
+    /// </summary>
+    public string GetAddressableKeyForImageIndex(int imageIndex)
+    {
+        if (menuImages == null || imageIndex < 0 || imageIndex >= menuImages.Count)
+        {
+            return null;
+        }
+        
+        return menuImages[imageIndex].GetAddressableKey();
+    }
+    
+    /// <summary>
+    /// Проверяет, используется ли картинка с указанным индексом в текущем прогрессе
+    /// Картинка считается используемой, если она соответствует текущей или будущим картинкам меню
+    /// </summary>
+    public bool IsImageIndexInUse(int imageIndex)
+    {
+        if (menuImages == null || imageIndex < 0 || imageIndex >= menuImages.Count)
+        {
+            return false;
+        }
+        
+        int currentLevel = PlayerPrefs.GetInt("CurrentLevel", 0);
+        int currentImageIndex = GetCurrentMenuImageIndex();
+        
+        // Картинка используется, если она соответствует текущей картинке или будущим
+        // Также проверяем, не полностью ли пройдена картинка (если пройдена, она может быть неактуальна)
+        if (imageIndex >= currentImageIndex)
+        {
+            // Это текущая или будущая картинка - она используется
+            return true;
+        }
+        
+        // Для прошлых картинок проверяем, не полностью ли они пройдены
+        // Если картинка полностью пройдена, она все еще может использоваться в коллекции
+        // Но для целей выгрузки считаем, что полностью пройденные картинки можно выгружать
+        // если они не являются текущей
+        return false;
+    }
 }
 
