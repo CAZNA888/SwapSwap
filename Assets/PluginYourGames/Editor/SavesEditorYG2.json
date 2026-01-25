@@ -9,19 +9,15 @@
         "Tutorial_FirstLaunchCompleted",
         "Tutorial_LevelCompleted",
         "CurrentLevel",
-        "PlayerMoney",
-        "MenuProgress_0",
-        "MenuProgress_1"
+        "PlayerMoney"
     ],
     "intValues": [
+        0,
+        0,
         1,
-        2,
         1,
-        1,
-        27,
-        90,
-        25,
-        2
+        3,
+        15
     ],
     "intExample": 5,
     "strExample": "Hello!",
@@ -31,5 +27,5 @@
         false,
         false
     ],
-    "idSave": 64
+    "idSave": 14
 }
