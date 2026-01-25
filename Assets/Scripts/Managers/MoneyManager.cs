@@ -1,4 +1,5 @@
 using UnityEngine;
+using YG;
 using PlayerPrefs = RedefineYG.PlayerPrefs;
 public class MoneyManager : MonoBehaviour
 {
@@ -29,6 +30,9 @@ public class MoneyManager : MonoBehaviour
     {
         PlayerPrefs.SetInt(MONEY_KEY, currentMoney);
         PlayerPrefs.Save();
+
+
+        YG2.SetLeaderboard( "money", currentMoney);
     }
     
     public void LoadMoney()
