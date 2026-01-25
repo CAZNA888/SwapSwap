@@ -638,39 +638,28 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             }
         }
         
-        // 7. Перемещаем мешающие карточки на старые позиции группы (если свободны) или на пустые ячейки
+        // 7. Перемещаем мешающие карточки с сохранением горизонтального порядка
         if (piecesToMove.Count > 0)
         {
-            // Сначала пытаемся переместить на старые позиции группы
-            List<Vector2Int> availableCells = freedCells.ToList();
+            // Получаем пустые ячейки
+            List<Vector2Int> emptyCells = grid.GetEmptyCells(occupiedCells)
+                .Where(c => !targetCells.Contains(c))
+                .ToList();
             
-            // Если не хватает ячеек, добавляем пустые ячейки
-            if (availableCells.Count < piecesToMove.Count)
+            // Умное размещение с сохранением горизонтального порядка
+            Dictionary<PuzzlePiece, Vector2Int> placement = PlacePiecesPreservingHorizontalOrder(
+                piecesToMove, 
+                freedCells.ToList(), 
+                emptyCells,
+                targetCells);
+            
+            Debug.Log($"[SwipeHandler] MoveGroupWithShape: перемещаем {piecesToMove.Count} мешающих карточек с сохранением горизонтального порядка");
+            
+            // Перемещаем карточки согласно размещению
+            foreach (var kvp in placement)
             {
-                List<Vector2Int> emptyCells = grid.GetEmptyCells(occupiedCells);
-                foreach (Vector2Int emptyCell in emptyCells)
-                {
-                    if (!availableCells.Contains(emptyCell) && !targetCells.Contains(emptyCell))
-                    {
-                        availableCells.Add(emptyCell);
-                    }
-                }
-            }
-            
-            List<Vector2Int> sortedAvailableCells = availableCells.OrderBy(c => c.x).ThenBy(c => c.y).ToList();
-            int cellIndex = 0;
-            
-            Debug.Log($"[SwipeHandler] MoveGroupWithShape: перемещаем {piecesToMove.Count} мешающих карточек в {sortedAvailableCells.Count} доступных ячеек");
-            
-            foreach (PuzzlePiece piece in piecesToMove)
-            {
-                if (cellIndex >= sortedAvailableCells.Count)
-                {
-                    Debug.LogWarning($"[SwipeHandler] MoveGroupWithShape: не хватает ячеек для мешающих карточек!");
-                    break;
-                }
-                
-                Vector2Int newPos = sortedAvailableCells[cellIndex];
+                PuzzlePiece piece = kvp.Key;
+                Vector2Int newPos = kvp.Value;
                 GridCell newCell = grid.GetCellAt(newPos.x, newPos.y);
                 
                 if (newCell != null)
@@ -713,8 +702,57 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                     // Затем добавляем новую позицию в occupiedCells
                     occupiedCells[newPos] = piece;
                     connectionManager.UpdatePieceOnGrid(piece, oldPos, newPos);
+                }
+            }
+            
+            // Если некоторые карточки не были размещены (fallback)
+            foreach (PuzzlePiece piece in piecesToMove)
+            {
+                if (!placement.ContainsKey(piece))
+                {
+                    Debug.LogWarning($"[SwipeHandler] MoveGroupWithShape: карточка {piece.name} не была размещена, используем fallback");
+                    // Используем старую логику как fallback
+                    List<Vector2Int> fallbackCells = grid.GetEmptyCells(occupiedCells)
+                        .Where(c => !targetCells.Contains(c))
+                        .OrderBy(c => c.x).ThenBy(c => c.y)
+                        .ToList();
                     
-                    cellIndex++;
+                    if (fallbackCells.Count > 0)
+                    {
+                        Vector2Int newPos = fallbackCells[0];
+                        GridCell newCell = grid.GetCellAt(newPos.x, newPos.y);
+                        
+                        if (newCell != null)
+                        {
+                            Vector2Int oldPos = new Vector2Int(piece.currentGridRow, piece.currentGridCol);
+                            GridCell oldCell = grid.GetCellAt(oldPos.x, oldPos.y);
+                            Vector2 worldPos2D = grid.GetWorldPosition(newPos.x, newPos.y);
+                            Vector3 newWorldPos = new Vector3(worldPos2D.x, worldPos2D.y, 0f);
+                            
+                            piece.transform.DOMove(newWorldPos, moveDuration).SetEase(moveEase);
+                            
+                            BoxCollider2D collider = piece.GetComponent<BoxCollider2D>();
+                            if (collider != null) collider.enabled = true;
+                            
+                            piece.SetCardSortingOrder(5);
+                            BorderRenderer borderRenderer = piece.GetComponentInChildren<BorderRenderer>();
+                            if (borderRenderer != null)
+                            {
+                                borderRenderer.SetBordersSortingOrder(6);
+                            }
+                            
+                            piece.SetGridCoordinates(newPos.x, newPos.y);
+                            occupiedCells.Remove(oldPos);
+                            
+                            if (oldCell != null)
+                            {
+                                oldCell.SetPiece(null);
+                            }
+                            newCell.SetPiece(piece);
+                            occupiedCells[newPos] = piece;
+                            connectionManager.UpdatePieceOnGrid(piece, oldPos, newPos);
+                        }
+                    }
                 }
             }
         }
@@ -1017,6 +1055,79 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
     {
         selectedPiece = null;
         selectedGroup = null;
+    }
+    
+    /// <summary>
+    /// Умное размещение мешающих карточек с сохранением горизонтального порядка
+    /// </summary>
+    private Dictionary<PuzzlePiece, Vector2Int> PlacePiecesPreservingHorizontalOrder(
+        List<PuzzlePiece> piecesToMove, 
+        List<Vector2Int> freedCells, 
+        List<Vector2Int> emptyCells,
+        HashSet<Vector2Int> targetCells)
+    {
+        Dictionary<PuzzlePiece, Vector2Int> placement = new Dictionary<PuzzlePiece, Vector2Int>();
+        
+        if (piecesToMove.Count == 0)
+        {
+            return placement;
+        }
+        
+        // 1. Сортируем карточки по исходным позициям (сохраняем порядок)
+        List<PuzzlePiece> sortedPieces = piecesToMove
+            .OrderBy(p => p.currentGridRow)
+            .ThenBy(p => p.currentGridCol)
+            .ToList();
+        
+        // 2. Объединяем и сортируем доступные ячейки (приоритет freedCells)
+        List<Vector2Int> allAvailable = new List<Vector2Int>();
+        allAvailable.AddRange(freedCells.OrderBy(c => c.x).ThenBy(c => c.y));
+        allAvailable.AddRange(emptyCells
+            .Where(c => !targetCells.Contains(c) && !freedCells.Contains(c))
+            .OrderBy(c => c.x).ThenBy(c => c.y));
+        
+        // 3. Группируем мешающие карточки по строкам
+        var piecesByRow = sortedPieces.GroupBy(p => p.currentGridRow).ToList();
+        
+        // 4. Для каждой группы строк размещаем карточки, сохраняя порядок
+        foreach (var rowGroup in piecesByRow)
+        {
+            List<PuzzlePiece> rowPieces = rowGroup.OrderBy(p => p.currentGridCol).ToList();
+            
+            // Определяем целевую строку - приоритет старым позициям группы
+            int targetRow = freedCells.Count > 0 ? freedCells.Min(c => c.x) : rowPieces[0].currentGridRow;
+            
+            // Фильтруем доступные ячейки по строке (приоритет той же строке)
+            List<Vector2Int> rowCells = allAvailable
+                .Where(c => c.x == targetRow)
+                .OrderBy(c => c.y)
+                .ToList();
+            
+            // Если не хватает ячеек в этой строке, добавляем ячейки из других строк
+            if (rowCells.Count < rowPieces.Count)
+            {
+                rowCells.AddRange(allAvailable
+                    .Where(c => !rowCells.Contains(c))
+                    .OrderBy(c => c.x).ThenBy(c => c.y)
+                    .Take(rowPieces.Count - rowCells.Count));
+            }
+            
+            // Сопоставляем карточки с ячейками, сохраняя относительный порядок
+            for (int i = 0; i < rowPieces.Count && i < rowCells.Count; i++)
+            {
+                placement[rowPieces[i]] = rowCells[i];
+                allAvailable.Remove(rowCells[i]);
+            }
+        }
+        
+        Debug.Log($"[SwipeHandler] PlacePiecesPreservingHorizontalOrder: размещено {placement.Count} карточек из {piecesToMove.Count}");
+        foreach (var kvp in placement)
+        {
+            Vector2Int oldPos = new Vector2Int(kvp.Key.currentGridRow, kvp.Key.currentGridCol);
+            Debug.Log($"[SwipeHandler]   {kvp.Key.name}: ({oldPos.x},{oldPos.y}) -> ({kvp.Value.x},{kvp.Value.y})");
+        }
+        
+        return placement;
     }
     
     // Перемещает карточку на свободную ячейку
