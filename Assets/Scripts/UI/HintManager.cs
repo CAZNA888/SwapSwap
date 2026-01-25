@@ -35,6 +35,10 @@ public class HintManager : MonoBehaviour
     private PuzzleGrid grid;
     private Dictionary<Vector2Int, PuzzlePiece> occupiedCells;
     
+    // Флаг для отслеживания, остановлены ли анимации из-за свайпа
+    private bool hintsPausedBySwipe = false;
+    private Coroutine checkMovementCoroutine;
+    
     // Константы для sorting order во время анимации подсказок
     private const int HINT_FIRST_CARD_SORTING_ORDER = 20;
     private const int HINT_FIRST_BORDER_SORTING_ORDER = 21;
@@ -562,6 +566,13 @@ public class HintManager : MonoBehaviour
             return;
         }
         
+        // Не показываем подсказки, если они приостановлены из-за свайпа
+        if (hintsPausedBySwipe)
+        {
+            Debug.Log("[HintManager] ShowHint: подсказки приостановлены из-за свайпа/движения карточек");
+            return;
+        }
+        
         // ПРОВЕРКА: блокируем подсказки во время раздачи и переворота карт
         if (gameManager.IsDealingOrFlipping())
         {
@@ -1038,6 +1049,95 @@ public class HintManager : MonoBehaviour
             }
         }
         activeHintAnimations.Clear();
+    }
+    
+    /// <summary>
+    /// Останавливает анимации подсказок при начале свайпа или движения карточек
+    /// </summary>
+    public void PauseHintsDuringSwipe()
+    {
+        hintsPausedBySwipe = true;
+        
+        // Останавливаем все активные анимации подсказок
+        foreach (var kvp in activeHintAnimations)
+        {
+            if (kvp.Value != null && kvp.Value.IsActive())
+            {
+                kvp.Value.Pause();
+            }
+        }
+        
+        Debug.Log("[HintManager] Hints paused due to swipe/movement");
+    }
+    
+    /// <summary>
+    /// Возобновляет анимации подсказок после завершения движений карточек
+    /// </summary>
+    public void ResumeHintsAfterMovement()
+    {
+        if (!hintsPausedBySwipe) return;
+        
+        // Запускаем проверку движений карточек
+        if (checkMovementCoroutine != null)
+        {
+            StopCoroutine(checkMovementCoroutine);
+        }
+        checkMovementCoroutine = StartCoroutine(CheckMovementAndResumeHints());
+    }
+    
+    /// <summary>
+    /// Проверяет, есть ли активные движения карточек, и возобновляет подсказки когда все движения завершены
+    /// </summary>
+    private IEnumerator CheckMovementAndResumeHints()
+    {
+        // Ждем немного перед проверкой
+        yield return new WaitForSeconds(0.1f);
+        
+        // Проверяем активные движения карточек
+        while (HasActiveCardMovements())
+        {
+            yield return new WaitForSeconds(0.1f);
+        }
+        
+        // Все движения завершены - возобновляем подсказки
+        hintsPausedBySwipe = false;
+        
+        // Возобновляем анимации подсказок
+        foreach (var kvp in activeHintAnimations)
+        {
+            if (kvp.Value != null && kvp.Value.IsActive() && !kvp.Value.IsPlaying())
+            {
+                kvp.Value.Play();
+            }
+        }
+        
+        Debug.Log("[HintManager] Hints resumed after movement completed");
+        checkMovementCoroutine = null;
+    }
+    
+    /// <summary>
+    /// Проверяет, есть ли активные движения карточек через DOTween
+    /// </summary>
+    private bool HasActiveCardMovements()
+    {
+        if (gameManager == null) return false;
+        
+        List<PuzzlePiece> allPieces = gameManager.GetAllPieces();
+        if (allPieces == null) return false;
+        
+        foreach (PuzzlePiece piece in allPieces)
+        {
+            if (piece != null && piece.transform != null)
+            {
+                // Проверяем, есть ли активные твины на transform карточки
+                if (DOTween.IsTweening(piece.transform))
+                {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
 }
 

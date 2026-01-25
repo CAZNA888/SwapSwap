@@ -48,6 +48,13 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         // Останавливаем все анимации scale перед началом свайпа
         StopAllScaleAnimations();
         
+        // Останавливаем анимации подсказок при начале свайпа
+        HintManager hintManager = FindObjectOfType<HintManager>();
+        if (hintManager != null)
+        {
+            hintManager.PauseHintsDuringSwipe();
+        }
+        
         PuzzlePiece clickedPiece = null;
         
         // Используем OverlapPointAll чтобы получить все коллайдеры
@@ -223,6 +230,13 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         dragTweens.Clear();
         
         isDragging = false;
+        
+        // Возобновляем анимации подсказок после завершения свайпа
+        HintManager hintManager = FindObjectOfType<HintManager>();
+        if (hintManager != null)
+        {
+            hintManager.ResumeHintsAfterMovement();
+        }
         
         Debug.Log($"[SwipeHandler] OnPointerUp: Начало обработки. Группа из {selectedGroup.Count} карточек");
         
