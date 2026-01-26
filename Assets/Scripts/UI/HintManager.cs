@@ -607,7 +607,15 @@ public class HintManager : MonoBehaviour
             {
                 // Показать подсказку на обмен двух карточек
                 Debug.Log($"[HintManager] ShowHint: найдена подсказка для обмена {piece1.name} и {piece2.name}");
-                AnimateHint(piece1, piece2);
+                // Для tutorial уровня используем scale анимацию, для обычных - автосвайп
+                if (isTutorialLevel)
+                {
+                    AnimateTutorialHint(piece1, piece2);
+                }
+                else
+                {
+                    AnimateHint(piece1, piece2);
+                }
             }
             return;
         }
@@ -635,7 +643,15 @@ public class HintManager : MonoBehaviour
                         if (piece != neighbor)
                         {
                             Debug.Log($"[HintManager] ShowHint: fallback - показываем обмен {piece.name} и {neighbor.name}");
-                            AnimateHint(piece, neighbor);
+                            // Для tutorial уровня используем scale анимацию, для обычных - автосвайп
+                            if (isTutorialLevel)
+                            {
+                                AnimateTutorialHint(piece, neighbor);
+                            }
+                            else
+                            {
+                                AnimateHint(piece, neighbor);
+                            }
                             return;
                         }
                     }
@@ -644,7 +660,15 @@ public class HintManager : MonoBehaviour
             
             // Если соседние не найдены, показываем обмен первых двух карточек
             Debug.Log($"[HintManager] ShowHint: fallback - показываем обмен первых двух карточек");
-            AnimateHint(allPieces[0], allPieces[1]);
+            // Для tutorial уровня используем scale анимацию, для обычных - автосвайп
+            if (isTutorialLevel)
+            {
+                AnimateTutorialHint(allPieces[0], allPieces[1]);
+            }
+            else
+            {
+                AnimateHint(allPieces[0], allPieces[1]);
+            }
             return;
         }
         
@@ -746,8 +770,35 @@ public class HintManager : MonoBehaviour
         return true;
     }
     
-    // Анимация для двух карточек (обмен)
+    // Анимация для двух карточек (обмен) - теперь автоматически свайпает карты
     private void AnimateHint(PuzzlePiece piece1, PuzzlePiece piece2)
+    {
+        if (piece1 == null || piece2 == null) return;
+        
+        // Останавливаем все анимации для этих карточек
+        StopAnimationsForPieces(new[] { piece1, piece2 });
+        
+        // Получаем SwipeHandler из одной из карточек
+        SwipeHandler swipeHandler = piece1.GetComponent<SwipeHandler>();
+        if (swipeHandler == null)
+        {
+            Debug.LogWarning("[HintManager] AnimateHint: SwipeHandler не найден на piece1, пробуем piece2");
+            swipeHandler = piece2.GetComponent<SwipeHandler>();
+        }
+        
+        if (swipeHandler == null)
+        {
+            Debug.LogError("[HintManager] AnimateHint: SwipeHandler не найден ни на одной из карточек!");
+            return;
+        }
+        
+        // Вызываем автоматический свайп карточек
+        Debug.Log($"[HintManager] AnimateHint: автоматический свайп карточек {piece1.name} и {piece2.name}");
+        swipeHandler.AutoSwapPieces(piece1, piece2);
+    }
+    
+    // Анимация для двух карточек (tutorial) - scale анимация для показа подсказки
+    private void AnimateTutorialHint(PuzzlePiece piece1, PuzzlePiece piece2)
     {
         if (piece1 == null || piece2 == null) return;
         
