@@ -318,6 +318,37 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         }
     }
     
+    /// <summary>
+    /// Публичный метод для автоматического свайпа двух карточек (используется в подсказках)
+    /// </summary>
+    public void AutoSwapPieces(PuzzlePiece piece1, PuzzlePiece piece2)
+    {
+        if (piece1 == null || piece2 == null)
+        {
+            Debug.LogWarning("[SwipeHandler] AutoSwapPieces: одна из карточек равна null");
+            return;
+        }
+        
+        if (grid == null)
+        {
+            Debug.LogError("[SwipeHandler] AutoSwapPieces: grid == null");
+            return;
+        }
+        
+        // Получаем GridCell для обеих карточек
+        GridCell cell1 = grid.GetCellAt(piece1.currentGridRow, piece1.currentGridCol);
+        GridCell cell2 = grid.GetCellAt(piece2.currentGridRow, piece2.currentGridCol);
+        
+        if (cell1 == null || cell2 == null)
+        {
+            Debug.LogError($"[SwipeHandler] AutoSwapPieces: не найдены ячейки для карточек. piece1: ({piece1.currentGridRow}, {piece1.currentGridCol}), piece2: ({piece2.currentGridRow}, {piece2.currentGridCol})");
+            return;
+        }
+        
+        // Вызываем приватный метод SwapPieces
+        SwapPieces(piece1, cell1, piece2, cell2);
+    }
+    
     private void SwapPieces(PuzzlePiece piece1, GridCell cell1, PuzzlePiece piece2, GridCell cell2)
     {
         // ПРОВЕРКИ: убеждаемся, что карточки действительно на этих ячейках

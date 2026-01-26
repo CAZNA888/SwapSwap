@@ -15,6 +15,12 @@ public class LevelManager : MonoBehaviour
     [Tooltip("Периодичность увеличения размерности (k). Каждые k уровней размерность увеличивается на 1")]
     public int gridSizeIncreasePeriod = 5;
 
+    [Tooltip("Периодичность увеличения размерности с 3 на 4. Используется только для первого перехода с 3 на 4")]
+    public int gridSizeIncreasePeriod3To4 = 5;
+
+    [Tooltip("Периодичность увеличения размерности с 4 на 5. Используется только для первого перехода с 4 на 5")]
+    public int gridSizeIncreasePeriod4To5 = 5;
+
     [Tooltip("Максимальная размерность сетки (k_max)")]
     public int maxGridSize = 8;
 
@@ -188,6 +194,61 @@ public class LevelManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Рассчитывает размерность сетки для startGridSize=3 с отдельными периодами для переходов 3→4 и 4→5
+    /// </summary>
+    private int CalculateGridSizeForStartSize3(int adjustedLevel, int originalLevel)
+    {
+        int baseSize;
+        int increase;
+        int gridSize;
+        int finalSize;
+
+        // Логика с отдельными периодами для переходов 3→4 и 4→5
+        if (adjustedLevel < gridSizeIncreasePeriod3To4)
+        {
+            // Уровни 0 до gridSizeIncreasePeriod3To4 - 1: размер 3
+            baseSize = 3;
+            increase = 0;
+            gridSize = baseSize;
+        }
+        else if (adjustedLevel < gridSizeIncreasePeriod3To4 + gridSizeIncreasePeriod4To5)
+        {
+            // Уровни gridSizeIncreasePeriod3To4 до gridSizeIncreasePeriod3To4 + gridSizeIncreasePeriod4To5 - 1: размер 4
+            baseSize = 4;
+            increase = 0;
+            gridSize = baseSize;
+        }
+        else
+        {
+            // Уровни начиная с gridSizeIncreasePeriod3To4 + gridSizeIncreasePeriod4To5: размер 5 и далее
+            // Используем стандартный gridSizeIncreasePeriod для дальнейших переходов
+            baseSize = 5;
+            int levelAfterTransitions = adjustedLevel - (gridSizeIncreasePeriod3To4 + gridSizeIncreasePeriod4To5);
+            increase = levelAfterTransitions / gridSizeIncreasePeriod;
+            gridSize = baseSize + increase;
+        }
+
+        // Учитываем сложный уровень
+        if (IsDifficultLevel(originalLevel))
+        {
+            gridSize += 1; // Дополнительное увеличение для сложного уровня
+        }
+
+        finalSize = Mathf.Min(gridSize, maxGridSize);
+
+        // Логирование для диагностики
+        string periodInfo = adjustedLevel < gridSizeIncreasePeriod3To4 
+            ? $"period 3→4 (level < {gridSizeIncreasePeriod3To4})"
+            : adjustedLevel < gridSizeIncreasePeriod3To4 + gridSizeIncreasePeriod4To5
+            ? $"period 4→5 (level < {gridSizeIncreasePeriod3To4 + gridSizeIncreasePeriod4To5})"
+            : $"standard period (level >= {gridSizeIncreasePeriod3To4 + gridSizeIncreasePeriod4To5})";
+        
+        Debug.Log($"LevelManager.CalculateGridSize: level={originalLevel}, adjustedLevel={adjustedLevel}, {periodInfo}, baseSize={baseSize}, increase={increase}, gridSize={gridSize}, isDifficult={IsDifficultLevel(originalLevel)}, finalSize={finalSize} (max={maxGridSize})");
+
+        return finalSize;
+    }
+
+    /// <summary>
     /// Рассчитывает размерность сетки для указанного уровня
     /// </summary>
     public int CalculateGridSize(int level)
@@ -208,25 +269,17 @@ public class LevelManager : MonoBehaviour
                 return finalSize;
             }
 
-            // Начиная с уровня 3, размерность становится 3, и дальше применяется обычная логика
+            // Начиная с уровня 3, размерность становится 3, и дальше применяется логика для startGridSize=3
             // Но нужно скорректировать расчет, так как мы уже "потратили" 3 уровня на размерность 2
-            // Уровень 3 должен быть размерностью 3, поэтому считаем как будто startGridSize = 3
-            // и level начинается с 3, но для расчета используем level - 3
             int adjustedLevel = level - 3;
-            baseSize = 3; // Начинаем с 3 после первых 3 уровней
-            increase = adjustedLevel / gridSizeIncreasePeriod;
-            gridSize = baseSize + increase;
+            // Используем логику для startGridSize=3 с adjustedLevel
+            return CalculateGridSizeForStartSize3(adjustedLevel, level);
+        }
 
-            if (IsDifficultLevel(level))
-            {
-                gridSize += 1; // Дополнительное увеличение для сложного уровня
-            }
-
-            finalSize = Mathf.Min(gridSize, maxGridSize);
-
-            Debug.Log($"LevelManager.CalculateGridSize: level={level}, startGridSize=2 special case, adjustedLevel={adjustedLevel}, baseSize={baseSize}, increase={increase}, gridSize={gridSize}, isDifficult={IsDifficultLevel(level)}, finalSize={finalSize} (max={maxGridSize})");
-
-            return finalSize;
+        // Специальная логика для startGridSize = 3 с отдельными периодами для переходов 3→4 и 4→5
+        if (startGridSize == 3)
+        {
+            return CalculateGridSizeForStartSize3(level, level);
         }
 
         // Обычная логика для остальных случаев

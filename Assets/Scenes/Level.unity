@@ -5856,7 +5856,7 @@ MonoBehaviour:
     addressableKey: Assets/Sprites/UI/LevelImages/Group 298.png
   - name: Group299
     addressableKey: Assets/Sprites/UI/LevelImages/Group 299.png
-  startGridSize: 2
+  startGridSize: 3
   gridSizeIncreasePeriod: 25
   maxGridSize: 8
   difficultLevelPeriod: 10
