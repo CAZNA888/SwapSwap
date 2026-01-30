@@ -1685,7 +1685,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.98039216, g: 0.93333334, b: 0.8, a: 0}
+  m_BackGroundColor: {r: 0.98490566, g: 0.93333334, b: 0.8, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -4519,7 +4519,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -25.799957, y: -93.099976}
+  m_AnchoredPosition: {x: -27.5, y: -84.6}
   m_SizeDelta: {x: 80, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1340223432
@@ -6889,7 +6889,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 74.8, y: 0}
+  m_AnchoredPosition: {x: 63.55, y: -11.9}
   m_SizeDelta: {x: 70, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1929524519
@@ -7011,6 +7011,7 @@ MonoBehaviour:
   hint: {fileID: 477672181}
   noads: {fileID: 31365905}
   exit: {fileID: 177313378}
+  bi: {fileID: 449054354}
 --- !u!4 &1934639047
 Transform:
   m_ObjectHideFlags: 0

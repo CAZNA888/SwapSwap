@@ -16,18 +16,18 @@ public class AdManager : MonoBehaviour
         noads = PlayerPrefs.GetInt("noads");
 
 
-        if (YG2.envir.isMobile) { bottomimage.SetActive(true); }
+        if (YG2.envir.isMobile&& bottomimage) { bottomimage.SetActive(true); }
 
         //////////////
         ///////////////
 
-        /////////////
+            /////////////
 
-        ///////
+            ///////
 
-        ///////////////
+            ///////////////
 
-        ///////////////////////////////////////////////
+            ///////////////////////////////////////////////
 
 
 

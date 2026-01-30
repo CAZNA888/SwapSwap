@@ -1,29 +1,15 @@
 {
     "stringKeys": [],
     "stringValues": [],
-    "floatKeys": [
-        "SFXVolume"
-    ],
-    "floatValues": [
-        0.5561370849609375
-    ],
+    "floatKeys": [],
+    "floatValues": [],
     "intKeys": [
-        "Tutorial_LevelCompleted",
-        "CurrentLevel",
-        "PlayerMoney",
-        "MenuProgress_0",
         "LastImageIndex",
-        "LastUnlockedCardCount",
-        "Tutorial_FirstLaunchCompleted"
+        "LastUnlockedCardCount"
     ],
     "intValues": [
-        1,
-        7,
-        105,
-        7,
         0,
-        7,
-        1
+        0
     ],
     "intExample": 5,
     "strExample": "Hello!",
@@ -33,5 +19,5 @@
         false,
         false
     ],
-    "idSave": 161
+    "idSave": 12
 }
