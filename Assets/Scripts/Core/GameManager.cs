@@ -371,15 +371,32 @@ public class GameManager : MonoBehaviour
         
         if (sourceImage == null && levelManager != null)
         {
-            Debug.Log("GameManager: Loading image via Addressables");
-            // Всегда используем асинхронную загрузку через Addressables
+            const int maxRetries = 3;
+            const float retryDelaySeconds = 0.5f;
             Sprite loadedSprite = null;
-            yield return StartCoroutine(levelManager.LoadLevelImageAsync((sprite) => {
-                loadedSprite = sprite;
-            }));
-            sourceImage = loadedSprite;
-            Debug.Log($"GameManager: Image loaded via Addressables: {sourceImage != null}");
-            
+
+            for (int attempt = 1; attempt <= maxRetries; attempt++)
+            {
+                Debug.Log($"GameManager: Loading image via Addressables (attempt {attempt}/{maxRetries})");
+                loadedSprite = null;
+                yield return StartCoroutine(levelManager.LoadLevelImageAsync((sprite) => {
+                    loadedSprite = sprite;
+                }));
+                sourceImage = loadedSprite;
+
+                if (sourceImage != null)
+                {
+                    Debug.Log($"GameManager: Image loaded via Addressables on attempt {attempt}");
+                    break;
+                }
+
+                if (attempt < maxRetries)
+                {
+                    Debug.LogWarning($"GameManager: Image load attempt {attempt} failed, retrying in {retryDelaySeconds}s...");
+                    yield return new WaitForSeconds(retryDelaySeconds);
+                }
+            }
+
             // Предзагружаем картинки на следующие уровни после успешной загрузки текущего
             if (sourceImage != null && levelManager != null)
             {
@@ -400,7 +417,7 @@ public class GameManager : MonoBehaviour
         // Проверяем наличие картинки
         if (sourceImage == null)
         {
-            Debug.LogError("GameManager: Source image is not set and LevelManager failed to load it via Addressables!");
+            Debug.LogError("GameManager: Source image is not set and LevelManager failed to load it via Addressables after all retries!");
             yield break;
         }
         
