@@ -10,11 +10,13 @@ public class AdManager : MonoBehaviour
     // Start is called before the first frame update
     [SerializeField] GameObject noadsicon;
     [SerializeField] GameObject TimerAd;
+    [SerializeField] GameObject bottomimage;
     void Start()
     {
         noads = PlayerPrefs.GetInt("noads");
 
 
+        if (YG2.envir.isMobile && bottomimage) { bottomimage.SetActive(true); }
 
 
         //////////////

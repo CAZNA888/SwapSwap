@@ -620,7 +620,7 @@ public class GameManager : MonoBehaviour
             OnLevelComplete();
         }
     }
-    [SerializeField] GameObject hint, noads, exit;
+    [SerializeField] GameObject hint, noads, exit,rr;
     private void OnLevelComplete()
     {
         isGameComplete = true;
@@ -655,6 +655,7 @@ public class GameManager : MonoBehaviour
             hint.SetActive(false);
             noads.SetActive(false); 
             exit.SetActive(false);
+            rr.SetActive(false);
         }
         
         // Показываем UI завершения (через LevelCompleteUI компонент, если используется)
