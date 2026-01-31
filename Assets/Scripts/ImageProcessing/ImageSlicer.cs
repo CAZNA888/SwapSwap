@@ -7,7 +7,6 @@ public class ImageSlicer : MonoBehaviour
     {
         if (sourceSprite == null)
         {
-            Debug.LogError("Source sprite is null!");
             return null;
         }
         
@@ -20,9 +19,6 @@ public class ImageSlicer : MonoBehaviour
         int spriteHeight = Mathf.RoundToInt(spriteRect.height); // 512
         int spriteX = Mathf.RoundToInt(spriteRect.x);
         int spriteY = Mathf.RoundToInt(spriteRect.y);
-        
-        Debug.Log($"Нарезание изображения: спрайт rect = {spriteRect}, размер: {spriteWidth}×{spriteHeight}");
-        Debug.Log($"Полная текстура: {sourceSprite.texture.width}×{sourceSprite.texture.height}");
         
         // Получаем читаемую текстуру
         Texture2D fullTexture = GetReadableTexture(sourceSprite.texture);
@@ -48,36 +44,29 @@ public class ImageSlicer : MonoBehaviour
         {
             adjustedWidth += sourceX; // Уменьшаем ширину на величину отрицательного смещения
             sourceX = 0;
-            Debug.LogWarning($"Корректировка cropX: смещение было отрицательным, скорректирована ширина до {adjustedWidth}");
         }
         
         if (sourceY < 0)
         {
             adjustedHeight += sourceY; // Уменьшаем высоту на величину отрицательного смещения
             sourceY = 0;
-            Debug.LogWarning($"Корректировка cropY: смещение было отрицательным, скорректирована высота до {adjustedHeight}");
         }
         
         // Проверяем, что не выходим за правую границу
         if (sourceX + adjustedWidth > fullTexture.width)
         {
             adjustedWidth = fullTexture.width - sourceX;
-            Debug.LogWarning($"Корректировка ширины: обрезано до {adjustedWidth} (граница текстуры: {fullTexture.width})");
         }
         
         // Проверяем, что не выходим за нижнюю границу
         if (sourceY + adjustedHeight > fullTexture.height)
         {
             adjustedHeight = fullTexture.height - sourceY;
-            Debug.LogWarning($"Корректировка высоты: обрезано до {adjustedHeight} (граница текстуры: {fullTexture.height})");
         }
         
         // Проверяем валидность финальных размеров
         if (adjustedWidth <= 0 || adjustedHeight <= 0)
         {
-            Debug.LogError($"Неверные размеры после обрезки: {adjustedWidth}×{adjustedHeight}. " +
-                          $"Исходные: {spriteWidth}×{spriteHeight}, crop: {cropX}×{cropY}, " +
-                          $"spritePos: {spriteX}×{spriteY}, textureSize: {fullTexture.width}×{fullTexture.height}");
             return null;
         }
         
@@ -86,14 +75,6 @@ public class ImageSlicer : MonoBehaviour
         sliceHeight = adjustedHeight / rows;
         adjustedWidth = sliceWidth * cols; // Гарантируем, что делится нацело
         adjustedHeight = sliceHeight * rows;
-        
-        // Логирование об обрезке
-        if (adjustedWidth != spriteWidth || adjustedHeight != spriteHeight)
-        {
-            Debug.Log($"Изображение обрезано: {spriteWidth}×{spriteHeight} → {adjustedWidth}×{adjustedHeight} " +
-                     $"(обрезано {spriteWidth - adjustedWidth}×{spriteHeight - adjustedHeight} пикселей, " +
-                     $"смещение: {cropX}×{cropY}, sourcePos: {sourceX}×{sourceY})");
-        }
         
         // Вырезаем обрезанную область спрайта из текстуры
         Texture2D spriteTexture = new Texture2D(adjustedWidth, adjustedHeight, TextureFormat.RGBA32, false);
@@ -105,8 +86,6 @@ public class ImageSlicer : MonoBehaviour
         spriteTexture.filterMode = FilterMode.Point;
         spriteTexture.wrapMode = TextureWrapMode.Clamp;
         spriteTexture.Apply();
-        
-        Debug.Log($"Размер каждого кусочка: {sliceWidth}×{sliceHeight} пикселей (все кусочки одинакового размера)");
         
         // КРИТИЧНО: Вычисляем pixelsPerUnit ОДИН РАЗ для всех кусочков ДО цикла
         // Это гарантирует одинаковый pixelsPerUnit для всех кусочков, независимо от округлений float в WebGL
@@ -132,8 +111,6 @@ public class ImageSlicer : MonoBehaviour
             float sizeRatio = (sizeRatioX + sizeRatioY) / 2f;
             pixelsPerUnitToUse = sourceSprite.pixelsPerUnit * sizeRatio;
         }
-        
-        Debug.Log($"ImageSlicer: pixelsPerUnit для всех кусочков = {pixelsPerUnitToUse:F6} (sizeRatioX={((float)sliceWidth / adjustedWidth):F6}, sizeRatioY={((float)sliceHeight / adjustedHeight):F6})");
         
         for (int row = 0; row < rows; row++)
         {

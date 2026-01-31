@@ -52,7 +52,6 @@ public class CardFlipAnimator : MonoBehaviour
                 BorderRenderer br = piece.GetComponentInChildren<BorderRenderer>();
                 if (br != null)
                 {
-                    Debug.Log($"После переворота карточки {piece.originalIndex}: top={br.topBorder != null && br.topBorder.activeSelf}, isFlipped={piece.isFlipped}");
                 }
                 
                 // Увеличиваем обратно

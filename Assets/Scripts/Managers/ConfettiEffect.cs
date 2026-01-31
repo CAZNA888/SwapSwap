@@ -8,7 +8,6 @@ public class ConfettiEffect : MonoBehaviour
     public void PlayConfetti()
     {
         // TODO: Реализовать эффект конфетти
-        Debug.Log("Confetti effect - to be implemented");
     }
 }
 

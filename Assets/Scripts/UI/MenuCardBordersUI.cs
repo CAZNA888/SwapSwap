@@ -39,7 +39,6 @@ public class MenuCardBordersUI : MonoBehaviour
         
         if (borderSprite == null)
         {
-            Debug.LogWarning("MenuCardBordersUI: Border sprite is not set!");
             return;
         }
         

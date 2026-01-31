@@ -85,12 +85,10 @@ public class LevelCompleteUI : MonoBehaviour
         // GameManager сам обработает анимацию монет и начисление денег
         if (gameManager != null)
         {
-            Debug.Log($"Loading next scene. Current scene index: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex}");
             gameManager.ReloadCurrentSceneWithAnimation();
         }
         else
         {
-            Debug.LogError("GameManager not found! Cannot reload scene.");
             // Fallback - перезагружаем текущую сцену по имени
             string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
             UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);

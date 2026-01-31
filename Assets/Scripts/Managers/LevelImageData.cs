@@ -24,7 +24,6 @@ public class LevelImageData
             return "LevelImage_" + name;
         }
         
-        Debug.LogWarning("LevelImageData: Both addressableKey and name are empty! Using default key.");
         return "LevelImage_Unknown";
     }
 }

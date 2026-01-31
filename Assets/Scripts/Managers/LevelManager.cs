@@ -70,10 +70,6 @@ public class LevelManager : MonoBehaviour
 
     void Awake()
     {
-        Debug.Log($"=== LevelManager Awake ===");
-        Debug.Log($"Scene: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
-        Debug.Log($"levelImages count: {(levelImages != null ? levelImages.Count : 0)}");
-
         if (instance == null)
         {
             instance = this;
@@ -83,23 +79,19 @@ public class LevelManager : MonoBehaviour
             // Проверяем, что список levelImages заполнен
             if (levelImages == null || levelImages.Count == 0)
             {
-                Debug.LogError("LevelManager: levelImages list is empty! Please fill it in Inspector!");
             }
             else
             {
-                Debug.Log($"LevelManager: Instance created with {levelImages.Count} level images");
             }
 
             LoadLevel();
         }
         else if (instance != this)
         {
-            Debug.LogWarning($"LevelManager: Duplicate found in scene {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}. Destroying duplicate.");
             Destroy(gameObject);
         }
         else
         {
-            Debug.Log($"LevelManager: Already instance exists. levelImages count: {instance.levelImages.Count}");
         }
     }
 
@@ -109,7 +101,6 @@ public class LevelManager : MonoBehaviour
         if (instance == this)
         {
             SaveLevel();
-            Debug.Log("LevelManager: Saving level progress before destruction");
             
             // Выгружаем все загруженные ресурсы при уничтожении
 #if UNITY_ADDRESSABLES
@@ -122,7 +113,6 @@ public class LevelManager : MonoBehaviour
             }
             loadedHandles.Clear();
             referenceCounts.Clear();
-            Debug.Log("LevelManager: Released all loaded Addressables resources");
 #endif
         }
     }
@@ -160,7 +150,6 @@ public class LevelManager : MonoBehaviour
         currentLevel++;
         PlayerPrefs.SetInt(LEVEL_KEY, currentLevel);
         PlayerPrefs.Save();
-        Debug.Log($"Level incremented to {currentLevel}");
         
         // Выгружаем неиспользуемые картинки пройденных уровней
         UnloadUnusedImages();
@@ -204,7 +193,6 @@ public class LevelManager : MonoBehaviour
             if (level < 3)
             {
                 finalSize = 2;
-                Debug.Log($"LevelManager.CalculateGridSize: level={level}, special case for startGridSize=2, finalSize={finalSize}");
                 return finalSize;
             }
 
@@ -224,8 +212,6 @@ public class LevelManager : MonoBehaviour
 
             finalSize = Mathf.Min(gridSize, maxGridSize);
 
-            Debug.Log($"LevelManager.CalculateGridSize: level={level}, startGridSize=2 special case, adjustedLevel={adjustedLevel}, baseSize={baseSize}, increase={increase}, gridSize={gridSize}, isDifficult={IsDifficultLevel(level)}, finalSize={finalSize} (max={maxGridSize})");
-
             return finalSize;
         }
 
@@ -240,9 +226,6 @@ public class LevelManager : MonoBehaviour
         }
 
         finalSize = Mathf.Min(gridSize, maxGridSize);
-
-        // Логирование для диагностики
-        Debug.Log($"LevelManager.CalculateGridSize: level={level}, baseSize={baseSize}, increase={increase} (level/{gridSizeIncreasePeriod}), gridSize={gridSize}, isDifficult={IsDifficultLevel(level)}, finalSize={finalSize} (max={maxGridSize})");
 
         return finalSize;
     }
@@ -284,8 +267,7 @@ public class LevelManager : MonoBehaviour
     public Sprite GetLevelImage()
     {
         // Addressables режим - нужно загрузить асинхронно
-        // Для синхронного доступа возвращаем null и предупреждение
-        Debug.LogWarning("LevelManager: Addressables mode requires async loading. Use LoadLevelImageAsync() instead.");
+        // Для синхронного доступа возвращаем null
         return null;
     }
 
@@ -444,7 +426,6 @@ public class LevelManager : MonoBehaviour
     {
         if (levelImages == null || levelImages.Count == 0)
         {
-            Debug.LogError("LevelManager: levelImages list is empty!");
             onComplete?.Invoke(null);
             yield break;
         }
@@ -452,7 +433,6 @@ public class LevelManager : MonoBehaviour
         int imageIndex = GetImageIndexForLevel(level);
         if (imageIndex < 0 || imageIndex >= levelImages.Count)
         {
-            Debug.LogError($"LevelManager: Invalid image index {imageIndex} for level {level}");
             onComplete?.Invoke(null);
             yield break;
         }
@@ -477,7 +457,6 @@ public class LevelManager : MonoBehaviour
                     referenceCounts[addressableKey] = 1;
                 }
                 onComplete?.Invoke(existingHandle.Result);
-                Debug.Log($"LevelManager: Image '{addressableKey}' already loaded, using cached version");
                 yield break;
             }
         }
@@ -486,7 +465,6 @@ public class LevelManager : MonoBehaviour
         // Всегда используем Addressables - проверяем наличие во время выполнения
         if (!IsAddressablesAvailable())
         {
-            Debug.LogError("LevelManager: Addressables are not installed! Please install Addressables package (Window > Package Manager > Addressables).");
             onComplete?.Invoke(null);
             yield break;
         }
@@ -509,15 +487,12 @@ public class LevelManager : MonoBehaviour
                 referenceCounts[addressableKey] = 1;
             }
             onComplete?.Invoke(handle.Result);
-            Debug.Log($"LevelManager: Image '{addressableKey}' loaded successfully for level {level}");
         }
         else
         {
-            Debug.LogError($"LevelManager: Failed to load image from Addressables with key '{addressableKey}' for level {level}.");
             onComplete?.Invoke(null);
         }
 #else
-        Debug.LogError("LevelManager: Addressables code is not compiled. Please add 'UNITY_ADDRESSABLES' to Scripting Define Symbols in Player Settings (Edit > Project Settings > Player > Other Settings > Scripting Define Symbols).");
         onComplete?.Invoke(null);
         yield break;
 #endif
@@ -548,17 +523,14 @@ public class LevelManager : MonoBehaviour
             // Проверяем, не загружена ли уже
             if (!loadedHandles.ContainsKey(nextLevelKey))
             {
-                Debug.Log($"LevelManager: Preloading image for level {nextLevel}");
                 yield return StartCoroutine(LoadLevelImageAsync(nextLevel, (sprite) => {
                     if (sprite != null)
                     {
-                        Debug.Log($"LevelManager: Successfully preloaded image for level {nextLevel}");
                     }
                 }));
             }
             else
             {
-                Debug.Log($"LevelManager: Image for level {nextLevel} already loaded");
             }
 #endif
         }
@@ -573,17 +545,14 @@ public class LevelManager : MonoBehaviour
             // Проверяем, не загружена ли уже
             if (!loadedHandles.ContainsKey(nextNextLevelKey))
             {
-                Debug.Log($"LevelManager: Preloading image for level {nextNextLevel}");
                 yield return StartCoroutine(LoadLevelImageAsync(nextNextLevel, (sprite) => {
                     if (sprite != null)
                     {
-                        Debug.Log($"LevelManager: Successfully preloaded image for level {nextNextLevel}");
                     }
                 }));
             }
             else
             {
-                Debug.Log($"LevelManager: Image for level {nextNextLevel} already loaded");
             }
 #endif
         }
@@ -648,7 +617,6 @@ public class LevelManager : MonoBehaviour
                 if (handle.IsValid())
                 {
                     UnityEngine.AddressableAssets.Addressables.Release(handle);
-                    Debug.Log($"LevelManager: Unloaded unused image '{key}'");
                 }
                 loadedHandles.Remove(key);
                 referenceCounts.Remove(key);
@@ -657,7 +625,6 @@ public class LevelManager : MonoBehaviour
 
         if (keysToUnload.Count > 0)
         {
-            Debug.Log($"LevelManager: Unloaded {keysToUnload.Count} unused images");
         }
 #else
         yield break;

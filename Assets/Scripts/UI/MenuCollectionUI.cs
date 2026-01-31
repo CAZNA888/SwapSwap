@@ -49,7 +49,6 @@ public class MenuCollectionUI : MonoBehaviour
         menuManager = MenuManager.Instance;
         if (menuManager == null)
         {
-            Debug.LogError("MenuCollectionUI: MenuManager not found!");
             return;
         }
         
@@ -136,7 +135,6 @@ public class MenuCollectionUI : MonoBehaviour
         
         if (completedIndices.Count == 0)
         {
-            Debug.Log("MenuCollectionUI: No completed images to display");
             return;
         }
         
@@ -151,7 +149,6 @@ public class MenuCollectionUI : MonoBehaviour
     {
         if (collectionGridParent == null)
         {
-            Debug.LogError("MenuCollectionUI: collectionGridParent is not set!");
             return;
         }
         
@@ -205,11 +202,8 @@ public class MenuCollectionUI : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"MenuCollectionUI: Failed to load image at index {imageIndex}");
             }
         }
-        
-        Debug.Log($"MenuCollectionUI: Displayed {collectionItems.Count} completed images");
     }
     
     /// <summary>

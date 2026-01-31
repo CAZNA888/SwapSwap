@@ -156,13 +156,11 @@ public class ConnectionManager : MonoBehaviour
             bool isConnected = neighbor.originalIndex == neighborOriginalIndex;
             if (isConnected)
             {
-                Debug.Log($"[ConnectionManager] CheckConnection: {piece.name} (originalIndex={piece.originalIndex}) соединена с {neighbor.name} (originalIndex={neighbor.originalIndex}) на позиции ({neighborGridPos.x}, {neighborGridPos.y})");
             }
             return isConnected;
         }
         else
         {
-            Debug.LogWarning($"[ConnectionManager] CheckConnection: не найдена карточка в piecesOnGrid для позиции ({neighborGridPos.x}, {neighborGridPos.y})");
         }
         
         return false;
@@ -203,8 +201,6 @@ public class ConnectionManager : MonoBehaviour
         {
             piecesOnGrid[kvp.Key] = kvp.Value;
         }
-        
-        Debug.Log($"[ConnectionManager] SyncWithOccupiedCells: синхронизировано {piecesOnGrid.Count} карточек");
     }
     
     private void AnimateConnectedGroup(PuzzlePiece startPiece)
@@ -323,7 +319,6 @@ public class ConnectionManager : MonoBehaviour
         List<Vector3> targetPositions = GetTargetWorldPositions(validPieces);
         if (targetPositions.Count != validPieces.Count)
         {
-            Debug.LogWarning("[ConnectionManager] AnimateGroupScale: Failed to get target positions");
             return;
         }
         

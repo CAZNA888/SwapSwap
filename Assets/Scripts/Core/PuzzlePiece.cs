@@ -68,7 +68,6 @@ public class PuzzlePiece : MonoBehaviour
             if (cardSpriteRenderer == null)
             {
                 cardSpriteRenderer = cardSpriteContainer.AddComponent<SpriteRenderer>();
-                Debug.LogWarning($"PuzzlePiece {originalIndex}: SpriteRenderer was missing on {cardSpriteContainer.name}, created automatically");
             }
         }
     }
@@ -101,10 +100,6 @@ public class PuzzlePiece : MonoBehaviour
                                 (frontSprite.texture != null ? "texture/PPU" : "bounds");
             string backSource = backSprite.rect.width > 0 ? "rect/PPU" : 
                                (backSprite.texture != null ? "texture/PPU" : "bounds");
-            
-            Debug.Log($"PuzzlePiece {index}: " +
-                     $"Front size ({frontSource})={frontSize}, bounds={frontBounds}, " +
-                     $"Back size ({backSource})={backSize}, bounds={backBounds}");
         }
         #endif
         
@@ -121,12 +116,10 @@ public class PuzzlePiece : MonoBehaviour
             cardSpriteRenderer.sortingOrder = 0; // По умолчанию
             
             #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            Debug.Log($"PuzzlePiece {index}: Sprite set on container '{cardSpriteContainer?.name}' (renderer: {cardSpriteRenderer != null})");
             #endif
         }
         else
         {
-            Debug.LogError($"PuzzlePiece {index}: FAILED to set sprite! cardSpriteRenderer={cardSpriteRenderer != null}, backSprite={backSprite != null}, cardSpriteContainer={cardSpriteContainer != null}, children={transform.childCount}");
         }
     }
     
@@ -222,7 +215,6 @@ public class PuzzlePiece : MonoBehaviour
             // КРИТИЧНО для WebGL: Проверяем, что спрайт не null перед установкой
             if (newSprite == null)
             {
-                Debug.LogError($"PuzzlePiece {originalIndex}: Cannot flip! newSprite is null (isFlipped: {isFlipped}, frontSprite: {frontSprite != null}, backSprite: {backSprite != null})");
                 return;
             }
             
@@ -265,12 +257,6 @@ public class PuzzlePiece : MonoBehaviour
                 // Если разница значительная, это указывает на проблему с pixelsPerUnit
                 if (sizeDiffX > 0.01f || sizeDiffY > 0.01f)
                 {
-                    Debug.LogWarning($"PuzzlePiece {originalIndex}: After flip, sprite size mismatch! " +
-                                   $"newSprite (scaled): {newSpriteSizeScaled.x:F4}x{newSpriteSizeScaled.y:F4}, " +
-                                   $"backSprite (scaled): {backSpriteSizeScaled.x:F4}x{backSpriteSizeScaled.y:F4}, " +
-                                   $"Difference: {sizeDiffX*100:F2}%/{sizeDiffY*100:F2}%. " +
-                                   $"This indicates a pixelsPerUnit calculation issue in ImageSlicer.");
-                    
                     // Корректируем масштаб только если разница критическая (>5%) И размеры валидны
                     if ((sizeDiffX > 0.05f || sizeDiffY > 0.05f) && maxX > 0.0001f && maxY > 0.0001f)
                     {
@@ -289,11 +275,9 @@ public class PuzzlePiece : MonoBehaviour
                                 currentScale.y * scaleCorrectionY,
                                 currentScale.z
                             );
-                            Debug.LogWarning($"PuzzlePiece {originalIndex}: Applied scale correction: {scaleCorrectionX:F4}x{scaleCorrectionY:F4}");
                         }
                         else
                         {
-                            Debug.LogError($"PuzzlePiece {originalIndex}: Invalid scale correction values: {scaleCorrectionX:F4}x{scaleCorrectionY:F4}. Skipping correction.");
                         }
                     }
                 }
@@ -342,12 +326,10 @@ public class PuzzlePiece : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogError($"PuzzlePiece {originalIndex}: Invalid scale calculated: {scaleX:F4}x{scaleY:F4} for targetSize: {targetSize}, baseSize: {baseSize}");
                 }
             }
             else
             {
-                Debug.LogError($"PuzzlePiece {originalIndex}: Invalid baseSize: {baseSize} for backSprite. Cannot set card size.");
             }
         }
     }
@@ -414,12 +396,10 @@ public class PuzzlePiece : MonoBehaviour
             cardSpriteContainer.transform.localScale = Vector3.one * multiplier;
             
             #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            Debug.Log($"PuzzlePiece {originalIndex}: Applied sprite scale multiplier: {multiplier} (isFlipped: {isFlipped}, container: {cardSpriteContainer.name})");
             #endif
         }
         else
         {
-            Debug.LogError($"PuzzlePiece {originalIndex}: cardSpriteContainer is null! Cannot apply sprite scale multiplier. GameObject: {gameObject.name}, Children count: {transform.childCount}");
         }
     }
 }

@@ -88,70 +88,40 @@ public class GameManager : MonoBehaviour
     
     void Awake()
     {
-        Debug.Log($"=== GameManager Awake ===");
-        Debug.Log($"Scene: {SceneManager.GetActiveScene().name}");
-        Debug.Log($"GameObject active: {gameObject.activeSelf}");
-        Debug.Log($"GameObject activeInHierarchy: {gameObject.activeInHierarchy}");
-        Debug.Log($"Component enabled: {enabled}");
-        Debug.Log($"GameObject name: {gameObject.name}");
-        Debug.Log($"GameObject instanceID: {gameObject.GetInstanceID()}");
     }
     
     void OnEnable()
     {
-        Debug.Log($"=== GameManager OnEnable ===");
-        Debug.Log($"Scene: {SceneManager.GetActiveScene().name}");
-        Debug.Log($"GameObject active: {gameObject.activeSelf}");
-        Debug.Log($"GameObject activeInHierarchy: {gameObject.activeInHierarchy}");
-        Debug.Log($"Component enabled: {enabled}");
     }
     
     void OnDisable()
     {
-        Debug.Log($"=== GameManager OnDisable ===");
-        Debug.Log($"Scene: {SceneManager.GetActiveScene().name}");
-        Debug.Log($"GameObject active: {gameObject.activeSelf}");
-        Debug.Log($"GameObject activeInHierarchy: {gameObject.activeInHierarchy}");
-        Debug.Log($"Component enabled: {enabled}");
-        Debug.Log($"GameObject instanceID: {gameObject.GetInstanceID()}");
         
         // Получаем стек вызовов для понимания, кто вызвал OnDisable
         System.Diagnostics.StackTrace stackTrace = new System.Diagnostics.StackTrace();
-        Debug.Log($"OnDisable call stack:\n{stackTrace}");
     }
     
     void Start()
     {
-        Debug.Log($"=== GameManager Start ===");
-        Debug.Log($"Scene: {SceneManager.GetActiveScene().name}");
-        Debug.Log($"GameObject active: {gameObject.activeSelf}");
-        Debug.Log($"GameObject activeInHierarchy: {gameObject.activeInHierarchy}");
-        Debug.Log($"Component enabled: {enabled}");
-        Debug.Log($"GameObject instanceID: {gameObject.GetInstanceID()}");
         
         // КРИТИЧЕСКАЯ ПРОВЕРКА: убеждаемся, что GameObject все еще существует
         if (this == null || gameObject == null)
         {
-            Debug.LogError("GameManager: GameObject is null in Start()! This should not happen.");
             return;
         }
         
         // Проверяем, сколько GameManager объектов в сцене
         GameManager[] allGameManagers = FindObjectsOfType<GameManager>();
-        Debug.Log($"GameManager: Found {allGameManagers.Length} GameManager(s) in scene");
         if (allGameManagers.Length > 1)
         {
-            Debug.LogWarning($"GameManager: Multiple GameManagers found! This may cause issues.");
             foreach (GameManager gm in allGameManagers)
             {
-                Debug.LogWarning($"  - GameManager: {gm.gameObject.name}, InstanceID: {gm.gameObject.GetInstanceID()}, Scene: {gm.gameObject.scene.name}");
             }
         }
         
         // Проверяем, что мы действительно в нужной сцене
         if (SceneManager.GetActiveScene().name != "Level")
         {
-            Debug.LogWarning($"GameManager: Start() called in wrong scene: {SceneManager.GetActiveScene().name}");
             // НЕ уничтожаем GameManager - просто предупреждаем
         }
         
@@ -161,7 +131,6 @@ public class GameManager : MonoBehaviour
         // Проверяем, что GameObject все еще активен перед инициализацией
         if (!gameObject.activeInHierarchy)
         {
-            Debug.LogError("GameManager: GameObject is not active in hierarchy! Cannot initialize.");
             return;
         }
         
@@ -171,11 +140,6 @@ public class GameManager : MonoBehaviour
     
     void OnDestroy()
     {
-        Debug.Log($"=== GameManager OnDestroy ===");
-        Debug.Log($"Scene: {SceneManager.GetActiveScene().name}");
-        Debug.Log($"GameObject name: {gameObject.name}");
-        Debug.Log($"GameObject active: {gameObject.activeSelf}");
-        Debug.Log($"GameObject instanceID: {gameObject.GetInstanceID()}");
         
         // Очищаем при уничтожении GameManager
         CleanupBeforeSceneLoad();
@@ -183,18 +147,15 @@ public class GameManager : MonoBehaviour
     
     private void InitializeComponents()
     {
-        Debug.Log("=== GameManager: Initializing components ===");
         
         // Проверяем, что GameObject все еще существует
         if (gameObject == null)
         {
-            Debug.LogError("GameManager: GameObject is null! Cannot initialize.");
             return;
         }
         
         if (!gameObject.activeInHierarchy)
         {
-            Debug.LogError("GameManager: GameObject is not active! Cannot initialize.");
             return;
         }
         
@@ -202,7 +163,6 @@ public class GameManager : MonoBehaviour
         levelManager = LevelManager.Instance;
         if (levelManager != null)
         {
-            Debug.Log("GameManager: LevelManager found");
             // Получаем размерность сетки из LevelManager
             int calculatedGridSize = levelManager.CalculateGridSize();
             // ВСЕГДА используем значения из LevelManager, независимо от значений в инспекторе
@@ -210,12 +170,9 @@ public class GameManager : MonoBehaviour
             gridRows = calculatedGridSize;
             gridCols = calculatedGridSize;
             
-            Debug.Log($"LevelManager: {levelManager.GetLevelInfo()}");
-            Debug.Log($"GameManager: Grid size set to {gridRows}x{gridCols} from LevelManager");
         }
         else
         {
-            Debug.LogWarning("GameManager: LevelManager not found! Using default values.");
             if (gridRows == 0) gridRows = 3;
             if (gridCols == 0) gridCols = 3;
             // Убеждаемся, что они равны
@@ -224,40 +181,33 @@ public class GameManager : MonoBehaviour
         
         // Финальная проверка: gridRows и gridCols всегда должны быть равны
         gridCols = gridRows;
-        Debug.Log($"GameManager: Final grid size - Rows: {gridRows}, Cols: {gridCols} (must be equal)");
         
         // Инициализация всех компонентов
         puzzleGrid = GetComponent<PuzzleGrid>();
         if (puzzleGrid == null)
         {
-            Debug.Log("GameManager: PuzzleGrid not found, creating...");
             puzzleGrid = gameObject.AddComponent<PuzzleGrid>();
         }
         else
         {
-            Debug.Log("GameManager: PuzzleGrid found");
         }
         
         puzzleGrid.Initialize(gridRows, gridCols, fieldWidth, fieldHeight, cardSpan, cardHeight);
         puzzleGrid.deckPosition = deckPosition;
         puzzleGrid.CreateGridCells(); // Создаем ячейки с коллайдерами
-        Debug.Log($"GameManager: PuzzleGrid initialized with {gridRows}x{gridCols} grid");
         
         imageSlicer = GetComponent<ImageSlicer>();
         if (imageSlicer == null)
         {
-            Debug.Log("GameManager: ImageSlicer not found, creating...");
             imageSlicer = gameObject.AddComponent<ImageSlicer>();
         }
         else
         {
-            Debug.Log("GameManager: ImageSlicer found");
         }
         
         cardDealer = GetComponent<CardDealer>();
         if (cardDealer == null)
         {
-            Debug.Log("GameManager: CardDealer not found, creating...");
             cardDealer = gameObject.AddComponent<CardDealer>();
         }
         cardDealer.dealDelay = dealDelay;
@@ -265,7 +215,6 @@ public class GameManager : MonoBehaviour
         cardFlipAnimator = GetComponent<CardFlipAnimator>();
         if (cardFlipAnimator == null)
         {
-            Debug.Log("GameManager: CardFlipAnimator not found, creating...");
             cardFlipAnimator = gameObject.AddComponent<CardFlipAnimator>();
         }
         cardFlipAnimator.Initialize(audioManager, connectionManager);
@@ -274,7 +223,6 @@ public class GameManager : MonoBehaviour
         connectionManager = GetComponent<ConnectionManager>();
         if (connectionManager == null)
         {
-            Debug.Log("GameManager: ConnectionManager not found, creating...");
             connectionManager = gameObject.AddComponent<ConnectionManager>();
         }
         connectionManager.Initialize(puzzleGrid);
@@ -282,13 +230,11 @@ public class GameManager : MonoBehaviour
         audioManager = FindObjectOfType<AudioManager>();
         if (audioManager == null)
         {
-            Debug.Log("GameManager: AudioManager not found, creating...");
             GameObject audioObj = new GameObject("AudioManager");
             audioManager = audioObj.AddComponent<AudioManager>();
         }
         else
         {
-            Debug.Log("GameManager: AudioManager found");
         }
         
         // Pass AudioManager to ConnectionManager
@@ -300,47 +246,39 @@ public class GameManager : MonoBehaviour
         moneyManager = FindObjectOfType<MoneyManager>();
         if (moneyManager == null)
         {
-            Debug.Log("GameManager: MoneyManager not found, creating...");
             GameObject moneyObj = new GameObject("MoneyManager");
             moneyManager = moneyObj.AddComponent<MoneyManager>();
         }
         else
         {
-            Debug.Log("GameManager: MoneyManager found");
         }
         
         levelCompleteUI = FindObjectOfType<LevelCompleteUI>();
         if (levelCompleteUI != null)
         {
-            Debug.Log("GameManager: LevelCompleteUI found");
             levelCompleteUI.SetMoneyTargetPosition(moneyTargetPosition);
         }
         else
         {
-            Debug.Log("GameManager: LevelCompleteUI not found");
         }
         
         confettiEffect = FindObjectOfType<ConfettiEffect>();
         if (confettiEffect == null)
         {
-            Debug.Log("GameManager: ConfettiEffect not found, creating...");
             GameObject confettiObj = new GameObject("ConfettiEffect");
             confettiEffect = confettiObj.AddComponent<ConfettiEffect>();
         }
         else
         {
-            Debug.Log("GameManager: ConfettiEffect found");
         }
         
         occupiedCells = new Dictionary<Vector2Int, PuzzlePiece>();
         puzzlePieces = new List<PuzzlePiece>();
         
-        Debug.Log("=== GameManager: Components initialized successfully ===");
     }
     
     private void StartGame()
     {
-        Debug.Log("=== GameManager: Starting game ===");
         UpdateLevelNumberDisplay(); // Обновляем номер уровня
         StartCoroutine(GameSequence());
     }
@@ -351,23 +289,19 @@ public class GameManager : MonoBehaviour
         {
             // Показываем следующий уровень (текущий + 1), отсчет с 1
             levelNumberText.text = (levelManager.GetCurrentLevel() + 1).ToString();
-            Debug.Log($"GameManager: Level number text updated to {levelManager.GetCurrentLevel() + 1}");
         }
     }
     
     private IEnumerator GameSequence()
     {
-        Debug.Log("=== GameManager: GameSequence started ===");
         
         // 0. Показываем UI сложного уровня, если это сложный уровень
         if (levelManager != null && levelManager.IsDifficultLevel())
         {
-            Debug.Log("GameManager: Showing difficult level UI");
             yield return StartCoroutine(levelManager.ShowDifficultLevelUI());
         }
         
         // 1. Загружаем картинку из LevelManager, если она не установлена
-        Debug.Log($"GameManager: Loading image. sourceImage is null: {sourceImage == null}, levelManager is null: {levelManager == null}");
         
         if (sourceImage == null && levelManager != null)
         {
@@ -377,7 +311,6 @@ public class GameManager : MonoBehaviour
 
             for (int attempt = 1; attempt <= maxRetries; attempt++)
             {
-                Debug.Log($"GameManager: Loading image via Addressables (attempt {attempt}/{maxRetries})");
                 loadedSprite = null;
                 yield return StartCoroutine(levelManager.LoadLevelImageAsync((sprite) => {
                     loadedSprite = sprite;
@@ -386,13 +319,11 @@ public class GameManager : MonoBehaviour
 
                 if (sourceImage != null)
                 {
-                    Debug.Log($"GameManager: Image loaded via Addressables on attempt {attempt}");
                     break;
                 }
 
                 if (attempt < maxRetries)
                 {
-                    Debug.LogWarning($"GameManager: Image load attempt {attempt} failed, retrying in {retryDelaySeconds}s...");
                     yield return new WaitForSeconds(retryDelaySeconds);
                 }
             }
@@ -405,7 +336,6 @@ public class GameManager : MonoBehaviour
         }
         else if (sourceImage != null)
         {
-            Debug.Log("GameManager: Using sourceImage from Inspector");
             
             // Даже если картинка была установлена вручную, предзагружаем следующие уровни
             if (levelManager != null)
@@ -417,60 +347,43 @@ public class GameManager : MonoBehaviour
         // Проверяем наличие картинки
         if (sourceImage == null)
         {
-            Debug.LogError("GameManager: Source image is not set and LevelManager failed to load it via Addressables after all retries!");
             yield break;
         }
         
-        Debug.Log($"GameManager: Image ready. Size: {sourceImage.texture.width}x{sourceImage.texture.height}");
-        Debug.Log($"GameManager: Slicing image. Grid: {gridRows}x{gridCols}");
         
         // Используем тот же pixelsPerUnit, что и у cardBackSprite
         float? targetPixelsPerUnit = cardBackSprite != null ? cardBackSprite.pixelsPerUnit : null;
         if (targetPixelsPerUnit.HasValue)
         {
-            Debug.Log($"GameManager: Using backSprite.pixelsPerUnit={targetPixelsPerUnit.Value:F2} for sliced sprites");
         }
         
         slicedSprites = imageSlicer.SliceImage(sourceImage, gridRows, gridCols, targetPixelsPerUnit);
         
         if (slicedSprites == null || slicedSprites.Count != gridRows * gridCols)
         {
-            Debug.LogError($"GameManager: Failed to slice image! Expected {gridRows * gridCols}, got {(slicedSprites != null ? slicedSprites.Count : 0)}");
             yield break;
         }
         
-        Debug.Log($"GameManager: Image sliced successfully. Created {slicedSprites.Count} sprites");
         
         // 2. Создаем карточки
-        Debug.Log("GameManager: Creating puzzle pieces...");
         CreatePuzzlePieces();
-        Debug.Log($"GameManager: Created {puzzlePieces.Count} puzzle pieces");
         
         // 3. Перемешиваем индексы
-        Debug.Log("GameManager: Shuffling pieces...");
         ShufflePieces();
         
         // 4. Раздаем карточки
-        Debug.Log("GameManager: Dealing cards...");
         isDealingOrFlipping = true; // Блокируем подсказки
         yield return StartCoroutine(cardDealer.DealCards(puzzlePieces, puzzleGrid));
-        Debug.Log("GameManager: Cards dealt");
         
         // 5. Переворачиваем карточки
-        Debug.Log("GameManager: Flipping cards...");
         yield return StartCoroutine(cardFlipAnimator.FlipAllCards(puzzlePieces));
         isDealingOrFlipping = false; // Разблокируем подсказки
-        Debug.Log("GameManager: Cards flipped");
         
         // 6. Инициализируем свайп-хендлер
-        Debug.Log("GameManager: Initializing swipe handler...");
         InitializeSwipeHandler();
-        Debug.Log("GameManager: Swipe handler initialized");
         
         // 7. Проверяем соединения
-        Debug.Log("GameManager: Checking connections...");
         connectionManager.CheckAllConnections();
-        Debug.Log("GameManager: Connections checked");
         
         // 8. Запускаем автоподсказки для tutorial (первый уровень)
         HintManager hintManager = FindObjectOfType<HintManager>();
@@ -479,7 +392,6 @@ public class GameManager : MonoBehaviour
             hintManager.StartAutoHints();
         }
         
-        Debug.Log("=== GameManager: GameSequence completed successfully! ===");
     }
     
     private void CreatePuzzlePieces()
@@ -533,7 +445,6 @@ public class GameManager : MonoBehaviour
             }
         }
         
-        Debug.Log($"GameManager: Grid {gridRows}x{gridCols} - Cell size: {cellSize.x:F2}x{cellSize.y:F2}, Card size: {cardSize.x:F2}x{cardSize.y:F2}, Aspect ratio: {cardAspectRatio:F2}, Negative spacing: {hasNegativeSpacing} (cardSpan={cardSpan:F2}, cardHeight={cardHeight:F2})");
         
         // Применяем мультипликатор размера всего префаба (если установлен)
         if (levelManager != null)
@@ -542,7 +453,6 @@ public class GameManager : MonoBehaviour
             if (prefabMultiplier != 1.0f)
             {
                 cardSize *= prefabMultiplier;
-                Debug.Log($"GameManager: Applied card prefab multiplier: {prefabMultiplier:F2}, New card size: {cardSize.x:F2}x{cardSize.y:F2}");
             }
         }
         
@@ -629,7 +539,6 @@ public class GameManager : MonoBehaviour
                 float backMultiplier = levelManager.GetBackSpriteMultiplier();
                 
                 // Добавляем логирование для диагностики
-                Debug.Log($"GameManager: Applying sprite scales - frontMultiplier: {frontMultiplier}, backMultiplier: {backMultiplier}, cardSpriteContainer: {(piece.cardSpriteContainer != null ? "found" : "null")}");
                 
                 piece.SetSpriteScales(frontMultiplier, backMultiplier);
             }
@@ -642,7 +551,6 @@ public class GameManager : MonoBehaviour
             if (i == 0)
             {
                 originalCardScale = piece.transform.localScale;
-                Debug.Log($"GameManager: Stored original card scale: {originalCardScale}");
             }
             
             // Устанавливаем спрайт обратной стороны (cardSpriteContainer уже инициализирован выше)
@@ -664,7 +572,6 @@ public class GameManager : MonoBehaviour
                 piece.borderParts[2] = borderRenderer.leftBorder;
                 piece.borderParts[3] = borderRenderer.rightBorder;
                 
-                Debug.Log($"Карточка {i}: Используются рамки из префаба");
             }
             else
             {
@@ -684,22 +591,18 @@ public class GameManager : MonoBehaviour
                         piece.borderParts[1] = borderRenderer.bottomBorder;
                         piece.borderParts[2] = borderRenderer.leftBorder;
                         piece.borderParts[3] = borderRenderer.rightBorder;
-                        Debug.Log($"Карточка {i}: Рамки созданы через CardPrefabBuilder");
                     }
                     else
                     {
-                        Debug.LogWarning($"Карточка {i}: Не удалось создать рамки через CardPrefabBuilder");
                     }
                 }
                 else if (borderSprite != null)
                 {
                     // Fallback - создаем старым способом (только если нет CardPrefabBuilder)
                     CreateBorders(pieceObj, piece, borderSprite, cardSize);
-                    Debug.Log($"Карточка {i}: Рамки созданы программно (fallback)");
                 }
                 else
                 {
-                    Debug.LogWarning($"Карточка {i}: BorderSprite не установлен, рамки не будут созданы!");
                 }
             }
             
@@ -717,19 +620,16 @@ public class GameManager : MonoBehaviour
                 if (br.topBorder == null || br.bottomBorder == null || 
                     br.leftBorder == null || br.rightBorder == null)
                 {
-                    Debug.LogWarning($"Карточка {i}: BorderRenderer не полностью инициализирован! top={br.topBorder != null}, bottom={br.bottomBorder != null}, left={br.leftBorder != null}, right={br.rightBorder != null}");
                 }
             }
             else
             {
-                Debug.LogWarning($"Карточка {i}: BorderRenderer не найден!");
             }
             
             puzzlePieces.Add(piece);
         }
         
         // Диагностика после создания всех карточек
-        Debug.Log($"=== ДИАГНОСТИКА РАМОК ===");
         int bordersFound = 0;
         int bordersMissing = 0;
         foreach (PuzzlePiece piece in puzzlePieces)
@@ -746,16 +646,13 @@ public class GameManager : MonoBehaviour
                 else
                 {
                     bordersMissing++;
-                    Debug.LogWarning($"Карточка {piece.originalIndex}: Рамки неполные - top={br.topBorder != null}, bottom={br.bottomBorder != null}, left={br.leftBorder != null}, right={br.rightBorder != null}");
                 }
             }
             else
             {
                 bordersMissing++;
-                Debug.LogWarning($"Карточка {piece.originalIndex}: BorderRenderer не найден!");
             }
         }
-        Debug.Log($"Рамки найдены: {bordersFound}, отсутствуют: {bordersMissing}");
     }
     
     private void CreateBorders(GameObject pieceObj, PuzzlePiece piece, Sprite borderSprite, Vector2 cardSize)
@@ -790,7 +687,6 @@ public class GameManager : MonoBehaviour
             puzzlePieces[j] = temp;
         }
         
-        Debug.Log($"Перемешано {puzzlePieces.Count} карточек");
     }
     
     private void InitializeSwipeHandler()
@@ -962,23 +858,19 @@ public class GameManager : MonoBehaviour
     {
         if (isGameComplete)
         {
-            Debug.Log("GameManager: Level is already complete!");
             return;
         }
         
         if (puzzlePieces == null || puzzlePieces.Count == 0)
         {
-            Debug.LogWarning("GameManager: No puzzle pieces to complete!");
             return;
         }
         
         if (puzzleGrid == null)
         {
-            Debug.LogError("GameManager: PuzzleGrid is not initialized!");
             return;
         }
         
-        Debug.Log("GameManager: Completing level instantly...");
         
         // Очищаем occupiedCells для пересчета
         occupiedCells.Clear();
@@ -995,7 +887,6 @@ public class GameManager : MonoBehaviour
             GridCell targetCell = puzzleGrid.GetCellAt(correctRow, correctCol);
             if (targetCell == null)
             {
-                Debug.LogError($"GameManager: Cannot find cell at ({correctRow}, {correctCol})!");
                 continue;
             }
             
@@ -1043,7 +934,6 @@ public class GameManager : MonoBehaviour
             connectionManager.CheckAllConnections();
         }
         
-        Debug.Log("GameManager: All pieces placed in correct positions. Checking win condition...");
         
         // Проверяем условие победы
         CheckWinCondition();
@@ -1055,13 +945,11 @@ public class GameManager : MonoBehaviour
         // Проверяем, не запущена ли уже загрузка сцены
         if (isLoadingScene)
         {
-            Debug.LogWarning("LoadSceneByIndex: Scene loading is already in progress! Ignoring duplicate call.");
             return;
         }
         
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         
-        Debug.Log($"LoadSceneByIndex: current={currentSceneIndex}, target={sceneIndex}");
         
         if (sceneIndex >= 0 && sceneIndex < SceneManager.sceneCountInBuildSettings)
         {
@@ -1071,7 +959,6 @@ public class GameManager : MonoBehaviour
             if (sceneIndex == currentSceneIndex)
             {
                 string sceneName = SceneManager.GetActiveScene().name;
-                Debug.Log($"Reloading current scene by name: {sceneName}");
                 StartCoroutine(LoadSceneWithCoinAnimationByName(sceneName));
             }
             else
@@ -1081,7 +968,6 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"Scene index {sceneIndex} is out of range! Available scenes: 0-{SceneManager.sceneCountInBuildSettings - 1}");
         }
     }
     
@@ -1091,7 +977,6 @@ public class GameManager : MonoBehaviour
         // Проверяем наличие необходимых объектов
         if (coinStartPoint == null || coinFinishPoint == null || coinPrefab == null)
         {
-            Debug.LogWarning("Coin animation parameters not set! Loading scene without animation.");
             // Начисляем деньги без анимации
             if (moneyManager != null)
             {
@@ -1112,7 +997,6 @@ public class GameManager : MonoBehaviour
         
         if (canvas == null)
         {
-            Debug.LogWarning("Canvas not found! Loading scene without animation.");
             // Начисляем деньги без анимации
             if (moneyManager != null)
             {
@@ -1131,7 +1015,6 @@ public class GameManager : MonoBehaviour
         
         if (canvasRect == null)
         {
-            Debug.LogWarning("Canvas must have RectTransform component!");
             // Начисляем деньги без анимации
             if (moneyManager != null)
             {
@@ -1151,7 +1034,6 @@ public class GameManager : MonoBehaviour
             
             if (startRect == null || finishRect == null)
             {
-                Debug.LogWarning("Coin start/finish points must have RectTransform component!");
                 break;
             }
             
@@ -1161,7 +1043,6 @@ public class GameManager : MonoBehaviour
             
             if (coinRect == null)
             {
-                Debug.LogWarning("Coin prefab must have RectTransform component!");
                 Destroy(coin);
                 continue;
             }
@@ -1240,7 +1121,6 @@ public class GameManager : MonoBehaviour
         // Проверяем наличие необходимых объектов
         if (coinStartPoint == null || coinFinishPoint == null || coinPrefab == null)
         {
-            Debug.LogWarning("Coin animation parameters not set! Loading scene without animation.");
             // Начисляем деньги без анимации
             if (moneyManager != null)
             {
@@ -1261,7 +1141,6 @@ public class GameManager : MonoBehaviour
         
         if (canvas == null)
         {
-            Debug.LogWarning("Canvas not found! Loading scene without animation.");
             // Начисляем деньги без анимации
             if (moneyManager != null)
             {
@@ -1280,7 +1159,6 @@ public class GameManager : MonoBehaviour
         
         if (canvasRect == null)
         {
-            Debug.LogWarning("Canvas must have RectTransform component!");
             // Начисляем деньги без анимации
             if (moneyManager != null)
             {
@@ -1300,7 +1178,6 @@ public class GameManager : MonoBehaviour
             
             if (startRect == null || finishRect == null)
             {
-                Debug.LogWarning("Coin start/finish points must have RectTransform component!");
                 break;
             }
             
@@ -1310,7 +1187,6 @@ public class GameManager : MonoBehaviour
             
             if (coinRect == null)
             {
-                Debug.LogWarning("Coin prefab must have RectTransform component!");
                 Destroy(coin);
                 continue;
             }
@@ -1380,7 +1256,6 @@ public class GameManager : MonoBehaviour
         isLoadingScene = false;
         
         // Загружаем по имени
-        Debug.Log($"Loading scene by name: {sceneName}");
         SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
     }
     
@@ -1395,7 +1270,6 @@ public class GameManager : MonoBehaviour
             return;
         }
         
-        Debug.Log("Cleaning up before scene reload...");
         
         // НЕ останавливаем корутины здесь, так как это остановит корутину загрузки сцены!
         // StopAllCoroutines(); // УБРАНО - останавливает корутину загрузки сцены!
@@ -1449,7 +1323,6 @@ public class GameManager : MonoBehaviour
             }
         }
         
-        Debug.Log("Cleanup completed.");
     }
     
     // Загрузка следующей сцены (использует nextSceneIndex)
@@ -1465,7 +1338,6 @@ public class GameManager : MonoBehaviour
         CleanupBeforeSceneLoad();
         
         string sceneName = SceneManager.GetActiveScene().name;
-        Debug.Log($"Reloading scene by name: {sceneName}");
         SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
     }
     
@@ -1473,7 +1345,6 @@ public class GameManager : MonoBehaviour
     public void ReloadCurrentSceneWithAnimation()
     {
         int currentIndex = SceneManager.GetActiveScene().buildIndex;
-        Debug.Log($"Reloading scene with animation. Current index: {currentIndex}");
         LoadSceneByIndex(currentIndex);
     }
     
