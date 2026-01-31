@@ -20,12 +20,9 @@ public class CardPrefabBuilder : MonoBehaviour
     [ContextMenu("1. Автоматическая настройка ВСЕГО")]
     public void AutoSetupEverything()
     {
-        Debug.Log("=== НАЧАЛО АВТОМАТИЧЕСКОЙ НАСТРОЙКИ ===");
-        
         // Шаг 1: Определяем размер из CardBack
         if (cardBackSprite == null)
         {
-            Debug.LogError("❌ Card Back Sprite не установлен! Перетащите спрайт в поле Card Back Sprite");
             return;
         }
         
@@ -33,8 +30,6 @@ public class CardPrefabBuilder : MonoBehaviour
             cardBackSprite.rect.width / cardBackSprite.pixelsPerUnit,
             cardBackSprite.rect.height / cardBackSprite.pixelsPerUnit
         );
-        
-        Debug.Log($"✓ Размер карточки определен: {cardSize.x:F2} x {cardSize.y:F2} единиц");
         
         // Шаг 2: Настраиваем SpriteRenderer
         SetupSpriteRenderer();
@@ -52,10 +47,7 @@ public class CardPrefabBuilder : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("⚠ Border Sprite не установлен. Рамки не будут созданы.");
         }
-        
-        Debug.Log("=== НАСТРОЙКА ЗАВЕРШЕНА ===");
     }
     
     private void SetupSpriteRenderer()
@@ -68,8 +60,6 @@ public class CardPrefabBuilder : MonoBehaviour
         
         sr.sprite = cardBackSprite;
         sr.sortingOrder = 0;
-        
-        Debug.Log("✓ SpriteRenderer настроен");
     }
     
     private void SetupCollider()
@@ -81,8 +71,6 @@ public class CardPrefabBuilder : MonoBehaviour
         }
         
         collider.size = cardSize;
-        
-        Debug.Log($"✓ BoxCollider2D настроен, размер: {collider.size.x:F2} x {collider.size.y:F2}");
     }
     
     private void SetupRigidbody()
@@ -95,8 +83,6 @@ public class CardPrefabBuilder : MonoBehaviour
         
         rb.isKinematic = true;
         rb.gravityScale = 0;
-        
-        Debug.Log("✓ Rigidbody2D настроен (Kinematic)");
     }
     
     [ContextMenu("2. Создать рамки")]
@@ -104,13 +90,11 @@ public class CardPrefabBuilder : MonoBehaviour
     {
         if (borderSprite == null)
         {
-            Debug.LogError("❌ Border Sprite не установлен!");
             return;
         }
         
         if (cardSize.x == 0 || cardSize.y == 0)
         {
-            Debug.LogError("❌ Размер карточки не определен! Сначала запустите '1. Автоматическая настройка ВСЕГО'");
             return;
         }
         
@@ -149,9 +133,6 @@ public class CardPrefabBuilder : MonoBehaviour
         int spriteX = Mathf.RoundToInt(spriteRect.x);
         int spriteY = Mathf.RoundToInt(spriteRect.y);
         
-        Debug.Log($"Спрайт рамки: rect = {spriteRect}, размер в текстуре: {spriteWidth}×{spriteHeight}");
-        Debug.Log($"Полная текстура: {borderSprite.texture.width}×{borderSprite.texture.height}");
-        
         // Получаем читаемую текстуру
         Texture2D fullTexture = GetReadableTexture(borderSprite.texture);
         
@@ -179,8 +160,6 @@ public class CardPrefabBuilder : MonoBehaviour
         
         int width = scaledTexture.width;
         int height = scaledTexture.height;
-        
-        Debug.Log($"Разрезание рамки {width}×{height} (из обрезанного спрайта {spriteWidth}×{spriteHeight}) по диагоналям");
         
         // Создаем 4 треугольника
         // Верхний треугольник (верхняя часть)
@@ -212,7 +191,6 @@ public class CardPrefabBuilder : MonoBehaviour
         if (top != null && bottom != null && left != null && right != null)
         {
             borderRenderer.Initialize(top, bottom, left, right);
-            Debug.Log("✓ Рамки созданы из треугольников");
             
             // ВАЖНО: Сохраняем изменения в префаб
             #if UNITY_EDITOR
@@ -392,7 +370,6 @@ public class CardPrefabBuilder : MonoBehaviour
         
         if (loadedSprite == null)
         {
-            Debug.LogWarning($"Не удалось загрузить спрайт из {texturePath}, создаем временный спрайт");
             // Fallback - создаем спрайт в памяти из квадратной текстуры
             triangleSprite = Sprite.Create(
                 squareTexture,
@@ -414,7 +391,6 @@ public class CardPrefabBuilder : MonoBehaviour
             
             // Удаляем временную квадратную текстуру, так как теперь используем сохраненный спрайт
             DestroyImmediate(squareTexture);
-            Debug.Log($"  ✓ Квадратный спрайт ({squareSize}×{squareSize}) сохранен в {texturePath}");
         }
         #else
         // В рантайме просто создаем спрайт в памяти из квадратной текстуры
@@ -449,23 +425,8 @@ public class CardPrefabBuilder : MonoBehaviour
         sr.sprite = triangleSprite;
         sr.sortingOrder = 2; // Должно быть выше карточки (которая имеет 0), чтобы рамки были поверх
         
-        // ВАЖНО: Убеждаемся, что спрайт установлен
-        if (sr.sprite == null)
-        {
-            Debug.LogError($"Sprite не установлен для {name}!");
-        }
-        
         // ВАЖНО: Убеждаемся, что объект активен
         borderObj.SetActive(true);
-        
-        #if UNITY_EDITOR
-        string savedInfo = triangleSprite != null && AssetDatabase.Contains(triangleSprite) 
-            ? $", сохранен в проекте" 
-            : "";
-        Debug.Log($"  ✓ {name} создан из треугольника, позиция: {position}, sprite={sr.sprite != null}, active={borderObj.activeSelf}, sortingOrder={sr.sortingOrder}{savedInfo}");
-        #else
-        Debug.Log($"  ✓ {name} создан из треугольника, позиция: {position}, sprite={sr.sprite != null}, active={borderObj.activeSelf}, sortingOrder={sr.sortingOrder}");
-        #endif
     }
     
     private Texture2D GetReadableTexture(Texture2D source)
@@ -519,15 +480,12 @@ public class CardPrefabBuilder : MonoBehaviour
             #else
             Destroy(borderContainer.gameObject);
             #endif
-            Debug.Log("✓ Рамки удалены");
         }
     }
     
     [ContextMenu("Проверить размеры спрайтов")]
     public void CheckSpriteSizes()
     {
-        Debug.Log("=== ПРОВЕРКА РАЗМЕРОВ СПРАЙТОВ ===");
-        
         if (cardBackSprite != null)
         {
             // ИСПРАВЛЕНО: Используем rect и pixelsPerUnit вместо bounds.size для стабильности
@@ -535,33 +493,11 @@ public class CardPrefabBuilder : MonoBehaviour
                 cardBackSprite.rect.width / cardBackSprite.pixelsPerUnit,
                 cardBackSprite.rect.height / cardBackSprite.pixelsPerUnit
             );
-            Debug.Log($"CardBack размер: {cardSize.x:F2} x {cardSize.y:F2} (мировых единиц)");
-            Debug.Log($"CardBack пиксели: {cardBackSprite.texture.width} x {cardBackSprite.texture.height}");
-            Debug.Log($"Pixels Per Unit: {cardBackSprite.pixelsPerUnit}");
-            Debug.Log($"Соотношение: {cardSize.x / cardSize.y:F2}:1");
             
             // Проверка на правильный размер (368x512 при Pixels Per Unit = 100)
             float expectedWidth = 368f / cardBackSprite.pixelsPerUnit;
             float expectedHeight = 512f / cardBackSprite.pixelsPerUnit;
             
-            Debug.Log($"Ожидаемый размер (368×512 / {cardBackSprite.pixelsPerUnit}): {expectedWidth:F2} x {expectedHeight:F2}");
-            
-            if (Mathf.Abs(cardSize.x - expectedWidth) < 0.01f && 
-                Mathf.Abs(cardSize.y - expectedHeight) < 0.01f)
-            {
-                Debug.Log("✓ Размеры правильные!");
-            }
-            else
-            {
-                Debug.LogWarning($"⚠ Несоответствие размеров!");
-                Debug.LogWarning($"  Ожидалось: {expectedWidth:F2} x {expectedHeight:F2}");
-                Debug.LogWarning($"  Получено: {cardSize.x:F2} x {cardSize.y:F2}");
-                Debug.LogWarning("  Проверьте Pixels Per Unit спрайта! Должно быть 100 для размера 368×512");
-            }
-        }
-        else
-        {
-            Debug.LogError("❌ Card Back Sprite не установлен!");
         }
         
         if (borderSprite != null)
@@ -571,9 +507,6 @@ public class CardPrefabBuilder : MonoBehaviour
                 borderSprite.rect.width / borderSprite.pixelsPerUnit,
                 borderSprite.rect.height / borderSprite.pixelsPerUnit
             );
-            Debug.Log($"Border размер: {borderSize.x:F2} x {borderSize.y:F2} (мировых единиц)");
-            Debug.Log($"Border пиксели: {borderSprite.texture.width} x {borderSprite.texture.height}");
-            Debug.Log($"Pixels Per Unit: {borderSprite.pixelsPerUnit}");
             
             if (cardBackSprite != null)
             {
@@ -583,20 +516,7 @@ public class CardPrefabBuilder : MonoBehaviour
                     cardBackSprite.rect.height / cardBackSprite.pixelsPerUnit
                 );
                 
-                if (Mathf.Abs(borderSize.x - cardSize.x) < 0.01f && 
-                    Mathf.Abs(borderSize.y - cardSize.y) < 0.01f)
-                {
-                    Debug.Log("✓ Размеры Border и CardBack совпадают!");
-                }
-                else
-                {
-                    Debug.LogWarning("⚠ Размеры Border и CardBack не совпадают!");
-                }
             }
-        }
-        else
-        {
-            Debug.LogWarning("⚠ Border Sprite не установлен");
         }
     }
     
@@ -610,13 +530,6 @@ public class CardPrefabBuilder : MonoBehaviour
                 cardBackSprite.rect.width / cardBackSprite.pixelsPerUnit,
                 cardBackSprite.rect.height / cardBackSprite.pixelsPerUnit
             );
-            Debug.Log($"Размер карточки: {size.x:F2} x {size.y:F2} (мировых единиц)");
-            Debug.Log($"Соотношение сторон: {size.x / size.y:F2}:1");
-            Debug.Log($"Пиксели: {cardBackSprite.texture.width} x {cardBackSprite.texture.height}");
-        }
-        else
-        {
-            Debug.LogWarning("Card Back Sprite не установлен!");
         }
     }
     
@@ -635,7 +548,6 @@ public class CardPrefabBuilder : MonoBehaviour
             {
                 PrefabUtility.SaveAsPrefabAsset(gameObject, prefabPath);
                 AssetDatabase.SaveAssets();
-                Debug.Log($"✓ Префаб сохранен: {prefabPath}");
                 return;
             }
         }
@@ -645,13 +557,11 @@ public class CardPrefabBuilder : MonoBehaviour
         {
             // Применяем изменения к префабу
             PrefabUtility.ApplyPrefabInstance(gameObject, InteractionMode.AutomatedAction);
-            Debug.Log("✓ Изменения применены к префабу");
             return;
         }
         
         // Это не префаб, просто отмечаем изменения
         EditorUtility.SetDirty(gameObject);
-        Debug.Log("✓ Изменения отмечены (не префаб)");
     }
     #endif
 }

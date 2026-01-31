@@ -87,7 +87,6 @@ public class PuzzlePieceSetup : MonoBehaviour
     {
         if (borderSprite == null)
         {
-            Debug.LogWarning("Border Sprite не установлен!");
             return;
         }
         

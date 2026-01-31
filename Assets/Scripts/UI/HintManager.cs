@@ -54,7 +54,6 @@ public class HintManager : MonoBehaviour
         if (autoHintOnFirstLevel && IsFirstLevel())
         {
             isTutorialLevel = true;
-            Debug.Log("[HintManager] Tutorial mode enabled - first level detected");
         }
     }
     
@@ -75,11 +74,8 @@ public class HintManager : MonoBehaviour
     {
         if (!isTutorialLevel)
         {
-            Debug.Log("[HintManager] StartAutoHints: not a tutorial level, skipping");
             return;
         }
-        
-        Debug.Log("[HintManager] StartAutoHints: starting auto hint routine");
         
         if (autoHintCoroutine != null)
         {
@@ -105,8 +101,6 @@ public class HintManager : MonoBehaviour
             // Ждем перед следующей подсказкой
             yield return new WaitForSeconds(autoHintDelay);
         }
-        
-        Debug.Log("[HintManager] AutoHintRoutine: ended");
     }
     
     /// <summary>
@@ -127,8 +121,6 @@ public class HintManager : MonoBehaviour
             }
             
             StopAllHints();
-            
-            Debug.Log("[HintManager] Tutorial completed - auto hints disabled permanently");
         }
     }
     
@@ -148,7 +140,6 @@ public class HintManager : MonoBehaviour
     {
         PlayerPrefs.DeleteKey(TUTORIAL_LEVEL_COMPLETED_KEY);
         PlayerPrefs.Save();
-        Debug.Log("[HintManager] Tutorial reset - will show auto hints on next level");
     }
     
     /// <summary>
@@ -160,7 +151,6 @@ public class HintManager : MonoBehaviour
         PlayerPrefs.SetInt(TUTORIAL_LEVEL_COMPLETED_KEY, 1);
         PlayerPrefs.Save();
         isTutorialLevel = false;
-        Debug.Log("[HintManager] Tutorial marked as completed");
     }
     
     // Проверяет, находится ли карточка в группе (имеет ли соединения)
@@ -201,7 +191,6 @@ public class HintManager : MonoBehaviour
         
         if (gameManager == null || grid == null || occupiedCells == null)
         {
-            Debug.LogWarning("[HintManager] FindSimplePositionHint: gameManager, grid или occupiedCells == null");
             return false;
         }
         
@@ -227,8 +216,6 @@ public class HintManager : MonoBehaviour
                     
                     if (correctPiece != null)
                     {
-                        Debug.Log($"[HintManager] FindSimplePositionHint: позиция ({row}, {col}) - неправильная карточка {currentPiece.name} (originalIndex={currentPiece.originalIndex}), нужна {correctPiece.name} (originalIndex={expectedOriginalIndex})");
-                        
                         // Проверить, находится ли нужная карточка в группе
                         if (IsPieceInGroup(correctPiece))
                         {
@@ -253,12 +240,10 @@ public class HintManager : MonoBehaviour
                                         mainPos.y + offset.y
                                     );
                                     group = correctPieceGroup;
-                                    Debug.Log($"[HintManager] FindSimplePositionHint: найдено перемещение группы из {group.Count} карточек на позицию ({targetPosition.x}, {targetPosition.y})");
                                     return true; // Найдена подсказка для группы
                                 }
                                 else
                                 {
-                                    Debug.Log($"[HintManager] FindSimplePositionHint: группа не может быть размещена на позиции ({pos.x}, {pos.y}), пропускаем");
                                     continue; // Пропускаем эту позицию, ищем следующую
                                 }
                             }
@@ -268,19 +253,13 @@ public class HintManager : MonoBehaviour
                             // Простой обмен двух карточек
                             piece1 = currentPiece;
                             piece2 = correctPiece;
-                            Debug.Log($"[HintManager] FindSimplePositionHint: найдена подсказка для обмена карточек {currentPiece.originalIndex} и {correctPiece.originalIndex}");
                             return true; // Найдена подсказка для обмена
                         }
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"[HintManager] FindSimplePositionHint: не найдена карточка с originalIndex={expectedOriginalIndex} для позиции ({row}, {col})");
                     }
                 }
             }
         }
         
-        Debug.Log("[HintManager] FindSimplePositionHint: не найдено подсказок");
         return false;
     }
     
@@ -360,8 +339,6 @@ public class HintManager : MonoBehaviour
         
         if (group == null || group.Count == 0 || grid == null) return false;
         
-        Debug.Log($"[HintManager] FindBestPositionForGroup: ищем позицию для группы из {group.Count} карточек");
-        
         // Стратегия 1: Переместить группу так, чтобы карточка оказалась на правильном месте
         foreach (PuzzlePiece wrongPiece in group)
         {
@@ -385,7 +362,6 @@ public class HintManager : MonoBehaviour
                     mainPos.x + offset.x,
                     mainPos.y + offset.y
                 );
-                Debug.Log($"[HintManager] FindBestPositionForGroup: найдена позиция через правильное место карточки {wrongPiece.name}");
                 return true;
             }
         }
@@ -413,7 +389,6 @@ public class HintManager : MonoBehaviour
                             mainPos.x + offset.x,
                             mainPos.y + offset.y
                         );
-                        Debug.Log($"[HintManager] FindBestPositionForGroup: найдена позиция через создание соединения (offset: {offsetX}, {offsetY})");
                         return true;
                     }
                 }
@@ -422,7 +397,6 @@ public class HintManager : MonoBehaviour
         
         // Стратегия 3: Если не найдено оптимальной позиции, показываем любую валидную позицию
         // (например, перемещение на 1 клетку в любом направлении)
-        Debug.Log("[HintManager] FindBestPositionForGroup: Стратегия 3 - ищем любую валидную позицию");
         int[] simpleOffsets = { -1, 0, 1 };
         foreach (int offsetX in simpleOffsets)
         {
@@ -438,13 +412,11 @@ public class HintManager : MonoBehaviour
                         mainPos.x + offset.x,
                         mainPos.y + offset.y
                     );
-                    Debug.Log($"[HintManager] FindBestPositionForGroup: найдена простая позиция (offset: {offsetX}, {offsetY})");
                     return true;
                 }
             }
         }
         
-        Debug.Log("[HintManager] FindBestPositionForGroup: не найдено подходящей позиции");
         return false;
     }
     
@@ -554,24 +526,19 @@ public class HintManager : MonoBehaviour
     // Called from button click
     public void ShowHint()
     {
-        Debug.Log("[HintManager] ShowHint: начало поиска подсказки");
-        
         if (gameManager == null)
         {
-            Debug.LogWarning("[HintManager] ShowHint: gameManager == null");
             return;
         }
         
         // ПРОВЕРКА: блокируем подсказки во время раздачи и переворота карт
         if (gameManager.IsDealingOrFlipping())
         {
-            Debug.Log("[HintManager] ShowHint: раздача или переворот карт в процессе, подсказки недоступны");
             return;
         }
         
         if (gameManager.IsGameComplete())
         {
-            Debug.Log("[HintManager] ShowHint: игра завершена, подсказки не показываем");
             return;
         }
         
@@ -584,11 +551,8 @@ public class HintManager : MonoBehaviour
         
         if (grid == null || occupiedCells == null)
         {
-            Debug.LogWarning("[HintManager] ShowHint: grid или occupiedCells == null");
             return;
         }
-        
-        Debug.Log($"[HintManager] ShowHint: grid размер {grid.gridRows}x{grid.gridCols}, занято ячеек {occupiedCells.Count}");
         
         // Простая логика: построчный проход по сетке
         PuzzlePiece piece1, piece2;
@@ -599,14 +563,10 @@ public class HintManager : MonoBehaviour
         {
             if (group != null && group.Count > 0)
             {
-                // Показать подсказку на перемещение группы
-                Debug.Log($"[HintManager] ShowHint: найдена подсказка для группы из {group.Count} карточек на позицию ({targetPosition.x}, {targetPosition.y})");
                 AnimateGroupHint(group, targetPosition);
             }
             else if (piece1 != null && piece2 != null)
             {
-                // Показать подсказку на обмен двух карточек
-                Debug.Log($"[HintManager] ShowHint: найдена подсказка для обмена {piece1.name} и {piece2.name}");
                 // Для tutorial уровня используем scale анимацию, для обычных - автосвайп
                 if (isTutorialLevel)
                 {
@@ -621,7 +581,6 @@ public class HintManager : MonoBehaviour
         }
         
         // Fallback: показать обмен любых двух соседних карточек
-        Debug.Log("[HintManager] ShowHint: fallback - показываем обмен любых соседних карточек");
         List<PuzzlePiece> allPieces = gameManager.GetAllPieces();
         if (allPieces != null && allPieces.Count >= 2)
         {
@@ -642,7 +601,6 @@ public class HintManager : MonoBehaviour
                     {
                         if (piece != neighbor)
                         {
-                            Debug.Log($"[HintManager] ShowHint: fallback - показываем обмен {piece.name} и {neighbor.name}");
                             // Для tutorial уровня используем scale анимацию, для обычных - автосвайп
                             if (isTutorialLevel)
                             {
@@ -659,7 +617,6 @@ public class HintManager : MonoBehaviour
             }
             
             // Если соседние не найдены, показываем обмен первых двух карточек
-            Debug.Log($"[HintManager] ShowHint: fallback - показываем обмен первых двух карточек");
             // Для tutorial уровня используем scale анимацию, для обычных - автосвайп
             if (isTutorialLevel)
             {
@@ -671,8 +628,6 @@ public class HintManager : MonoBehaviour
             }
             return;
         }
-        
-        Debug.LogWarning("[HintManager] ShowHint: не найдено подходящей подсказки!");
     }
     
     // УДАЛЕНО: FindSimpleHint - больше не используется, заменен на FindSimplePositionHint
@@ -688,18 +643,14 @@ public class HintManager : MonoBehaviour
         
         if (gameManager == null || grid == null || occupiedCells == null)
         {
-            Debug.LogWarning("[HintManager] FindGroupMoveHint: gameManager, grid или occupiedCells == null");
             return false;
         }
         
         List<PuzzlePiece> allPieces = gameManager.GetAllPieces();
         if (allPieces == null || allPieces.Count == 0)
         {
-            Debug.LogWarning("[HintManager] FindGroupMoveHint: нет карточек");
             return false;
         }
-        
-        Debug.Log($"[HintManager] FindGroupMoveHint: всего карточек {allPieces.Count}");
         
         // Ищем все группы соединенных карточек
         HashSet<PuzzlePiece> processed = new HashSet<PuzzlePiece>();
@@ -712,7 +663,6 @@ public class HintManager : MonoBehaviour
             // Пропускаем карточки без соединений
             if (!IsPieceInGroup(startPiece))
             {
-                Debug.Log($"[HintManager] FindGroupMoveHint: карточка {startPiece.name} не в группе, пропускаем");
                 continue;
             }
             
@@ -720,19 +670,15 @@ public class HintManager : MonoBehaviour
             List<PuzzlePiece> connectedGroup = FindConnectedGroup(startPiece);
             if (connectedGroup == null || connectedGroup.Count == 0)
             {
-                Debug.LogWarning($"[HintManager] FindGroupMoveHint: не удалось найти группу для {startPiece.name}");
                 continue;
             }
             
             groupCount++;
-            Debug.Log($"[HintManager] FindGroupMoveHint: найдена группа #{groupCount} из {connectedGroup.Count} карточек");
-            
             processed.UnionWith(connectedGroup);
             
             // Пропускаем группы, которые уже полностью собраны
             if (IsGroupComplete(connectedGroup))
             {
-                Debug.Log($"[HintManager] FindGroupMoveHint: группа #{groupCount} полностью собрана, пропускаем");
                 continue;
             }
             
@@ -740,18 +686,12 @@ public class HintManager : MonoBehaviour
             Vector2Int targetPos;
             if (FindBestPositionForGroup(connectedGroup, out targetPos))
             {
-                Debug.Log($"[HintManager] FindGroupMoveHint: найдена позиция для группы #{groupCount} на ({targetPos.x}, {targetPos.y})");
                 group = connectedGroup;
                 targetPosition = targetPos;
                 return true;
             }
-            else
-            {
-                Debug.Log($"[HintManager] FindGroupMoveHint: не найдена позиция для группы #{groupCount}");
-            }
         }
         
-        Debug.Log($"[HintManager] FindGroupMoveHint: проверено {groupCount} групп, подходящих не найдено");
         return false;
     }
     
@@ -782,18 +722,14 @@ public class HintManager : MonoBehaviour
         SwipeHandler swipeHandler = piece1.GetComponent<SwipeHandler>();
         if (swipeHandler == null)
         {
-            Debug.LogWarning("[HintManager] AnimateHint: SwipeHandler не найден на piece1, пробуем piece2");
             swipeHandler = piece2.GetComponent<SwipeHandler>();
         }
         
         if (swipeHandler == null)
         {
-            Debug.LogError("[HintManager] AnimateHint: SwipeHandler не найден ни на одной из карточек!");
             return;
         }
         
-        // Вызываем автоматический свайп карточек
-        Debug.Log($"[HintManager] AnimateHint: автоматический свайп карточек {piece1.name} и {piece2.name}");
         swipeHandler.AutoSwapPieces(piece1, piece2);
     }
     

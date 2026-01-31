@@ -101,7 +101,6 @@ public class AudioManager : MonoBehaviour
         // Проверяем доступность Addressables
         if (!IsAddressablesAvailable())
         {
-            Debug.LogWarning("AudioManager: Addressables не доступны. Используются legacy AudioClip.");
             isAudioLoading = false;
             isAudioLoaded = true;
             yield break;
@@ -123,9 +122,7 @@ public class AudioManager : MonoBehaviour
             yield return StartCoroutine(LoadAudioClipAsync(key));
         }
 
-        Debug.Log($"AudioManager: Загружено {loadedClips.Count} звуков из Addressables.");
 #else
-        Debug.LogWarning("AudioManager: Addressables код не скомпилирован. Используются legacy AudioClip.");
 #endif
 
         isAudioLoading = false;
@@ -151,11 +148,9 @@ public class AudioManager : MonoBehaviour
         if (handle.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
         {
             loadedClips[addressableKey] = handle.Result;
-            Debug.Log($"AudioManager: Звук '{addressableKey}' успешно загружен из Addressables.");
         }
         else
         {
-            Debug.LogError($"AudioManager: Не удалось загрузить звук '{addressableKey}' из Addressables.");
         }
 #else
         yield break;

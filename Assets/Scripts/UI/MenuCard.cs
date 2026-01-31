@@ -64,14 +64,12 @@ public class MenuCard : MonoBehaviour
     {
         if (isAnimating)
         {
-            Debug.LogWarning("MenuCard: Flip animation already in progress!");
             onComplete?.Invoke();
             return;
         }
         
         if (isUnlocked)
         {
-            Debug.LogWarning("MenuCard: Card is already unlocked!");
             onComplete?.Invoke();
             return;
         }

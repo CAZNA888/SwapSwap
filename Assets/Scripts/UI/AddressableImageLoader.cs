@@ -63,7 +63,6 @@ public class AddressableImageLoader : MonoBehaviour
     {
         if (string.IsNullOrEmpty(addressableKey))
         {
-            Debug.LogError($"AddressableImageLoader: addressableKey не указан для '{gameObject.name}'. Загрузка невозможна.");
             return;
         }
         
@@ -79,7 +78,6 @@ public class AddressableImageLoader : MonoBehaviour
         // Проверяем доступность Addressables
         if (!IsAddressablesAvailable())
         {
-            Debug.LogError($"AddressableImageLoader: Addressables не доступны для '{gameObject.name}'. Загрузка невозможна.");
             yield break;
         }
         
@@ -92,16 +90,13 @@ public class AddressableImageLoader : MonoBehaviour
         if (handle.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
         {
             SetSprite(handle.Result);
-            Debug.Log($"AddressableImageLoader: Спрайт успешно загружен из Addressables с ключом '{addressableKey}' для '{gameObject.name}'");
         }
         else
         {
-            Debug.LogError($"AddressableImageLoader: Не удалось загрузить спрайт из Addressables с ключом '{addressableKey}' для '{gameObject.name}'. Загрузка не выполнена.");
             // Очищаем handle при ошибке
             addressableHandle = null;
         }
 #else
-        Debug.LogError($"AddressableImageLoader: Addressables код не скомпилирован для '{gameObject.name}'. Загрузка невозможна.");
         yield break;
 #endif
     }
@@ -113,7 +108,6 @@ public class AddressableImageLoader : MonoBehaviour
     {
         if (sprite == null)
         {
-            Debug.LogWarning($"AddressableImageLoader: Попытка установить null спрайт для '{gameObject.name}'");
             return;
         }
         
@@ -124,10 +118,6 @@ public class AddressableImageLoader : MonoBehaviour
         else if (spriteRenderer != null)
         {
             spriteRenderer.sprite = sprite;
-        }
-        else
-        {
-            Debug.LogError($"AddressableImageLoader: Не найден ни Image, ни SpriteRenderer компонент на '{gameObject.name}'");
         }
     }
     

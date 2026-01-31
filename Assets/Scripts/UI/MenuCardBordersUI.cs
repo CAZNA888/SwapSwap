@@ -38,10 +38,7 @@ public class MenuCardBordersUI : MonoBehaviour
         }
         
         if (borderSprite == null)
-        {
-            Debug.LogWarning("MenuCardBordersUI: Border sprite is not set!");
             return;
-        }
         
         // Создаем рамки, если их нет
         if (topBorder == null) CreateBorder("TopBorder", 0);

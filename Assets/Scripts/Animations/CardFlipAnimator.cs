@@ -48,13 +48,6 @@ public class CardFlipAnimator : MonoBehaviour
                     connectionManager.CheckPieceConnections(piece);
                 }
                 
-                // Дополнительная проверка - убеждаемся, что рамки показываются
-                BorderRenderer br = piece.GetComponentInChildren<BorderRenderer>();
-                if (br != null)
-                {
-                    Debug.Log($"После переворота карточки {piece.originalIndex}: top={br.topBorder != null && br.topBorder.activeSelf}, isFlipped={piece.isFlipped}");
-                }
-                
                 // Увеличиваем обратно
                 cardTransform.DOScaleX(originalScale.x, flipDuration)
                     .SetEase(Ease.OutQuad)

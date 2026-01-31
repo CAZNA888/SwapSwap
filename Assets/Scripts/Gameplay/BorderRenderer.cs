@@ -85,7 +85,6 @@ public class BorderRenderer : MonoBehaviour
         // Проверка наличия рамок
         if (topBorder == null || bottomBorder == null || leftBorder == null || rightBorder == null)
         {
-            Debug.LogWarning($"UpdateBorders: Рамки не инициализированы! top={topBorder != null}, bottom={bottomBorder != null}, left={leftBorder != null}, right={rightBorder != null}");
             return;
         }
         

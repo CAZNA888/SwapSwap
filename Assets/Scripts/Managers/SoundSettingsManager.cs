@@ -36,14 +36,12 @@ public class SoundSettingsManager : MonoBehaviour
         audioManager = FindObjectOfType<AudioManager>();
         if (audioManager == null)
         {
-            Debug.LogWarning("SoundSettingsManager: AudioManager not found!");
         }
         
         // Получаем MusicManager (синглтон)
         musicManager = MusicManager.Instance;
         if (musicManager == null)
         {
-            Debug.LogWarning("SoundSettingsManager: MusicManager not found!");
         }
         
         // Загружаем сохраненные значения
@@ -65,10 +63,6 @@ public class SoundSettingsManager : MonoBehaviour
             sfxVolumeSlider.value = savedSFXVolume;
             sfxVolumeSlider.onValueChanged.AddListener(OnSFXVolumeChanged);
         }
-        else
-        {
-            Debug.LogWarning("SoundSettingsManager: SFX Volume Slider is not assigned!");
-        }
         
         // Настраиваем слайдер музыки
         if (musicVolumeSlider != null)
@@ -76,10 +70,6 @@ public class SoundSettingsManager : MonoBehaviour
             float savedMusicVolume = PlayerPrefs.GetFloat(MUSIC_VOLUME_KEY, defaultMusicVolume);
             musicVolumeSlider.value = savedMusicVolume;
             musicVolumeSlider.onValueChanged.AddListener(OnMusicVolumeChanged);
-        }
-        else
-        {
-            Debug.LogWarning("SoundSettingsManager: Music Volume Slider is not assigned!");
         }
     }
     
@@ -97,8 +87,6 @@ public class SoundSettingsManager : MonoBehaviour
         {
             audioManager.SetSFXVolume(value);
         }
-        
-        Debug.Log($"SoundSettingsManager: SFX Volume changed to {value}");
     }
     
     /// <summary>
@@ -115,8 +103,6 @@ public class SoundSettingsManager : MonoBehaviour
         {
             musicManager.SetMusicVolume(value);
         }
-        
-        Debug.Log($"SoundSettingsManager: Music Volume changed to {value}");
     }
     
     /// <summary>

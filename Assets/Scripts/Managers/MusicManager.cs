@@ -93,7 +93,6 @@ public class MusicManager : MonoBehaviour
         // Проверяем доступность Addressables
         if (!IsAddressablesAvailable())
         {
-            Debug.LogWarning("MusicManager: Addressables не доступны. Используется legacy AudioClip.");
             isMusicLoading = false;
             isMusicLoaded = true;
             yield break;
@@ -106,8 +105,6 @@ public class MusicManager : MonoBehaviour
         if (handle.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
         {
             loadedMusicClip = handle.Result;
-            Debug.Log($"MusicManager: Музыка '{backgroundMusicKey}' успешно загружена из Addressables.");
-
             // Если музыка еще не играет или играет legacy клип - переключаемся на загруженный
             if (!musicAudioSource.isPlaying || musicAudioSource.clip == backgroundMusicClip)
             {
@@ -122,10 +119,8 @@ public class MusicManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"MusicManager: Не удалось загрузить музыку '{backgroundMusicKey}' из Addressables.");
         }
 #else
-        Debug.LogWarning("MusicManager: Addressables код не скомпилирован. Используется legacy AudioClip.");
 #endif
 
         isMusicLoading = false;
