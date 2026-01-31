@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using PlayerPrefs = RedefineYG.PlayerPrefs;
 
@@ -36,14 +36,12 @@ public class SoundSettingsManager : MonoBehaviour
         audioManager = FindObjectOfType<AudioManager>();
         if (audioManager == null)
         {
-            Debug.LogWarning("SoundSettingsManager: AudioManager not found!");
         }
         
         // Получаем MusicManager (синглтон)
         musicManager = MusicManager.Instance;
         if (musicManager == null)
         {
-            Debug.LogWarning("SoundSettingsManager: MusicManager not found!");
         }
         
         // Загружаем сохраненные значения
@@ -67,7 +65,6 @@ public class SoundSettingsManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("SoundSettingsManager: SFX Volume Slider is not assigned!");
         }
         
         // Настраиваем слайдер музыки
@@ -79,7 +76,6 @@ public class SoundSettingsManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("SoundSettingsManager: Music Volume Slider is not assigned!");
         }
     }
     
@@ -98,7 +94,6 @@ public class SoundSettingsManager : MonoBehaviour
             audioManager.SetSFXVolume(value);
         }
         
-        Debug.Log($"SoundSettingsManager: SFX Volume changed to {value}");
     }
     
     /// <summary>
@@ -116,7 +111,6 @@ public class SoundSettingsManager : MonoBehaviour
             musicManager.SetMusicVolume(value);
         }
         
-        Debug.Log($"SoundSettingsManager: Music Volume changed to {value}");
     }
     
     /// <summary>

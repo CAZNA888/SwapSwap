@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 
 public class PuzzleGrid : MonoBehaviour
@@ -42,7 +42,6 @@ public class PuzzleGrid : MonoBehaviour
         cardSpan = span;
         cardHeight = heightSpacing;
         
-        Debug.Log($"PuzzleGrid.Initialize: cardSpan={cardSpan:F2}, cardHeight={cardHeight:F2}");
         
         CalculateCardSize();
         CalculateFieldStartPosition();
@@ -75,7 +74,6 @@ public class PuzzleGrid : MonoBehaviour
         // Центрируем поле в (0,0), значит левый край = -totalWidth/2
         fieldStartPosition = new Vector2(-totalWidth / 2f, totalHeight / 2f);
         
-        Debug.Log($"PuzzleGrid.RecalculateFieldStartPosition: sizeToUse={sizeToUse.x:F2}x{sizeToUse.y:F2}, totalWidth={totalWidth:F2}, totalHeight={totalHeight:F2}, fieldStartPosition={fieldStartPosition}, cardSpan={cardSpan:F2}, cardHeight={cardHeight:F2}");
     }
     
     public Vector2 GetCardSize()
@@ -103,7 +101,6 @@ public class PuzzleGrid : MonoBehaviour
     {
         actualCardSize = actualSize;
         RecalculateFieldStartPosition();
-        Debug.Log($"PuzzleGrid.SetActualCardSize: actualCardSize={actualSize.x:F2}x{actualSize.y:F2}, calculated cardSize={cardSize.x:F2}x{cardSize.y:F2}");
     }
     
     public Vector2 GetWorldPosition(int row, int col)
@@ -127,7 +124,6 @@ public class PuzzleGrid : MonoBehaviour
         {
             float leftEdge = x - sizeToUse.x / 2f;
             float rightEdge = x + sizeToUse.x / 2f;
-            Debug.Log($"GetWorldPosition(row={row}, col={col}): center=({x:F3}, {y:F3}), leftEdge={leftEdge:F3}, rightEdge={rightEdge:F3}, sizeToUse={sizeToUse.x:F3}, cellWidth={cellWidth:F3}, cardSpan={cardSpan:F3}, fieldStartPosition.x={fieldStartPosition.x:F3}");
         }
         
         return new Vector2(x, y);

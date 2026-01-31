@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
 using System.Collections;
@@ -65,7 +65,6 @@ public class MenuManager : MonoBehaviour
         if (instance == this)
         {
             SaveMenuProgress();
-            Debug.Log("MenuManager: Saving progress before destruction");
         }
     }
     
@@ -117,7 +116,6 @@ public class MenuManager : MonoBehaviour
         // Прогресс уже сохраняется через SetUnlockedCardsCount при каждом обновлении
         // Этот метод просто гарантирует, что все изменения записаны на диск
         PlayerPrefs.Save();
-        Debug.Log("MenuManager: Menu progress saved to PlayerPrefs");
     }
     
     /// <summary>
@@ -171,7 +169,6 @@ public class MenuManager : MonoBehaviour
         if (unlockedCount > currentUnlocked)
         {
             SetUnlockedCardsCount(imageIndex, unlockedCount);
-            Debug.Log($"MenuManager: Updated progress for image {imageIndex}: {unlockedCount}/{cardsPerImage} cards unlocked");
         }
         
         // Обновляем отображение уровня
@@ -225,14 +222,12 @@ public class MenuManager : MonoBehaviour
     {
         if (menuImages == null || menuImages.Count == 0)
         {
-            Debug.LogError("MenuManager: menuImages list is empty!");
             onComplete?.Invoke(null);
             yield break;
         }
         
         if (imageIndex < 0 || imageIndex >= menuImages.Count)
         {
-            Debug.LogError($"MenuManager: Image index {imageIndex} is out of range! Available images: 0-{menuImages.Count - 1}");
             onComplete?.Invoke(null);
             yield break;
         }
@@ -242,7 +237,6 @@ public class MenuManager : MonoBehaviour
         // Всегда используем Addressables - проверяем наличие во время выполнения
         if (!IsAddressablesAvailable())
         {
-            Debug.LogError("MenuManager: Addressables are not installed! Please install Addressables package (Window > Package Manager > Addressables).");
             onComplete?.Invoke(null);
             yield break;
         }
@@ -259,13 +253,11 @@ public class MenuManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"MenuManager: Failed to load image from Addressables with key '{addressableKey}'. Загрузка не выполнена.");
             onComplete?.Invoke(null);
         }
         
         // Не освобождаем handle здесь, так как спрайт может использоваться
 #else
-        Debug.LogError("MenuManager: Addressables code is not compiled. Please add 'UNITY_ADDRESSABLES' to Scripting Define Symbols in Player Settings (Edit > Project Settings > Player > Other Settings > Scripting Define Symbols).");
         onComplete?.Invoke(null);
         yield break;
 #endif
@@ -278,21 +270,16 @@ public class MenuManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(sceneName))
         {
-            Debug.LogError("MenuManager: Scene name is null or empty!");
             return;
         }
         
         // Сохраняем имя текущей сцены меню для возможного возврата
         currentMenuSceneName = SceneManager.GetActiveScene().name;
         
-        Debug.Log($"MenuManager: Loading level scene: {sceneName}");
-        Debug.Log($"MenuManager: Current scene before load: {SceneManager.GetActiveScene().name}");
-        Debug.Log($"MenuManager: Scene exists in build: {SceneExistsInBuild(sceneName)}");
         
         // Используем LoadSceneMode.Single для гарантированной загрузки
         SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
         
-        Debug.Log($"MenuManager: Scene load command sent for: {sceneName}");
     }
     
     /// <summary>
@@ -371,12 +358,10 @@ public class MenuManager : MonoBehaviour
     {
         if (imageIndex < 0)
         {
-            Debug.LogWarning($"MenuManager: Invalid image index: {imageIndex}");
             return;
         }
         
         SetUnlockedCardsCount(imageIndex, cardsPerImage);
-        Debug.Log($"MenuManager: Unlocked all {cardsPerImage} cards for image {imageIndex}");
     }
     
     /// <summary>

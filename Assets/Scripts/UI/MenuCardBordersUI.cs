@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class MenuCardBordersUI : MonoBehaviour
@@ -39,7 +39,6 @@ public class MenuCardBordersUI : MonoBehaviour
         
         if (borderSprite == null)
         {
-            Debug.LogWarning("MenuCardBordersUI: Border sprite is not set!");
             return;
         }
         

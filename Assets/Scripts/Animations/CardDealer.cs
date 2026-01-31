@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -94,7 +94,6 @@ public class CardDealer : MonoBehaviour
             availablePositions.Remove(selectedPos);
         }
         
-        Debug.Log($"CardDealer: Generated placement - all pieces on non-original positions");
         return assignedPositions;
     }
 }

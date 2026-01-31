@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [System.Serializable]
 public class PuzzlePieceSetup : MonoBehaviour
@@ -87,7 +87,6 @@ public class PuzzlePieceSetup : MonoBehaviour
     {
         if (borderSprite == null)
         {
-            Debug.LogWarning("Border Sprite не установлен!");
             return;
         }
         

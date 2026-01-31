@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
 using System.Linq;
@@ -112,7 +112,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             
             // Находим группу соединенных карточек (используем текущие соединения без обновления)
             selectedGroup = FindConnectedGroup(selectedPiece);
-            Debug.Log($"[SwipeHandler] OnPointerDown: найдена группа из {selectedGroup.Count} карточек");
             
             // Вычисляем смещение от точки нажатия
             Vector3 worldPos = Camera.main != null ? 
@@ -238,11 +237,9 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             hintManager.ResumeHintsAfterMovement();
         }
         
-        Debug.Log($"[SwipeHandler] OnPointerUp: Начало обработки. Группа из {selectedGroup.Count} карточек");
         
         // Сохраняем старые позиции группы
         Dictionary<PuzzlePiece, Vector2Int> oldPositions = SaveOldPositions(selectedGroup);
-        Debug.Log($"[SwipeHandler] Сохранены старые позиции: {string.Join(", ", oldPositions.Select(kvp => $"{kvp.Key.name}->({kvp.Value.x},{kvp.Value.y})"))}");
         
         // Определяем целевую ЯЧЕЙКУ по коллайдеру
         Vector3 worldPos = Camera.main.ScreenToWorldPoint(eventData.position);
@@ -252,13 +249,11 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         
         if (targetCell == null)
         {
-            Debug.LogWarning($"[SwipeHandler] Целевая ячейка не найдена! Возвращаем группу на исходные позиции.");
             ReturnGroupToOriginalPositions(selectedGroup, oldPositions);
             ResetGroupState();
             return;
         }
         
-        Debug.Log($"[SwipeHandler] Найдена целевая ячейка: ({targetCell.row}, {targetCell.col})");
         
         // ПРОСТОЙ ОБМЕН: если перетаскивается одна карточка
         if (selectedGroup.Count == 1)
@@ -269,7 +264,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             
             if (draggedOldCell == null)
             {
-                Debug.LogError($"[SwipeHandler] Не найдена старая ячейка для карточки {draggedPiece.name}");
                 ReturnGroupToOriginalPositions(selectedGroup, oldPositions);
                 ResetGroupState();
                 return;
@@ -283,18 +277,15 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                 // ПРОВЕРКА: убеждаемся, что targetPiece действительно на этой ячейке
                 if (targetPiece == null)
                 {
-                    Debug.LogWarning($"[SwipeHandler] targetCell не пуста, но currentPiece == null! Ищем в occupiedCells.");
                     // Исправляем - ищем карточку в occupiedCells
                     Vector2Int targetPos = new Vector2Int(targetCell.row, targetCell.col);
                     if (occupiedCells.TryGetValue(targetPos, out PuzzlePiece foundPiece))
                     {
                         targetPiece = foundPiece;
                         targetCell.SetPiece(foundPiece);
-                        Debug.Log($"[SwipeHandler] Найдена карточка {foundPiece.name} в occupiedCells для ячейки ({targetCell.row}, {targetCell.col})");
                     }
                     else
                     {
-                        Debug.LogError($"[SwipeHandler] Не найдена карточка в occupiedCells для ячейки ({targetCell.row}, {targetCell.col})");
                         ReturnGroupToOriginalPositions(selectedGroup, oldPositions);
                         ResetGroupState();
                         return;
@@ -304,17 +295,14 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                 // ПРОВЕРКА: убеждаемся, что draggedPiece действительно на старой ячейке
                 if (draggedOldCell.currentPiece != draggedPiece)
                 {
-                    Debug.LogWarning($"[SwipeHandler] draggedOldCell.currentPiece != draggedPiece, исправляем");
                     draggedOldCell.SetPiece(draggedPiece);
                 }
                 
-                Debug.Log($"[SwipeHandler] Обмен: {draggedPiece.name} ({draggedOldPos.x},{draggedOldPos.y}) <-> {targetPiece.name} ({targetCell.row},{targetCell.col})");
                 SwapPieces(draggedPiece, draggedOldCell, targetPiece, targetCell);
             }
             else
             {
                 // Перемещаем карточку в пустую ячейку
-                Debug.Log($"[SwipeHandler] Перемещение: {draggedPiece.name} ({draggedOldPos.x},{draggedOldPos.y}) -> ({targetCell.row},{targetCell.col})");
                 MovePieceToCell(draggedPiece, draggedOldCell, targetCell);
             }
             
@@ -325,7 +313,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         // Перемещение группы с сохранением формы
         if (selectedGroup.Count > 1)
         {
-            Debug.Log($"[SwipeHandler] Перемещение группы из {selectedGroup.Count} карточек в ячейку ({targetCell.row}, {targetCell.col})");
             MoveGroupWithShape(selectedGroup, targetCell, oldPositions);
             ResetGroupState();
             return;
@@ -337,13 +324,11 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         // ПРОВЕРКИ: убеждаемся, что карточки действительно на этих ячейках
         if (cell1.currentPiece != piece1)
         {
-            Debug.LogWarning($"[SwipeHandler] SwapPieces: cell1.currentPiece != piece1! cell1: {cell1.currentPiece?.name}, piece1: {piece1.name}. Исправляем.");
             cell1.SetPiece(piece1);
         }
         
         if (cell2.currentPiece != piece2)
         {
-            Debug.LogWarning($"[SwipeHandler] SwapPieces: cell2.currentPiece != piece2! cell2: {cell2.currentPiece?.name}, piece2: {piece2.name}. Исправляем.");
             cell2.SetPiece(piece2);
         }
         
@@ -457,7 +442,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         // ПРОВЕРКА: убеждаемся, что новая ячейка действительно пуста
         if (!newCell.IsEmpty())
         {
-            Debug.LogError($"[SwipeHandler] MovePieceToCell: новая ячейка ({newCell.row}, {newCell.col}) не пуста! Содержит {newCell.currentPiece?.name}");
             // Очищаем ячейку
             newCell.SetPiece(null);
         }
@@ -465,7 +449,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         // ПРОВЕРКА: убеждаемся, что старая ячейка содержит эту карточку
         if (oldCell.currentPiece != piece)
         {
-            Debug.LogWarning($"[SwipeHandler] MovePieceToCell: oldCell.currentPiece != piece! Исправляем.");
             oldCell.SetPiece(piece);
         }
         
@@ -574,7 +557,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         // 3. Проверяем, что все ячейки валидны
         if (targetCells.Count != group.Count)
         {
-            Debug.LogWarning($"[SwipeHandler] Группа не помещается в целевую область. Возвращаем на место.");
             ReturnGroupToOriginalPositions(group, oldPositions);
             return;
         }
@@ -653,7 +635,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                 emptyCells,
                 targetCells);
             
-            Debug.Log($"[SwipeHandler] MoveGroupWithShape: перемещаем {piecesToMove.Count} мешающих карточек с сохранением горизонтального порядка");
             
             // Перемещаем карточки согласно размещению
             foreach (var kvp in placement)
@@ -669,7 +650,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                     Vector2 worldPos2D = grid.GetWorldPosition(newPos.x, newPos.y);
                     Vector3 newWorldPos = new Vector3(worldPos2D.x, worldPos2D.y, 0f); // z = 0
                     
-                    Debug.Log($"[SwipeHandler] MoveGroupWithShape: перемещаем {piece.name} ({oldPos.x},{oldPos.y}) -> ({newPos.x},{newPos.y})");
                     
                     piece.transform.DOMove(newWorldPos, moveDuration).SetEase(moveEase);
                     
@@ -710,7 +690,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             {
                 if (!placement.ContainsKey(piece))
                 {
-                    Debug.LogWarning($"[SwipeHandler] MoveGroupWithShape: карточка {piece.name} не была размещена, используем fallback");
                     // Используем старую логику как fallback
                     List<Vector2Int> fallbackCells = grid.GetEmptyCells(occupiedCells)
                         .Where(c => !targetCells.Contains(c))
@@ -802,7 +781,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             // Но нужно убедиться, что ячейка пуста
             if (!newCell.IsEmpty() && newCell.currentPiece != piece)
             {
-                Debug.LogWarning($"[SwipeHandler] MoveGroupWithShape: ячейка ({newRow}, {newCol}) не пуста! Содержит {newCell.currentPiece?.name}. Перемещаем.");
                 // Перемещаем старую карточку на свободное место
                 PuzzlePiece oldPiece = newCell.currentPiece;
                 Vector2Int oldPiecePos = new Vector2Int(oldPiece.currentGridRow, oldPiece.currentGridCol);
@@ -857,7 +835,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                 // Если на ячейке карточка, которая НЕ в группе - её нужно переместить
                 if (pieceOnCell != null && !group.Contains(pieceOnCell))
                 {
-                    Debug.LogWarning($"[SwipeHandler] MoveGroupWithShape: на целевой ячейке ({targetPos.x}, {targetPos.y}) осталась старая карточка {pieceOnCell.name}. Перемещаем.");
                     remainingPiecesToMove.Add(pieceOnCell);
                 }
             }
@@ -885,13 +862,11 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             List<Vector2Int> sortedAvailableCells = availableCells.OrderBy(c => c.x).ThenBy(c => c.y).ToList();
             int cellIndex = 0;
             
-            Debug.Log($"[SwipeHandler] MoveGroupWithShape: финальная проверка - перемещаем {remainingPiecesToMove.Count} оставшихся карточек в {sortedAvailableCells.Count} доступных ячеек");
             
             foreach (PuzzlePiece piece in remainingPiecesToMove)
             {
                 if (cellIndex >= sortedAvailableCells.Count)
                 {
-                    Debug.LogWarning($"[SwipeHandler] MoveGroupWithShape: не хватает ячеек для оставшихся карточек!");
                     break;
                 }
                 
@@ -905,7 +880,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                     Vector2 worldPos2D = grid.GetWorldPosition(newPos.x, newPos.y);
                     Vector3 newWorldPos = new Vector3(worldPos2D.x, worldPos2D.y, 0f); // z = 0
                     
-                    Debug.Log($"[SwipeHandler] MoveGroupWithShape: финальная проверка - перемещаем {piece.name} ({oldPos.x},{oldPos.y}) -> ({newPos.x},{newPos.y})");
                     
                     piece.transform.DOMove(newWorldPos, moveDuration).SetEase(moveEase);
                     
@@ -1120,11 +1094,9 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             }
         }
         
-        Debug.Log($"[SwipeHandler] PlacePiecesPreservingHorizontalOrder: размещено {placement.Count} карточек из {piecesToMove.Count}");
         foreach (var kvp in placement)
         {
             Vector2Int oldPos = new Vector2Int(kvp.Key.currentGridRow, kvp.Key.currentGridCol);
-            Debug.Log($"[SwipeHandler]   {kvp.Key.name}: ({oldPos.x},{oldPos.y}) -> ({kvp.Value.x},{kvp.Value.y})");
         }
         
         return placement;
@@ -1136,7 +1108,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         List<Vector2Int> emptyCells = grid.GetEmptyCells(occupiedCells);
         if (emptyCells.Count == 0)
         {
-            Debug.LogError($"[SwipeHandler] MovePieceToEmptyCell: нет свободных ячеек для {piece.name}!");
             return;
         }
         
@@ -1162,7 +1133,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             occupiedCells[newPos] = piece;
             connectionManager.UpdatePieceOnGrid(piece, oldPos, newPos);
             
-            Debug.Log($"[SwipeHandler] MovePieceToEmptyCell: перемещена {piece.name} ({oldPos.x},{oldPos.y}) -> ({newPos.x},{newPos.y})");
         }
     }
     
@@ -1186,14 +1156,12 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                     // Проверяем, что карточка действительно на этой позиции
                     if (piece.currentGridRow != row || piece.currentGridCol != col)
                     {
-                        Debug.LogWarning($"[SwipeHandler] ValidateGridIntegrityImmediate: Несоответствие! Ячейка ({row},{col}) содержит {piece.name}, но карточка думает что она на ({piece.currentGridRow},{piece.currentGridCol}). Исправляем.");
                         piece.SetPosition(row, col);
                     }
                     
                     // Проверяем дубликаты
                     if (cellPieces.ContainsKey(pos))
                     {
-                        Debug.LogWarning($"[SwipeHandler] ValidateGridIntegrityImmediate: ДУБЛИКАТ! Ячейка ({row},{col}) содержит несколько карточек! Перемещаем {piece.name}.");
                         duplicatePieces.Add(piece);
                     }
                     else
@@ -1210,13 +1178,11 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             List<Vector2Int> emptyCells = grid.GetEmptyCells(occupiedCells);
             int cellIndex = 0;
             
-            Debug.LogWarning($"[SwipeHandler] ValidateGridIntegrityImmediate: найдено {duplicatePieces.Count} дубликатов, перемещаем на {emptyCells.Count} свободных ячеек");
             
             foreach (PuzzlePiece duplicate in duplicatePieces)
             {
                 if (cellIndex >= emptyCells.Count)
                 {
-                    Debug.LogError($"[SwipeHandler] ValidateGridIntegrityImmediate: не хватает свободных ячеек для дубликатов!");
                     break;
                 }
                 
@@ -1226,7 +1192,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                 
                 if (newCell != null)
                 {
-                    Debug.LogWarning($"[SwipeHandler] ValidateGridIntegrityImmediate: перемещаем дубликат {duplicate.name} ({oldPos.x},{oldPos.y}) -> ({newPos.x},{newPos.y})");
                     
                     Vector2 worldPos2D = grid.GetWorldPosition(newPos.x, newPos.y);
                     Vector3 newWorldPos = new Vector3(worldPos2D.x, worldPos2D.y, 0f);
@@ -1251,7 +1216,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             }
         }
         
-        Debug.Log($"[SwipeHandler] ValidateGridIntegrityImmediate: проверка завершена. Найдено дубликатов: {duplicatePieces.Count}");
     }
     
     // Проверяет целостность сетки: на каждой ячейке должна быть только 1 карточка
@@ -1274,7 +1238,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                     // Проверяем, что карточка действительно на этой позиции
                     if (piece.currentGridRow != row || piece.currentGridCol != col)
                     {
-                        Debug.LogError($"[SwipeHandler] ValidateGridIntegrity: Несоответствие! Ячейка ({row},{col}) содержит {piece.name}, но карточка думает что она на ({piece.currentGridRow},{piece.currentGridCol})");
                         // Исправляем
                         piece.SetPosition(row, col);
                     }
@@ -1282,7 +1245,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                     // Проверяем дубликаты
                     if (cellPieces.ContainsKey(pos))
                     {
-                        Debug.LogError($"[SwipeHandler] ValidateGridIntegrity: ДУБЛИКАТ! Ячейка ({row},{col}) содержит несколько карточек!");
                         duplicatePieces.Add(piece);
                     }
                     else
@@ -1309,7 +1271,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                 
                 if (newCell != null)
                 {
-                    Debug.LogWarning($"[SwipeHandler] ValidateGridIntegrity: перемещаем дубликат {duplicate.name} ({oldPos.x},{oldPos.y}) -> ({newPos.x},{newPos.y})");
                     
                     Vector2 worldPos2D = grid.GetWorldPosition(newPos.x, newPos.y);
                     Vector3 newWorldPos = new Vector3(worldPos2D.x, worldPos2D.y, 0f);
@@ -1333,7 +1294,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             }
         }
         
-        Debug.Log($"[SwipeHandler] ValidateGridIntegrity: проверка завершена. Найдено дубликатов: {duplicatePieces.Count}");
     }
     
     // Проверяет соединения соседей карточки
@@ -1396,7 +1356,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             
             if (clickedPiece != null)
             {
-                Debug.Log($"[SwipeHandler] GetPieceUnderCursor: Найдена карточка {clickedPiece.name} через Physics2D в позиции {worldPos}, sortingOrder: {lowestSortingOrder}");
             }
         }
         
@@ -1412,7 +1371,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                 if (piece != null && (selectedGroup == null || !selectedGroup.Contains(piece)))
                 {
                     clickedPiece = piece;
-                    Debug.Log($"[SwipeHandler] GetPieceUnderCursor: Найдена карточка {clickedPiece.name} через EventSystem");
                     break;
                 }
             }
@@ -1420,7 +1378,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         
         if (clickedPiece == null)
         {
-            Debug.Log($"[SwipeHandler] GetPieceUnderCursor: Карточка под курсором не найдена");
         }
         
         return clickedPiece;
@@ -1602,19 +1559,16 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
     {
         if (pieces.Count == 0 || freedCells.Count == 0)
         {
-            Debug.Log($"[SwipeHandler] MovePiecesToFreedCells: Нет карточек или ячеек (pieces: {pieces.Count}, freedCells: {freedCells.Count})");
             return;
         }
         
         List<Vector2Int> sortedFreedCells = freedCells.OrderBy(c => c.x).ThenBy(c => c.y).ToList();
-        Debug.Log($"[SwipeHandler] MovePiecesToFreedCells: Перемещаем {pieces.Count} карточек в {sortedFreedCells.Count} ячеек");
         
         int cellIndex = 0;
         foreach (PuzzlePiece piece in pieces)
         {
             if (cellIndex >= sortedFreedCells.Count)
             {
-                Debug.LogWarning($"[SwipeHandler] MovePiecesToFreedCells: Недостаточно свободных ячеек для карточки {piece.name}");
                 break;
             }
             
@@ -1624,7 +1578,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             Vector2Int oldPos = new Vector2Int(piece.currentGridRow, piece.currentGridCol);
             occupiedCells.Remove(oldPos);
             
-            Debug.Log($"[SwipeHandler] MovePiecesToFreedCells: {piece.name} ({oldPos.x},{oldPos.y}) -> ({newPos.x},{newPos.y})");
             
             piece.transform.DOMove(targetWorldPos, moveDuration).SetEase(moveEase);
             connectionManager.UpdatePieceOnGrid(piece, oldPos, newPos);
@@ -1668,13 +1621,11 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
     {
         List<Tween> tweens = new List<Tween>();
         
-        Debug.Log($"[SwipeHandler] PlaceGroup: Размещаем группу из {group.Count} карточек, главная ячейка: ({mainCell.x}, {mainCell.y})");
         
         foreach (PuzzlePiece piece in group)
         {
             if (!offsets.TryGetValue(piece, out Vector2Int offset))
             {
-                Debug.LogWarning($"[SwipeHandler] PlaceGroup: Нет смещения для карточки {piece.name}");
                 continue; // Пропускаем, если нет смещения
             }
             
@@ -1683,7 +1634,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             // Проверяем валидность - если невалидна, это ошибка, но мы уже проверили выше
             if (!grid.IsValidGridPosition(newPos.x, newPos.y))
             {
-                Debug.LogError($"[SwipeHandler] PlaceGroup: Карточка {piece.name} не может быть размещена в позиции ({newPos.x}, {newPos.y})");
                 continue;
             }
             
@@ -1695,7 +1645,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                 oldPos = new Vector2Int(piece.currentGridRow, piece.currentGridCol);
             }
             
-            Debug.Log($"[SwipeHandler] PlaceGroup: {piece.name} ({oldPos.x},{oldPos.y}) -> ({newPos.x},{newPos.y}), offset: ({offset.x},{offset.y})");
             
             Tween tween = piece.transform.DOMove(targetWorldPos, moveDuration)
                 .SetEase(moveEase);
@@ -1707,10 +1656,8 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             piece.SetPosition(newPos.x, newPos.y);
             occupiedCells[newPos] = piece; // ВАЖНО: добавляем в occupiedCells
             
-            Debug.Log($"[SwipeHandler] PlaceGroup: {piece.name} добавлена в occupiedCells[({newPos.x},{newPos.y})]");
         }
         
-        Debug.Log($"[SwipeHandler] PlaceGroup: Создано {tweens.Count} анимаций из {group.Count} карточек");
         return tweens;
     }
     
@@ -1722,7 +1669,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         queue.Enqueue(startPiece);
         visited.Add(startPiece);
         
-        Debug.Log($"[SwipeHandler] FindConnectedGroup: начинаем с {startPiece.name}");
         
         while (queue.Count > 0)
         {
@@ -1731,20 +1677,17 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
             // Находим всех соединенных соседей
             List<PuzzlePiece> neighbors = GetConnectedNeighbors(current);
             
-            Debug.Log($"[SwipeHandler] FindConnectedGroup: для {current.name} найдено {neighbors.Count} соседей");
             
             foreach (PuzzlePiece neighbor in neighbors)
             {
                 if (!visited.Contains(neighbor))
                 {
-                    Debug.Log($"[SwipeHandler] FindConnectedGroup: добавляем {neighbor.name} в группу");
                     visited.Add(neighbor);
                     queue.Enqueue(neighbor);
                 }
             }
         }
         
-        Debug.Log($"[SwipeHandler] FindConnectedGroup: итоговая группа из {visited.Count} карточек: {string.Join(", ", visited.Select(p => p.name))}");
         return visited.ToList();
     }
     
@@ -1757,8 +1700,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
         int[] dy = { 0, 0, -1, 1 };
         int[] connectionIndex = { 0, 1, 2, 3 }; // 0=верх, 1=низ, 2=лево, 3=право
         
-        Debug.Log($"[SwipeHandler] GetConnectedNeighbors для {piece.name} в позиции ({piece.currentGridRow}, {piece.currentGridCol})");
-        Debug.Log($"[SwipeHandler] isConnected: верх={piece.isConnected[0]}, низ={piece.isConnected[1]}, лево={piece.isConnected[2]}, право={piece.isConnected[3]}");
         
         for (int i = 0; i < 4; i++)
         {
@@ -1783,34 +1724,28 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                     // Для соседа нужно проверить противоположную сторону
                     int oppositeIndex = (i % 2 == 0) ? (i + 1) : (i - 1); // 0<->1, 2<->3
                     
-                    Debug.Log($"[SwipeHandler] Найден сосед {neighbor.name} на стороне {i}, oppositeIndex={oppositeIndex}, neighbor.isConnected[{oppositeIndex}]={neighbor.isConnected[oppositeIndex]}");
                     
                     if (neighbor.isConnected[oppositeIndex])
                     {
                         // Дополнительно проверяем, что они были соседями в оригинале
                         if (AreConnectedInOriginal(piece, neighbor))
                         {
-                            Debug.Log($"[SwipeHandler] Карточки {piece.name} и {neighbor.name} соединены!");
                             neighbors.Add(neighbor);
                         }
                         else
                         {
-                            Debug.LogWarning($"[SwipeHandler] Карточки {piece.name} и {neighbor.name} не были соседями в оригинале");
                         }
                     }
                     else
                     {
-                        Debug.LogWarning($"[SwipeHandler] Сосед {neighbor.name} не соединен с обратной стороны (oppositeIndex={oppositeIndex})");
                     }
                 }
                 else
                 {
-                    Debug.LogWarning($"[SwipeHandler] Нет карточки в occupiedCells для позиции ({newRow}, {newCol})");
                 }
             }
         }
         
-        Debug.Log($"[SwipeHandler] GetConnectedNeighbors для {piece.name} нашел {neighbors.Count} соседей");
         return neighbors;
     }
     
@@ -1898,7 +1833,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                         // Ячейка должна содержать эту карточку
                         if (cell.currentPiece != piece)
                         {
-                            Debug.LogWarning($"[SwipeHandler] Синхронизация: ячейка ({row},{col}) должна содержать {piece.name}, но содержит {cell.currentPiece?.name}");
                             cell.SetPiece(piece);
                         }
                     }
@@ -1907,7 +1841,6 @@ public class SwipeHandler : MonoBehaviour, IPointerDownHandler, IDragHandler, IP
                         // occupiedCells не содержит эту позицию - ячейка должна быть пуста
                         if (cell.currentPiece != null)
                         {
-                            Debug.LogWarning($"[SwipeHandler] Синхронизация: ячейка ({row},{col}) должна быть пуста, но содержит {cell.currentPiece.name}");
                             cell.SetPiece(null);
                         }
                     }

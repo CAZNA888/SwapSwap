@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
@@ -53,7 +53,6 @@ public class MenuProgressUI : MonoBehaviour
         menuManager = MenuManager.Instance;
         if (menuManager == null)
         {
-            Debug.LogError("MenuProgressUI: MenuManager not found!");
             return;
         }
         
@@ -72,7 +71,6 @@ public class MenuProgressUI : MonoBehaviour
         
         if (cardsGridParent == null)
         {
-            Debug.LogError("MenuProgressUI: cardsGridParent is not set!");
             return;
         }
         
@@ -174,7 +172,6 @@ public class MenuProgressUI : MonoBehaviour
         
         if (menuImage == null)
         {
-            Debug.LogError($"MenuProgressUI: Failed to load menu image at index {imageIndex}");
             yield break;
         }
         
@@ -183,7 +180,6 @@ public class MenuProgressUI : MonoBehaviour
         
         if (slicedSprites == null || slicedSprites.Count != gridSize * gridSize)
         {
-            Debug.LogError($"MenuProgressUI: Failed to slice image! Expected {gridSize * gridSize} sprites, got {(slicedSprites != null ? slicedSprites.Count : 0)}");
             yield break;
         }
         
@@ -224,7 +220,6 @@ public class MenuProgressUI : MonoBehaviour
         // Если это та же картинка и количество увеличилось, показываем анимацию
         bool shouldAnimate = (savedImageIndex == imageIndex && previousUnlockedCount > savedUnlockedCount) || hasNewCard;
         
-        Debug.Log($"MenuProgressUI: savedImageIndex={savedImageIndex}, currentImageIndex={imageIndex}, savedUnlocked={savedUnlockedCount}, currentUnlocked={previousUnlockedCount}, shouldAnimate={shouldAnimate}");
         
         // Обновляем прогресс в MenuManager
         menuManager.UpdateProgress();
@@ -241,7 +236,6 @@ public class MenuProgressUI : MonoBehaviour
             int nextImageIndex = imageIndex + 1;
             if (nextImageIndex < menuManager.menuImages.Count)
             {
-                Debug.Log($"MenuProgressUI: Current image {imageIndex} is completed, switching to next image {nextImageIndex}");
                 
                 // Переключаемся на следующую картинку
                 // Убеждаемся, что уровень установлен на начало следующей картинки
@@ -275,13 +269,11 @@ public class MenuProgressUI : MonoBehaviour
             }
             else
             {
-                Debug.Log($"MenuProgressUI: Current image {imageIndex} is completed, but no more images available");
             }
         }
         
         if (shouldAnimate && unlockedCount > 0 && unlockedCount <= menuCards.Count)
         {
-            Debug.Log($"MenuProgressUI: Will animate new card at index {unlockedCount - 1}");
             // Устанавливаем все карточки в правильное состояние, но последнюю оставляем закрытой
             UpdateProgress(skipLastCard: true);
             
@@ -580,7 +572,6 @@ public class MenuProgressUI : MonoBehaviour
     private IEnumerator AnimateCardFlip(MenuCard card)
     {
         card.FlipCard(() => {
-            Debug.Log("MenuProgressUI: Card flip animation completed");
             // Обновляем рамки после переворота
             UpdateAllBorders();
         });
@@ -636,7 +627,6 @@ public class MenuProgressUI : MonoBehaviour
             int nextImageIndex = imageIndex + 1;
             if (nextImageIndex < menuManager.menuImages.Count)
             {
-                Debug.Log($"MenuProgressUI: Current image {imageIndex} is completed, switching to next image {nextImageIndex}");
                 
                 // Переключаемся на следующую картинку
                 // Убеждаемся, что уровень установлен на начало следующей картинки
@@ -670,7 +660,6 @@ public class MenuProgressUI : MonoBehaviour
             }
             else
             {
-                Debug.Log($"MenuProgressUI: Current image {imageIndex} is completed, but no more images available");
                 // Просто обновляем прогресс без анимации
                 UpdateProgress();
             }
@@ -723,7 +712,6 @@ public class MenuProgressUI : MonoBehaviour
             
             // Анимируем переворот (используется та же анимация, что и в GameManager)
             newCard.FlipCard(() => {
-                Debug.Log("MenuProgressUI: New card flip animation completed after level completion");
                 // Обновляем рамки после переворота
                 UpdateAllBorders();
             });
@@ -769,7 +757,6 @@ public class MenuProgressUI : MonoBehaviour
         // Обновляем визуальное отображение
         UpdateProgress();
         
-        Debug.Log($"MenuProgressUI: Unlocked all cards for image {imageIndex}");
     }
     
     /// <summary>
@@ -787,11 +774,9 @@ public class MenuProgressUI : MonoBehaviour
         if (imageIndex == currentImageIndex)
         {
             UpdateProgress();
-            Debug.Log($"MenuProgressUI: Unlocked all cards for current image {imageIndex}");
         }
         else
         {
-            Debug.Log($"MenuProgressUI: Unlocked all cards for image {imageIndex} (not current, UI not updated)");
         }
     }
 }

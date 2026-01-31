@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [System.Serializable]
 public class MenuImageData
@@ -24,7 +24,6 @@ public class MenuImageData
             return "MenuImage_" + name;
         }
         
-        Debug.LogWarning("MenuImageData: Both addressableKey and name are empty! Using default key.");
         return "MenuImage_Unknown";
     }
 }

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
@@ -138,7 +138,6 @@ public class ButtonGlowEffect : MonoBehaviour
             UpdateGlowIntensity(1f);
         }
 
-        Debug.Log("ButtonGlowEffect: Glow started");
     }
 
     /// <summary>
@@ -161,7 +160,6 @@ public class ButtonGlowEffect : MonoBehaviour
             glowContainer.SetActive(false);
         }
 
-        Debug.Log("ButtonGlowEffect: Glow stopped");
     }
 
     /// <summary>
@@ -180,7 +178,6 @@ public class ButtonGlowEffect : MonoBehaviour
 
         if (buttonRect == null)
         {
-            Debug.LogError("ButtonGlowEffect: No RectTransform found on button!");
             return;
         }
 
@@ -231,7 +228,6 @@ public class ButtonGlowEffect : MonoBehaviour
 
         glowContainer.SetActive(false);
 
-        Debug.Log($"ButtonGlowEffect: Glow effect created with {quality} layers, size: {calculatedGlowSize}");
     }
 
     /// <summary>

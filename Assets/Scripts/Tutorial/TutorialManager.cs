@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using PlayerPrefs = RedefineYG.PlayerPrefs;
 /// <summary>
@@ -65,7 +65,6 @@ public class TutorialManager : MonoBehaviour
     {
         if (playButton == null)
         {
-            Debug.LogError("TutorialManager: Play button is not assigned!");
             return;
         }
 
@@ -105,7 +104,6 @@ public class TutorialManager : MonoBehaviour
             playButton.onClick.AddListener(CompleteTutorial);
         }
 
-        Debug.Log("TutorialManager: Tutorial started");
     }
 
     /// <summary>
@@ -138,7 +136,6 @@ public class TutorialManager : MonoBehaviour
             playButton.onClick.RemoveListener(CompleteTutorial);
         }
 
-        Debug.Log("TutorialManager: Tutorial completed");
     }
 
     /// <summary>
@@ -165,7 +162,6 @@ public class TutorialManager : MonoBehaviour
     {
         PlayerPrefs.DeleteKey(FIRST_LAUNCH_KEY);
         PlayerPrefs.Save();
-        Debug.Log("TutorialManager: Tutorial reset - will show on next launch");
     }
 
     /// <summary>
@@ -176,7 +172,6 @@ public class TutorialManager : MonoBehaviour
     {
         PlayerPrefs.SetInt(FIRST_LAUNCH_KEY, 1);
         PlayerPrefs.Save();
-        Debug.Log("TutorialManager: Tutorial marked as completed");
     }
 
     void OnDestroy()
